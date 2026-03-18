@@ -2590,7 +2590,7 @@ applyTheme(savedTheme);
 function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
 
 function exportData() {
-  const data = { version: 2, exportedAt: new Date().toISOString(), notes: getNotes(), bookmarks: getBookmarks() };
+  const data = { version: 3, exportedAt: new Date().toISOString(), notes: getNotes(), bookmarks: getBookmarks(), mediaItems: getMediaItems(), vault: getVault() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -2616,9 +2616,19 @@ function importData(e) {
       const newBms = (data.bookmarks || []).filter(b => !existingBmIds.has(b.id));
       bookmarks = [...bookmarks, ...newBms];
       saveBookmarks(bookmarks);
-      renderTagList(); renderNoteList();
+      // Merge media items
+      const existingMediaIds = new Set(mediaItems.map(m => m.id));
+      const newMedia = (data.mediaItems || []).filter(m => !existingMediaIds.has(m.id));
+      mediaItems = [...mediaItems, ...newMedia];
+      saveMediaItems(mediaItems);
+      // Merge vault
+      const existingVaultIds = new Set(vault.map(v => v.id));
+      const newVault = (data.vault || []).filter(v => !existingVaultIds.has(v.id));
+      vault = [...vault, ...newVault];
+      saveVault(vault);
+      renderTagList(); renderNoteList(); renderMediaGrid(); renderPwGrid();
       document.getElementById('export-modal').style.display = 'none';
-      showToast(`İçe aktarıldı: +${newNotes.length} not, +${newBms.length} bookmark ✓`);
+      showToast(`İçe aktarıldı: +${newNotes.length} not, +${newBms.length} bookmark, +${newMedia.length} film/dizi ✓`);
     } catch { showToast('Hatalı dosya formatı'); }
   };
   reader.readAsText(file);
@@ -3038,6 +3048,7 @@ async function syncPush() {
       notes: getNotes(),
       bookmarks: getBookmarks(),
       vault: getVault(),
+      mediaItems: getMediaItems(),
       pwHash: getSavedPwHash()
     };
     await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -3072,19 +3083,30 @@ async function syncPull() {
     // Şifre hash'i varsa güncelle
     if (data.pwHash) localStorage.setItem(PW_HASH_KEY, data.pwHash);
 
-    // Notları merge et
-    const existingNoteIds = new Set(notes.map(n => n.id));
-    const newNotes = (data.notes || []).filter(n => !existingNoteIds.has(n.id));
-    notes = [...(data.notes || [])]; // tam üzerine yaz
+    // Notları merge et (yerel notlar korunur)
+    const cloudNoteIds = new Set((data.notes || []).map(n => n.id));
+    const localOnlyNotes = notes.filter(n => !cloudNoteIds.has(n.id));
+    const mergedNotes = [...(data.notes || []), ...localOnlyNotes];
+    notes = mergedNotes;
     saveNotes(notes);
 
-    // Bookmarkları güncelle
-    bookmarks = data.bookmarks || [];
+    // Bookmarkları güncelle (merge)
+    const cloudBmIds = new Set((data.bookmarks || []).map(b => b.id));
+    const localOnlyBms = bookmarks.filter(b => !cloudBmIds.has(b.id));
+    bookmarks = [...(data.bookmarks || []), ...localOnlyBms];
     saveBookmarks(bookmarks);
 
-    // Vault güncelle
-    vault = data.vault || [];
+    // Vault güncelle (merge)
+    const cloudVaultIds = new Set((data.vault || []).map(v => v.id));
+    const localOnlyVault = vault.filter(v => !cloudVaultIds.has(v.id));
+    vault = [...(data.vault || []), ...localOnlyVault];
     saveVault(vault);
+
+    // Media öğelerini güncelle (merge)
+    const cloudMediaIds = new Set((data.mediaItems || []).map(m => m.id));
+    const localOnlyMedia = mediaItems.filter(m => !cloudMediaIds.has(m.id));
+    mediaItems = [...(data.mediaItems || []), ...localOnlyMedia];
+    saveMediaItems(mediaItems);
 
     renderTagList(); renderNoteList();
     const syncDate = new Date(data.syncedAt).toLocaleString('tr-TR');
