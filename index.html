@@ -1048,45 +1048,68 @@
     body { overflow: hidden; }
 
     /* Topbar kompakt */
-    .topbar { padding: 0 12px; height: 48px; gap: 8px; }
-    .logo { font-size: 17px; }
-    .search-wrap { max-width: none; }
+    .topbar { padding: 0 12px; height: 52px; gap: 8px; }
+    .logo { font-size: 20px; }
+    .search-wrap { max-width: none; flex: 1; }
     .topbar-sep { display: none; }
     .security-badge { display: none !important; }
-    /* Topbar butonlarını gizle — alt navda göster */
     .btn-icon, .btn-new { display: none !important; }
-    /* Sadece yeni not butonunu göster — özel mobil versiyonu */
+
+    /* Hamburger butonu */
+    #mob-hamburger {
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid var(--border);
+      color: var(--text2); width: 36px; height: 36px;
+      border-radius: 6px; cursor: pointer; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Drawer overlay */
+    #mob-drawer-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6); z-index: 400;
+    }
+    #mob-drawer-overlay.open { display: block; }
+
+    /* Sidebar drawer soldan açılır */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: 280px !important; z-index: 500;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+      overflow-y: auto;
+    }
+    .sidebar.mob-drawer-open { transform: translateX(0); }
+
+    /* FAB */
     #mobile-fab {
       position: fixed; bottom: 72px; right: 16px;
       width: 52px; height: 52px; border-radius: 50%;
       background: var(--accent); border: none; color: #000;
-      font-size: 24px; cursor: pointer; z-index: 200;
+      cursor: pointer; z-index: 200;
       display: flex; align-items: center; justify-content: center;
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      transition: transform 0.15s, opacity 0.15s;
+      transition: transform 0.15s;
     }
     #mobile-fab:active { transform: scale(0.93); }
 
-    /* Ana layout: tek panel, tam ekran */
+    /* Ana layout tek panel */
     .main { position: relative; overflow: hidden; }
-    .sidebar, .note-list-panel, .editor-panel, #bm-panel {
+    .note-list-panel, .editor-panel, #bm-panel, #pw-panel {
       position: absolute; inset: 0;
       width: 100% !important;
       transition: transform 0.28s cubic-bezier(.4,0,.2,1);
       overflow-y: auto;
     }
+    .note-list-panel { transform: translateX(0); z-index: 2; display: flex !important; }
+    .editor-panel   { transform: translateX(100%); z-index: 3; display: flex !important; }
+    #bm-panel       { transform: translateX(100%); z-index: 2; display: flex !important; }
+    #pw-panel       { transform: translateX(100%); z-index: 2; display: flex !important; }
 
-    /* Varsayılan: hepsi sağda gizli */
-    .sidebar { transform: translateX(0); z-index: 3; }
-    .note-list-panel { transform: translateX(100%); z-index: 2; display: flex !important; }
-    .editor-panel { transform: translateX(100%); z-index: 1; display: flex !important; }
-    #bm-panel { transform: translateX(100%); z-index: 2; display: flex !important; }
+    .mob-show       { transform: translateX(0) !important; }
+    .mob-hide-left  { transform: translateX(-30%) !important; }
 
-    /* Aktif panel sınıfları */
-    .mob-show { transform: translateX(0) !important; }
-    .mob-hide-left { transform: translateX(-30%) !important; }
-
-    /* Editor içeriği */
+    /* Editor */
     #editor-content { min-height: 100%; }
     .editor-toolbar { flex-wrap: wrap; gap: 4px; padding: 6px 10px; }
     .view-toggle { margin-left: 0; }
@@ -1094,19 +1117,13 @@
     .tags-row { padding: 4px 14px 10px; }
     .md-editor { padding: 12px 14px; font-size: 15px; }
     .md-preview { padding: 12px 14px; }
-
-    /* Not listesi */
     .note-card { padding: 14px; }
-
-    /* Bookmark grid */
     .bm-grid { padding: 10px; }
-
-    /* Sidebar tam ekran */
-    .sidebar { width: 100% !important; }
+    .pw-grid { padding: 10px; }
     .tag-list { padding: 6px; }
     .tag-item { padding: 10px 12px; font-size: 14px; }
 
-    /* Alt navigasyon */
+    /* Alt nav */
     #mobile-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
       height: 56px; background: var(--surface);
@@ -1120,23 +1137,18 @@
       align-items: center; justify-content: center;
       gap: 3px; cursor: pointer; font-size: 10px;
       font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-      letter-spacing: 0.3px; transition: color 0.15s;
+      transition: color 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
     .mob-nav-btn.active { color: var(--accent); }
     .mob-nav-btn .ico-svg { width: 22px; height: 22px; }
 
-    /* Alt nav için padding */
-    .note-list-panel, .editor-panel, #bm-panel, .sidebar { padding-bottom: 56px; }
+    .note-list-panel, .editor-panel, #bm-panel, #pw-panel { padding-bottom: 56px; }
 
-    /* Modaller tam ekran */
     .modal { width: calc(100vw - 32px) !important; max-height: 85vh; overflow-y: auto; }
     .theme-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-
-    /* Toast'u yukarı taşı */
     .toast { bottom: 72px; right: 12px; left: 12px; text-align: center; }
 
-    /* Geri butonu */
     #mob-back-btn {
       display: flex; align-items: center; gap: 6px;
       background: none; border: none; color: var(--text2);
@@ -1145,7 +1157,6 @@
     }
     #mob-back-btn .ico-svg { width: 18px; height: 18px; }
 
-    /* Mobil editor toolbar geri butonu */
     .mob-toolbar-row {
       display: flex; align-items: center;
       padding: 4px 6px; border-bottom: 1px solid var(--border);
@@ -1154,10 +1165,12 @@
   }
 
   @media (min-width: 681px) {
-    #mobile-nav { display: none !important; }
-    #mobile-fab { display: none !important; }
+    #mobile-nav      { display: none !important; }
+    #mobile-fab      { display: none !important; }
+    #mob-hamburger   { display: none !important; }
+    #mob-drawer-overlay { display: none !important; }
     .mob-toolbar-row { display: none !important; }
-    #mob-back-btn { display: none !important; }
+    #mob-back-btn    { display: none !important; }
   }
 </style>
 </head>
@@ -1193,6 +1206,9 @@
       <input type="text" id="search-input" placeholder="Notlarda ara...">
     </div>
     <div class="topbar-actions">
+      <button id="mob-hamburger" onclick="toggleDrawer()" style="display:none">
+        <span class="ico-svg" style="width:18px;height:18px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+      </button>
       <div class="security-badge" id="autolock-badge" title="Otomatik kilit aktif"><span class="ico-svg"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/></svg></span> <span id="autolock-countdown"></span></div>
       <div class="topbar-sep"></div>
       <button class="btn-icon" title="Şablonlar" onclick="openTplModal()"><span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg></span></button>
@@ -1420,6 +1436,9 @@
   </div>
 </div>
 
+<!-- DRAWER OVERLAY -->
+<div id="mob-drawer-overlay" onclick="toggleDrawer()"></div>
+
 <!-- MOBILE FAB -->
 <button id="mobile-fab" onclick="mobileNewNote()" style="display:none">
   <span class="ico-svg" style="width:24px;height:24px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
@@ -1427,17 +1446,17 @@
 
 <!-- MOBILE BOTTOM NAV -->
 <nav id="mobile-nav" style="display:none">
-  <button class="mob-nav-btn active" id="mob-btn-tags" onclick="mobNav('tags')">
-    <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M11.5 3l9 9a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0l-9-9V3h8.5z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg></span>
-    Etiketler
-  </button>
-  <button class="mob-nav-btn" id="mob-btn-list" onclick="mobNav('list')">
+  <button class="mob-nav-btn active" id="mob-btn-list" onclick="mobNav('list')">
     <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M6 4h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
     Notlar
   </button>
   <button class="mob-nav-btn" id="mob-btn-links" onclick="mobNav('links')">
     <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M9 4h6a2 2 0 0 1 2 2v14l-5-3l-5 3V6a2 2 0 0 1 2-2"/></svg></span>
     Linkler
+  </button>
+  <button class="mob-nav-btn" id="mob-btn-pw" onclick="mobNav('pw')">
+    <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/></svg></span>
+    Şifreler
   </button>
   <button class="mob-nav-btn" id="mob-btn-more" onclick="mobNav('more')">
     <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></svg></span>
@@ -2437,65 +2456,66 @@ function useTemplate(i) {
 // ─── MOBILE NAVIGATION ───
 const isMobile = () => window.innerWidth <= 680;
 
+function toggleDrawer() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('mob-drawer-overlay');
+  const isOpen  = sidebar.classList.contains('mob-drawer-open');
+  sidebar.classList.toggle('mob-drawer-open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+}
+
+function closeDrawer() {
+  document.querySelector('.sidebar').classList.remove('mob-drawer-open');
+  document.getElementById('mob-drawer-overlay').classList.remove('open');
+}
+
 function mobNav(panel) {
   if (!isMobile()) return;
-  const sidebar   = document.querySelector('.sidebar');
-  const noteList  = document.querySelector('.note-list-panel');
-  const editor    = document.getElementById('editor-panel');
-  const bmPanel   = document.getElementById('bm-panel');
-  const fab       = document.getElementById('mobile-fab');
-  const backBtn   = document.getElementById('mob-back-btn');
+  closeDrawer();
 
-  // Reset all
-  [sidebar, noteList, editor, bmPanel].forEach(el => {
+  const noteList = document.querySelector('.note-list-panel');
+  const editor   = document.getElementById('editor-panel');
+  const bmPanel  = document.getElementById('bm-panel');
+  const pwPanel  = document.getElementById('pw-panel');
+  const fab      = document.getElementById('mobile-fab');
+
+  [noteList, editor, bmPanel, pwPanel].forEach(el => {
     el.classList.remove('mob-show', 'mob-hide-left');
   });
 
-  // Set active nav button
-  ['tags','list','links','more'].forEach(id => {
-    const btn = document.getElementById('mob-btn-' + id);
-    if (btn) btn.classList.toggle('active', id === panel);
+  ['list','links','pw','more'].forEach(id => {
+    document.getElementById('mob-btn-' + id)?.classList.remove('active');
   });
 
-  if (panel === 'tags') {
-    sidebar.classList.add('mob-show');
-    // Show notes tags by default
-    document.getElementById('snav-notes').click();
-    fab.style.display = 'flex';
-    backBtn.style.display = 'none';
-  } else if (panel === 'list') {
-    sidebar.classList.add('mob-hide-left');
+  if (panel === 'list') {
     noteList.classList.add('mob-show');
+    document.getElementById('mob-btn-list')?.classList.add('active');
     fab.style.display = 'flex';
-    backBtn.style.display = 'flex';
   } else if (panel === 'links') {
-    sidebar.classList.add('mob-hide-left');
     bmPanel.classList.add('mob-show');
+    document.getElementById('mob-btn-links')?.classList.add('active');
     switchSidebarTab('bm');
     fab.style.display = 'none';
-    backBtn.style.display = 'none';
+  } else if (panel === 'pw') {
+    pwPanel.classList.add('mob-show');
+    document.getElementById('mob-btn-pw')?.classList.add('active');
+    switchSidebarTab('pw');
+    fab.style.display = 'none';
   } else if (panel === 'editor') {
-    sidebar.classList.add('mob-hide-left');
     noteList.classList.add('mob-hide-left');
     editor.classList.add('mob-show');
     fab.style.display = 'none';
-    backBtn.style.display = 'none';
-    // Update nav to highlight list
-    ['tags','list','links','more'].forEach(id => {
-      document.getElementById('mob-btn-' + id)?.classList.remove('active');
-    });
     document.getElementById('mob-btn-list')?.classList.add('active');
   } else if (panel === 'more') {
-    // Show a quick actions sheet
     openThemeModal();
-    // reset panel to whatever was shown
-    mobNav(currentMobPanel || 'tags');
+    mobNav(currentMobPanel || 'list');
+    return;
   }
 
   if (panel !== 'more') currentMobPanel = panel;
 }
 
-let currentMobPanel = 'tags';
+let currentMobPanel = 'list';
 
 // Add back-from-editor button in toolbar on mobile
 function addMobileEditorBack() {
@@ -2506,8 +2526,8 @@ function addMobileEditorBack() {
   row.className = 'mob-toolbar-row';
   row.id = 'mob-editor-back';
   row.innerHTML = `<button onclick="mobNav('list')" style="background:none;border:none;color:var(--text2);display:flex;align-items:center;gap:5px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;padding:4px 8px"><span class="ico-svg" style="width:18px;height:18px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M15 6l-6 6l6 6"/></svg></span> Geri</button>
-  <div style="flex:1;text-align:center;font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace" id="mob-save-indicator">otomatik kaydediliyor</div>
-  <button onclick="document.getElementById('del-modal').style.display='flex'" style="background:none;border:none;color:var(--text3);padding:4px 8px;cursor:pointer;font-size:12px;font-family:'IBM Plex Sans',sans-serif"><span class="ico-svg" style="width:16px;height:16px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></span></button>`;
+  <div style="flex:1;text-align:center;font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace">otomatik kaydediliyor</div>
+  <button onclick="document.getElementById('del-modal').style.display='flex'" style="background:none;border:none;color:var(--text3);padding:4px 8px;cursor:pointer"><span class="ico-svg" style="width:16px;height:16px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></span></button>`;
   toolbar.insertBefore(row, toolbar.firstChild);
 }
 
@@ -2516,8 +2536,8 @@ function initMobile() {
   if (!isMobile()) return;
   document.getElementById('mobile-fab').style.display = 'flex';
   document.getElementById('mobile-nav').style.display = 'flex';
-  document.getElementById('mob-back-btn').style.display = 'flex';
-  mobNav('tags');
+  document.getElementById('mob-hamburger').style.display = 'flex';
+  mobNav('list');
   addMobileEditorBack();
 }
 
@@ -2531,6 +2551,7 @@ window.addEventListener('resize', () => {
   else {
     document.getElementById('mobile-fab').style.display = 'none';
     document.getElementById('mobile-nav').style.display = 'none';
+    document.getElementById('mob-hamburger').style.display = 'none';
   }
 });
 
