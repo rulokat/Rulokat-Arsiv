@@ -1247,7 +1247,29 @@
           <div style="font-size:10px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px">İstatistik</div>
           <div id="pw-stats" style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text2)"></div>
         </div>
-        <!-- ANA ŞİFRE DEĞİŞİMİ -->
+        <!-- SYNC AYARLARI -->
+        <div style="border-top:1px solid var(--border);padding:12px 16px">
+          <div style="font-size:10px;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:10px">Senkronizasyon</div>
+          <div id="sync-status" style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">● Bağlı değil</div>
+          <div id="sync-token-wrap">
+            <div class="pw-field-wrap" style="margin-bottom:6px">
+              <input type="password" id="sync-token-input" placeholder="GitHub Token" style="font-size:11px;padding:6px 36px 6px 10px;font-family:'IBM Plex Mono',monospace">
+              <button class="pw-eye" onclick="togglePwEye('sync-token-input',this)" style="right:8px"><span class="ico-svg" style="width:13px;height:13px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/><path d="M21 12c-2.4 4-5.4 6-9 6c-3.6 0-6.6-2-9-6c2.4-4 5.4-6 9-6c3.6 0 6.6 2 9 6"/></svg></span></button>
+            </div>
+            <button onclick="connectSync()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">Bağlan</button>
+          </div>
+          <div id="sync-connected" style="display:none;flex-direction:column;gap:6px">
+            <button onclick="syncPush()" style="width:100%;background:var(--accent);border:none;color:#000;padding:7px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px">
+              <span class="ico-svg" style="width:13px;height:13px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>
+              Yedekle (Bu cihaz → Bulut)
+            </button>
+            <button onclick="syncPull()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
+              <span class="ico-svg" style="width:13px;height:13px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></span>
+              Yükle (Bulut → Bu cihaz)
+            </button>
+            <button onclick="disconnectSync()" style="background:none;border:none;color:var(--text3);font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;padding:2px 0">Bağlantıyı kes</button>
+          </div>
+        </div>
         <div style="margin-top:auto;border-top:1px solid var(--border)">
           <button onclick="toggleChangeMasterPw()" style="width:100%;background:none;border:none;color:var(--text3);font-size:11px;padding:10px 16px;text-align:left;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:color 0.15s" onmouseover="this.style.color='var(--text2)'" onmouseout="this.style.color='var(--text3)'">
             <span class="ico-svg" style="width:13px;height:13px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M5 13a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/><path d="M11 13h8M15 16l3-3l-3-3"/></svg></span>
@@ -1753,6 +1775,7 @@ function init() {
   renderNoteList();
   if (notes.length > 0 && !isMobile()) selectNote(notes[0].id);
   initMobile();
+  initSync();
 }
 
 // ─── TAGS ───
@@ -2736,6 +2759,169 @@ function useGenerated() {
 }
 
 document.getElementById('pw-search').addEventListener('input', renderPwGrid);
+
+// ─── GITHUB GIST SYNC ───
+const SYNC_TOKEN_KEY = 'rulokat_sync_token';
+const SYNC_GIST_KEY  = 'rulokat_sync_gist_id';
+const GIST_FILENAME  = 'rulokat-arsiv-backup.json';
+
+function getSyncToken() { return localStorage.getItem(SYNC_TOKEN_KEY); }
+function getSyncGistId() { return localStorage.getItem(SYNC_GIST_KEY); }
+
+function updateSyncStatus(msg, color) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = '● ' + msg;
+  el.style.color = color || 'var(--text3)';
+}
+
+async function connectSync() {
+  const token = document.getElementById('sync-token-input').value.trim();
+  if (!token) { showToast('Token girin'); return; }
+
+  updateSyncStatus('Bağlanıyor...', 'var(--accent2)');
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error('Geçersiz token');
+    const user = await res.json();
+
+    localStorage.setItem(SYNC_TOKEN_KEY, token);
+    document.getElementById('sync-token-input').value = '';
+    document.getElementById('sync-token-wrap').style.display = 'none';
+    document.getElementById('sync-connected').style.display = 'flex';
+    updateSyncStatus(`${user.login} olarak bağlı`, '#4ade80');
+    showToast(`GitHub'a bağlandı: ${user.login} ✓`);
+
+    // Mevcut gist var mı bul
+    await findOrCreateGist(token);
+  } catch(e) {
+    updateSyncStatus('Bağlantı başarısız', 'var(--danger)');
+    showToast('Hata: ' + e.message);
+  }
+}
+
+async function findOrCreateGist(token) {
+  const tok = token || getSyncToken();
+  // Mevcut gistleri tara
+  const res = await fetch('https://api.github.com/gists', {
+    headers: { 'Authorization': `token ${tok}`, 'Accept': 'application/vnd.github.v3+json' }
+  });
+  const gists = await res.json();
+  const existing = gists.find(g => g.files && g.files[GIST_FILENAME]);
+  if (existing) {
+    localStorage.setItem(SYNC_GIST_KEY, existing.id);
+    return existing.id;
+  }
+  // Yeni gist oluştur
+  const create = await fetch('https://api.github.com/gists', {
+    method: 'POST',
+    headers: { 'Authorization': `token ${tok}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      description: 'Rulokat Arşiv — otomatik yedek',
+      public: false,
+      files: { [GIST_FILENAME]: { content: JSON.stringify({ init: true }) } }
+    })
+  });
+  const newGist = await create.json();
+  localStorage.setItem(SYNC_GIST_KEY, newGist.id);
+  return newGist.id;
+}
+
+async function syncPush() {
+  const token = getSyncToken();
+  if (!token) { showToast('Önce GitHub\'a bağlanın'); return; }
+  updateSyncStatus('Yükleniyor...', 'var(--accent2)');
+  try {
+    let gistId = getSyncGistId() || await findOrCreateGist(token);
+    const payload = {
+      syncedAt: new Date().toISOString(),
+      notes: getNotes(),
+      bookmarks: getBookmarks(),
+      vault: getVault(),
+      pwHash: getSavedPwHash()
+    };
+    await fetch(`https://api.github.com/gists/${gistId}`, {
+      method: 'PATCH',
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: { [GIST_FILENAME]: { content: JSON.stringify(payload) } } })
+    });
+    const now = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
+    updateSyncStatus(`Son yedek: ${now}`, '#4ade80');
+    showToast('Buluta yedeklendi ✓');
+  } catch(e) {
+    updateSyncStatus('Yedekleme başarısız', 'var(--danger)');
+    showToast('Hata: ' + e.message);
+  }
+}
+
+async function syncPull() {
+  const token = getSyncToken();
+  if (!token) { showToast('Önce GitHub\'a bağlanın'); return; }
+  updateSyncStatus('İndiriliyor...', 'var(--accent2)');
+  try {
+    let gistId = getSyncGistId() || await findOrCreateGist(token);
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    const gist = await res.json();
+    const raw = gist.files[GIST_FILENAME]?.content;
+    if (!raw) { showToast('Bulutta veri bulunamadı'); return; }
+    const data = JSON.parse(raw);
+    if (data.init) { showToast('Henüz bulut yedeği yok — önce yedekle'); return; }
+
+    // Şifre hash'i varsa güncelle
+    if (data.pwHash) localStorage.setItem(PW_HASH_KEY, data.pwHash);
+
+    // Notları merge et
+    const existingNoteIds = new Set(notes.map(n => n.id));
+    const newNotes = (data.notes || []).filter(n => !existingNoteIds.has(n.id));
+    notes = [...(data.notes || [])]; // tam üzerine yaz
+    saveNotes(notes);
+
+    // Bookmarkları güncelle
+    bookmarks = data.bookmarks || [];
+    saveBookmarks(bookmarks);
+
+    // Vault güncelle
+    vault = data.vault || [];
+    saveVault(vault);
+
+    renderTagList(); renderNoteList();
+    const syncDate = new Date(data.syncedAt).toLocaleString('tr-TR');
+    updateSyncStatus(`Senkronize: ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`, '#4ade80');
+    showToast(`Buluttan yüklendi ✓ (${syncDate})`);
+  } catch(e) {
+    updateSyncStatus('İndirme başarısız', 'var(--danger)');
+    showToast('Hata: ' + e.message);
+  }
+}
+
+function disconnectSync() {
+  localStorage.removeItem(SYNC_TOKEN_KEY);
+  localStorage.removeItem(SYNC_GIST_KEY);
+  document.getElementById('sync-connected').style.display = 'none';
+  document.getElementById('sync-token-wrap').style.display = 'block';
+  updateSyncStatus('Bağlı değil', 'var(--text3)');
+  showToast('Bağlantı kesildi');
+}
+
+// Sayfa açılınca sync durumunu göster
+function initSync() {
+  const token = getSyncToken();
+  if (!token) return;
+  document.getElementById('sync-token-wrap').style.display = 'none';
+  document.getElementById('sync-connected').style.display = 'flex';
+  // Token geçerliliğini sessizce kontrol et
+  fetch('https://api.github.com/user', {
+    headers: { 'Authorization': `token ${token}` }
+  }).then(r => r.json()).then(u => {
+    updateSyncStatus(`${u.login} olarak bağlı`, '#4ade80');
+  }).catch(() => {
+    updateSyncStatus('Token geçersiz', 'var(--danger)');
+  });
+}
 
 // ─── CHANGE MASTER PASSWORD (sidebar) ───
 function toggleChangeMasterPw() {
