@@ -1234,7 +1234,7 @@
 <!-- LOCK SCREEN -->
 <div id="lock-screen">
   <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:64px;height:64px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-  <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.20</span></div>
+  <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.21</span></div>
   <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
   <div class="lock-input-wrap">
     <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1255,7 +1255,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.20</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.21</span></div>
     <div class="search-wrap">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Notlarda ara...">
@@ -1450,6 +1450,7 @@
           </div>
           <button class="del-btn" id="del-btn"><span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></span> Sil</button>
           <button class="pin-btn" id="pin-btn" title="Sabitle"><span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M9 4v6l-2 4h10l-2-4V4M12 14v6M8 4h8"/></svg></span></button>
+          <button class="pin-btn" id="lock-btn" title="Notayı Şifrele" onclick="toggleNoteLock()"><span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg></span></button>
         </div>
 
         <input type="text" class="note-title-input" id="note-title" placeholder="Başlık...">
@@ -1693,6 +1694,33 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closePwModal()">İptal</button>
       <button class="btn-confirm" style="background:var(--accent);color:#0f0e0c;" onclick="saveNewPw()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE LOCK MODAL -->
+<div class="modal-overlay" id="note-lock-modal">
+  <div class="modal">
+    <h3>🔐 Not Şifresi</h3>
+    <p>Bu notu açmak için şifre girin</p>
+    <input type="password" id="note-pw-input" placeholder="Not şifresi..." onkeydown="if(event.key==='Enter')unlockNote()">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('note-lock-modal').style.display='none'">İptal</button>
+      <button class="btn-confirm" style="background:var(--accent);color:#0f0e0c;" onclick="unlockNote()">Aç</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE SET PASSWORD MODAL -->
+<div class="modal-overlay" id="note-setpw-modal">
+  <div class="modal">
+    <h3>🔒 Not Şifre Koy</h3>
+    <p>Bu nota şifre atamak istiyorsunuz. Şifre belirleyin:</p>
+    <input type="password" id="note-setpw-input" placeholder="Şifre girin..." onkeydown="if(event.key==='Enter')setNotePw()">
+    <div style="font-size:11px;color:var(--text3);margin-top:10px"><strong>Not:</strong> Şifreyi unutursanız kurtaramayız!</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('note-setpw-modal').style.display='none'">İptal</button>
+      <button class="btn-confirm" style="background:var(--accent);color:#0f0e0c;" onclick="setNotePw()">Şifre Koy</button>
     </div>
   </div>
 </div>
@@ -2021,7 +2049,9 @@ function renderNoteList() {
     const date = formatDate(n.updatedAt);
     const tags = (n.tags||[]).map(t => `<span class="tag-pill">#${t}</span>`).join('');
     const preview = (n.content||'').replace(/[#*`>_~]/g,'').slice(0,90);
-    const titlePrefix = n.pinned ? '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:var(--accent);fill:var(--accent);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:inline;margin-right:3px;vertical-align:middle"><path d="M9 4v6l-2 4h10l-2-4V4M12 14v6M8 4h8"/></svg>' : '';
+    let titlePrefix = '';
+    if (n.isLocked) titlePrefix += '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:var(--danger);fill:var(--danger);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline;margin-right:3px;vertical-align:middle"><path d="M12 1C6.48 1 2 5.48 2 11s4.48 10 10 10 10-4.48 10-10S17.52 1 12 1zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>';
+    if (n.pinned) titlePrefix += '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:var(--accent);fill:var(--accent);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:inline;margin-right:3px;vertical-align:middle"><path d="M9 4v6l-2 4h10l-2-4V4M12 14v6M8 4h8"/></svg>';
     return `<div class="note-card ${active} ${pinned}" data-id="${n.id}">
       <div class="note-card-title">${titlePrefix}${n.title || 'Başlıksız Not'}</div>
       <div class="note-card-preview">${preview || 'İçerik yok...'}</div>
@@ -2051,6 +2081,21 @@ function selectNote(id) {
   const note = notes.find(n => n.id === id);
   if (!note) return;
 
+  // Kilit kontrolü
+  if (note.isLocked) {
+    document.getElementById('note-lock-modal').style.display = 'flex';
+    document.getElementById('note-pw-input').value = '';
+    document.getElementById('note-pw-input').focus();
+    return;
+  }
+
+  openNote(id);
+}
+
+function openNote(id) {
+  const note = notes.find(n => n.id === id);
+  if (!note) return;
+
   document.getElementById('no-note').style.display = 'none';
   const ec = document.getElementById('editor-content');
   ec.style.display = 'flex';
@@ -2060,11 +2105,73 @@ function selectNote(id) {
   updatePreview();
   renderTagChips(note.tags || []);
   renderPinBtn(note.pinned);
+  renderLockBtn(note.isLocked);
   renderNoteList();
 
   // Mobilde editöre geç
   if (typeof isMobile === 'function' && isMobile()) {
     setTimeout(() => mobNav('editor'), 10);
+  }
+}
+
+function unlockNote() {
+  const note = notes.find(n => n.id === activeNoteId);
+  if (!note) return;
+  
+  const pw = document.getElementById('note-pw-input').value;
+  if (!pw) { showToast('Şifre girin'); return; }
+  
+  if (pw !== note.notePw) {
+    showToast('Yanlış şifre');
+    return;
+  }
+  
+  document.getElementById('note-lock-modal').style.display = 'none';
+  openNote(activeNoteId);
+}
+
+function toggleNoteLock() {
+  const note = notes.find(n => n.id === activeNoteId);
+  if (!note) return;
+  
+  if (note.isLocked) {
+    note.isLocked = false;
+    note.notePw = null;
+    saveNotes(notes);
+    renderLockBtn(false);
+    showToast('Not kilidi açıldı');
+  } else {
+    document.getElementById('note-setpw-modal').style.display = 'flex';
+    document.getElementById('note-setpw-input').value = '';
+    document.getElementById('note-setpw-input').focus();
+  }
+}
+
+function setNotePw() {
+  const note = notes.find(n => n.id === activeNoteId);
+  if (!note) return;
+  
+  const pw = document.getElementById('note-setpw-input').value.trim();
+  if (!pw) { showToast('Şifre boş olamaz'); return; }
+  if (pw.length < 3) { showToast('Şifre en az 3 karakterli olmalı'); return; }
+  
+  note.isLocked = true;
+  note.notePw = pw;
+  saveNotes(notes);
+  document.getElementById('note-setpw-modal').style.display = 'none';
+  renderLockBtn(true);
+  showToast('Not şifresi ayarlandı');
+}
+
+function renderLockBtn(isLocked) {
+  const btn = document.getElementById('lock-btn');
+  if (!btn) return;
+  if (isLocked) {
+    btn.style.color = 'var(--danger)';
+    btn.title = 'Not kilitli. Tıkla kilidi aç';
+  } else {
+    btn.style.color = '';
+    btn.title = 'Notayı Şifrele';
   }
 }
 
