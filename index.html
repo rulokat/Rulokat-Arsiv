@@ -3043,12 +3043,18 @@ async function syncPush() {
   updateSyncStatus('Yükleniyor...', 'var(--accent2)');
   try {
     let gistId = getSyncGistId() || await findOrCreateGist(token);
+    // Film verilerini ikiye böl: poster/background olmadan iletiş aç (yer tasarrufu)
+    const allMedia = getMediaItems();
+    const mediaForCloud = allMedia.map(m => {
+      const {poster, ...rest} = m; // poster çıkar
+      return rest;
+    });
     const payload = {
       syncedAt: new Date().toISOString(),
       notes: getNotes(),
       bookmarks: getBookmarks(),
       vault: getVault(),
-      mediaItems: getMediaItems(),
+      mediaItems: mediaForCloud,
       pwHash: getSavedPwHash()
     };
     await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -3108,7 +3114,7 @@ async function syncPull() {
     mediaItems = [...(data.mediaItems || []), ...localOnlyMedia];
     saveMediaItems(mediaItems);
 
-    renderTagList(); renderNoteList();
+    renderTagList(); renderNoteList(); renderMediaGrid();
     const syncDate = new Date(data.syncedAt).toLocaleString('tr-TR');
     updateSyncStatus(`Senkronize: ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`, '#4ade80');
     showToast(`Buluttan yüklendi ✓ (${syncDate})`);
