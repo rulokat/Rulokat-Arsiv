@@ -1234,7 +1234,7 @@
 <!-- LOCK SCREEN -->
 <div id="lock-screen">
   <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:64px;height:64px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-  <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.18</span></div>
+  <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.19</span></div>
   <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
   <div class="lock-input-wrap">
     <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1255,7 +1255,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.18</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.19</span></div>
     <div class="search-wrap">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Notlarda ara...">
@@ -1511,6 +1511,9 @@
         <input type="text" id="media-search" placeholder="Film veya dizi ara (OMDb)..." style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:7px 12px;border-radius:5px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')searchMedia()">
         <button onclick="searchMedia()" style="background:var(--accent);border:none;color:#000;padding:7px 14px;border-radius:5px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
           <span class="ico-svg" style="width:14px;height:14px;margin-right:4px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>Ara
+        </button>
+        <button id="fetch-posters-btn" onclick="fetchMissingPosters()" title="Eksik afişleri indir" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 12px;border-radius:5px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+          <span class="ico-svg" style="width:14px;height:14px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
         </button>
         <button onclick="openManualMediaAdd()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 12px;border-radius:5px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
           <span class="ico-svg" style="width:14px;height:14px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
@@ -3270,6 +3273,36 @@ async function addMediaFromSearch(imdbId, title, year, type, poster) {
   updateMediaSidebarCounts();
   renderMediaGrid();
   showToast(`"${title}" listeye eklendi`);
+}
+
+// ─── EKSIK AİŞLERİ FETCH ───
+async function fetchMissingPosters() {
+  const items = getMediaItems();
+  const missing = items.filter(m => !m.poster || m.poster === '');
+  
+  if (missing.length === 0) {
+    showToast('Tüm filmlerin afişi var');
+    return;
+  }
+  
+  showToast(`${missing.length} film afişi indiriliyor...`);
+  let fetched = 0;
+  
+  for (const item of missing) {
+    if (!item.imdbId) continue;
+    try {
+      const res = await fetch(`https://www.omdbapi.com/?apikey=${OMDB_KEY}&i=${item.imdbId}`);
+      const data = await res.json();
+      if (data.Poster && data.Poster !== 'N/A') {
+        item.poster = data.Poster;
+        fetched++;
+      }
+    } catch(e) {}
+  }
+  
+  saveMediaItems(items);
+  renderMediaGrid();
+  showToast(`${fetched} film afişi indirildi`);
 }
 
 // ─── MANUEL EKLEME ───
