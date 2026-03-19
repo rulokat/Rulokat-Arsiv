@@ -822,13 +822,30 @@
     flex: 1; font-size: 14px; font-weight: 500; color: var(--text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  @keyframes breathe-up {
+    0%,100% { box-shadow: 0 0 3px 1px rgba(74,222,128,0.5); opacity: 1; }
+    50%      { box-shadow: 0 0 8px 3px rgba(74,222,128,0.9); opacity: 0.8; }
+  }
+  @keyframes breathe-down {
+    0%,100% { box-shadow: 0 0 3px 1px rgba(220,60,60,0.5); opacity: 1; }
+    50%      { box-shadow: 0 0 8px 3px rgba(220,60,60,0.9); opacity: 0.8; }
+  }
   .bm-status-dot {
     width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-    background: var(--text3);
+    background: #555;
   }
-  .bm-status-dot.up { background: var(--accent2); box-shadow: 0 0 5px var(--accent2); }
-  .bm-status-dot.down { background: var(--danger); }
-  .bm-status-dot.checking { background: var(--accent); animation: pulse 1s infinite; }
+  .bm-status-dot.up {
+    background: #4ade80;
+    animation: breathe-up 2.4s ease-in-out infinite;
+  }
+  .bm-status-dot.down {
+    background: #dc3c3c;
+    animation: breathe-down 2.4s ease-in-out infinite;
+  }
+  .bm-status-dot.checking {
+    background: #f59e0b;
+    animation: pulse 1s infinite;
+  }
 
   .bm-url {
     font-size: 11px; color: var(--text3);
@@ -1176,6 +1193,9 @@
     gap: 24px;
   }
   #stats-panel.visible { display: flex; }
+  @media (max-width: 680px) {
+    #stats-panel { display: flex !important; flex-direction: column; }
+  }
   .stats-title {
     font-family: 'Playfair Display', serif;
     font-size: 22px; color: var(--text); margin-bottom: 4px;
@@ -1221,6 +1241,138 @@
     background: var(--surface2); display: block;
   }
   .bm-preview-img.hidden { display: none; }
+
+
+  /* ═══════════════════════════════════════════
+     BOTTOM SHEET — Notion tarzı
+  ═══════════════════════════════════════════ */
+  .bs-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0);
+    z-index: 800;
+    transition: background 0.3s ease;
+  }
+  .bs-overlay.open {
+    display: block;
+    background: rgba(0,0,0,0.55);
+  }
+
+  .bottom-sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border);
+    z-index: 801;
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .bottom-sheet.open {
+    transform: translateY(0);
+  }
+  /* Yarı açık pozisyon */
+  .bottom-sheet.peek {
+    transform: translateY(45%);
+  }
+
+  /* Tutma çubuğu */
+  .bs-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+    cursor: grab;
+  }
+  .bs-handle:active { cursor: grabbing; }
+
+  /* Sheet başlık satırı */
+  .bs-header {
+    display: flex; align-items: center;
+    padding: 12px 18px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 10px;
+  }
+  .bs-title {
+    flex: 1;
+    font-size: 15px; font-weight: 600;
+    color: var(--text);
+    font-family: 'Playfair Display', serif;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bs-close {
+    background: var(--surface2); border: none;
+    color: var(--text3); width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 16px; line-height: 1;
+    transition: background 0.15s;
+  }
+  .bs-close:hover { background: var(--border); color: var(--text); }
+
+  /* Sheet içerik alanı */
+  .bs-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 16px 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* FAB Speed-dial sheet */
+  #bs-fab .bs-body {
+    padding: 8px 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .bs-fab-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background 0.12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bs-fab-item:active { background: var(--surface2); }
+  .bs-fab-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .bs-fab-label { font-size: 15px; color: var(--text); font-weight: 500; }
+  .bs-fab-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+  /* Not kartı uzun basma sheet */
+  #bs-note-ctx .bs-body {
+    padding: 8px 0 20px;
+  }
+  .bs-ctx-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background 0.12s;
+    font-size: 15px; color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .bs-ctx-item:active { background: var(--surface2); }
+  .bs-ctx-item.danger { color: var(--danger); }
+  .bs-ctx-item-icon {
+    width: 36px; height: 36px;
+    background: var(--surface2); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Medya detay sheet */
+  #bs-media-detail .bs-body { padding: 0 0 20px; }
+
+  /* Swipe to dismiss desteği */
+  .bottom-sheet { touch-action: none; }
 
   /* TOAST */
   .toast {
@@ -1286,7 +1438,7 @@
 
     /* Ana layout tek panel */
     .main { position: relative; overflow: hidden; }
-    .note-list-panel, .editor-panel, #bm-panel, #pw-panel {
+    .note-list-panel, .editor-panel, #bm-panel, #pw-panel, #media-panel, #stats-panel {
       position: absolute; inset: 0;
       width: 100% !important;
       transition: transform 0.28s cubic-bezier(.4,0,.2,1);
@@ -1297,6 +1449,7 @@
     #bm-panel       { transform: translateX(100%); z-index: 2; display: flex !important; }
     #pw-panel       { transform: translateX(100%); z-index: 2; display: flex !important; }
     #media-panel    { transform: translateX(100%); z-index: 2; display: flex !important; }
+    #stats-panel    { transform: translateX(100%); z-index: 2; display: flex !important; flex-direction: column; }
 
     .mob-show       { transform: translateX(0) !important; }
     .mob-hide-left  { transform: translateX(-30%) !important; }
@@ -1335,7 +1488,7 @@
     .mob-nav-btn.active { color: var(--accent); }
     .mob-nav-btn .ico-svg { width: 22px; height: 22px; }
 
-    .note-list-panel, .editor-panel, #bm-panel, #pw-panel { padding-bottom: 56px; }
+    .note-list-panel, .editor-panel, #bm-panel, #pw-panel, #media-panel, #stats-panel { padding-bottom: 56px; }
 
     .modal { width: calc(100vw - 32px) !important; max-height: 85vh; overflow-y: auto; }
     .theme-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -1372,7 +1525,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.29</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.31</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1394,7 +1547,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.29</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.31</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -1806,9 +1959,9 @@
     <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg></span>
     İzle
   </button>
-  <button class="mob-nav-btn" id="mob-btn-more" onclick="mobNav('more')">
-    <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><circle cx="5" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1" fill="currentColor" stroke="none"/></svg></span>
-    Daha
+  <button class="mob-nav-btn" id="mob-btn-stats" onclick="mobNav('stats')">
+    <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>
+    İstat
   </button>
 </nav>
 
@@ -1907,6 +2060,79 @@
     </div>
   </div>
 </div>
+
+
+<!-- ═══ BOTTOM SHEET OVERLAY ═══ -->
+<div class="bs-overlay" id="bs-overlay" onclick="closeAllSheets()"></div>
+
+<!-- FAB SPEED-DIAL SHEET -->
+<div class="bottom-sheet" id="bs-fab">
+  <div class="bs-handle"></div>
+  <div class="bs-header">
+    <div class="bs-title">Ne eklemek istersin?</div>
+    <button class="bs-close" onclick="closeSheet('bs-fab')">✕</button>
+  </div>
+  <div class="bs-body">
+    <div class="bs-fab-item" onclick="closeSheet('bs-fab');document.getElementById('new-note-btn').click()">
+      <div class="bs-fab-icon" style="background:rgba(230,58,15,0.15)">
+        <span class="ico-svg" style="width:22px;height:22px;color:var(--accent)"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M6 4h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+      </div>
+      <div><div class="bs-fab-label">Yeni Not</div><div class="bs-fab-sub">Markdown destekli not al</div></div>
+    </div>
+    <div class="bs-fab-item" onclick="closeSheet('bs-fab');mobNav('links');setTimeout(()=>document.getElementById('bm-add-toggle').click(),300)">
+      <div class="bs-fab-icon" style="background:rgba(96,165,250,0.15)">
+        <span class="ico-svg" style="width:22px;height:22px;color:#60a5fa"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M9 4h6a2 2 0 0 1 2 2v14l-5-3l-5 3V6a2 2 0 0 1 2-2"/></svg></span>
+      </div>
+      <div><div class="bs-fab-label">Yeni Link</div><div class="bs-fab-sub">Bookmark ekle</div></div>
+    </div>
+    <div class="bs-fab-item" onclick="closeSheet('bs-fab');mobNav('media');setTimeout(()=>openManualMediaAdd(),300)">
+      <div class="bs-fab-icon" style="background:rgba(167,139,250,0.15)">
+        <span class="ico-svg" style="width:22px;height:22px;color:#a78bfa"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 9l5 3-5 3V9z"/></svg></span>
+      </div>
+      <div><div class="bs-fab-label">Film / Dizi</div><div class="bs-fab-sub">İzleme listesine ekle</div></div>
+    </div>
+    <div class="bs-fab-item" onclick="closeSheet('bs-fab');mobNav('pw');setTimeout(()=>openPwEntry(null),300)">
+      <div class="bs-fab-icon" style="background:rgba(230,160,32,0.15)">
+        <span class="ico-svg" style="width:22px;height:22px;color:#e6a020"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/></svg></span>
+      </div>
+      <div><div class="bs-fab-label">Şifre</div><div class="bs-fab-sub">Hesap bilgisi kaydet</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOT BAĞLAM MENÜSÜ SHEET -->
+<div class="bottom-sheet" id="bs-note-ctx">
+  <div class="bs-handle"></div>
+  <div class="bs-header">
+    <div class="bs-title" id="bs-note-ctx-title">Not İşlemleri</div>
+    <button class="bs-close" onclick="closeSheet('bs-note-ctx')">✕</button>
+  </div>
+  <div class="bs-body">
+    <div class="bs-ctx-item" id="bs-ctx-pin" onclick="bsCtxPin()">
+      <div class="bs-ctx-item-icon"><span class="ico-svg" style="width:18px;height:18px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round"><path d="M9 4v6l-2 4h10l-2-4V4M12 14v6M8 4h8"/></svg></span></div>
+      <span id="bs-ctx-pin-lbl">Sabitle</span>
+    </div>
+    <div class="bs-ctx-item" onclick="bsCtxLock()">
+      <div class="bs-ctx-item-icon"><span class="ico-svg" style="width:18px;height:18px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/></svg></span></div>
+      <span>Şifrele / Kilitle</span>
+    </div>
+    <div class="bs-ctx-item" onclick="bsCtxCopy()">
+      <div class="bs-ctx-item-icon"><span class="ico-svg" style="width:18px;height:18px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span></div>
+      <span>İçeriği Kopyala</span>
+    </div>
+    <div class="bs-ctx-item danger" onclick="bsCtxDelete()">
+      <div class="bs-ctx-item-icon" style="background:rgba(196,106,106,0.15)"><span class="ico-svg" style="width:18px;height:18px;color:var(--danger)"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg></span></div>
+      <span>Sil</span>
+    </div>
+  </div>
+</div>
+
+<!-- MEDYA DETAY SHEET -->
+<div class="bottom-sheet" id="bs-media-detail">
+  <div class="bs-handle" id="bs-media-handle"></div>
+  <div class="bs-body" id="bs-media-body"></div>
+</div>
+
 
 <div class="toast" id="toast"></div>
 
@@ -2238,7 +2464,7 @@ function renderNoteList() {
     if (n.isLocked) titlePrefix += '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:var(--danger);fill:var(--danger);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline;margin-right:3px;vertical-align:middle"><path d="M12 1C6.48 1 2 5.48 2 11s4.48 10 10 10 10-4.48 10-10S17.52 1 12 1zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>';
     if (n.pinned) titlePrefix += '<svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:var(--accent);fill:var(--accent);stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:inline;margin-right:3px;vertical-align:middle"><path d="M9 4v6l-2 4h10l-2-4V4M12 14v6M8 4h8"/></svg>';
     const previewClass = n.isLocked ? 'locked' : '';
-    return `<div class="note-card ${active} ${pinned}" data-id="${n.id}">
+    return `<div class="note-card ${active} ${pinned}" data-note-id="${n.id}" data-id="${n.id}">
       <div class="note-card-title">${titlePrefix}${n.title || 'Başlıksız Not'}</div>
       <div class="note-card-preview ${previewClass}">${preview || 'İçerik yok...'}</div>
       <div class="note-card-meta">${tags}<span class="note-date">${date}</span></div>
@@ -2577,6 +2803,12 @@ function toggleAcc(tab) {
     if (arrow) arrow.style.transform = 'rotate(180deg)';
     currentTab = tab;
     switchSidebarTab(tab);
+
+    // Mobilde sidebar'dan sekme seçince drawer kapansın ve panel açılsın
+    if (isMobile()) {
+      const mobMap = {notes:'list', bm:'links', pw:'pw', media:'media', stats:'stats'};
+      if (mobMap[tab]) mobNav(mobMap[tab]);
+    }
   }
 }
 
@@ -3023,18 +3255,19 @@ function mobNav(panel) {
   if (!isMobile()) return;
   closeDrawer();
 
-  const noteList  = document.querySelector('.note-list-panel');
-  const editor    = document.getElementById('editor-panel');
-  const bmPanel   = document.getElementById('bm-panel');
-  const pwPanel   = document.getElementById('pw-panel');
-  const mediaPanel= document.getElementById('media-panel');
-  const fab       = document.getElementById('mobile-fab');
+  const noteList   = document.querySelector('.note-list-panel');
+  const editor     = document.getElementById('editor-panel');
+  const bmPanel    = document.getElementById('bm-panel');
+  const pwPanel    = document.getElementById('pw-panel');
+  const mediaPanel = document.getElementById('media-panel');
+  const statsPanel = document.getElementById('stats-panel');
+  const fab        = document.getElementById('mobile-fab');
 
-  [noteList, editor, bmPanel, pwPanel, mediaPanel].forEach(el => {
-    el.classList.remove('mob-show', 'mob-hide-left');
+  [noteList, editor, bmPanel, pwPanel, mediaPanel, statsPanel].forEach(el => {
+    if (el) el.classList.remove('mob-show', 'mob-hide-left');
   });
 
-  ['list','links','pw','media','more'].forEach(id => {
+  ['list','links','pw','media','stats'].forEach(id => {
     document.getElementById('mob-btn-' + id)?.classList.remove('active');
   });
 
@@ -3045,27 +3278,28 @@ function mobNav(panel) {
   } else if (panel === 'links') {
     bmPanel.classList.add('mob-show');
     document.getElementById('mob-btn-links')?.classList.add('active');
-    toggleAcc('bm');
+    renderBmTagList(); renderBookmarks();
     fab.style.display = 'none';
   } else if (panel === 'pw') {
     pwPanel.classList.add('mob-show');
     document.getElementById('mob-btn-pw')?.classList.add('active');
-    toggleAcc('pw');
+    renderPwGrid();
     fab.style.display = 'none';
   } else if (panel === 'media') {
     mediaPanel.classList.add('mob-show');
     document.getElementById('mob-btn-media')?.classList.add('active');
-    toggleAcc('media');
+    renderMediaGrid();
+    fab.style.display = 'none';
+  } else if (panel === 'stats') {
+    statsPanel.classList.add('mob-show');
+    document.getElementById('mob-btn-stats')?.classList.add('active');
+    renderStats();
     fab.style.display = 'none';
   } else if (panel === 'editor') {
     noteList.classList.add('mob-hide-left');
     editor.classList.add('mob-show');
     fab.style.display = 'none';
     document.getElementById('mob-btn-list')?.classList.add('active');
-  } else if (panel === 'more') {
-    openThemeModal();
-    mobNav(currentMobPanel || 'list');
-    return;
   }
 
   if (panel !== 'more') currentMobPanel = panel;
@@ -3090,6 +3324,7 @@ function addMobileEditorBack() {
 // Init mobile
 function initMobile() {
   if (!isMobile()) return;
+  initNoteCardLongPress();
   document.getElementById('mobile-fab').style.display = 'flex';
   document.getElementById('mobile-nav').style.display = 'flex';
   document.getElementById('mob-hamburger').style.display = 'flex';
@@ -3703,59 +3938,7 @@ function renderMediaGrid() {
   }).join('');
 }
 
-// ─── MEDIA DETAIL MODAL ───
-function openMediaDetail(id) {
-  const item = mediaItems.find(m => m.id === id);
-  if (!item) return;
-  const modal = document.getElementById('media-detail-modal');
-  modal.style.display = 'flex';
-
-  const typeLabel  = {movie:'Film',series:'Dizi',anime:'Anime'};
-  const totalS = item.totalSeasons || 1;
-
-  let episodeHTML = '';
-  if (item.type !== 'movie') {
-    const tabs = Array.from({length:totalS},(_,i)=>i+1).map(s => {
-      const cnt = (item.seasons[s]||[]).length;
-      return `<button onclick="showSeason(${s},'${id}')" id="stab-${s}" style="padding:4px 10px;border-radius:4px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;background:${cnt?'var(--accent)':'var(--surface2)'};border:1px solid ${cnt?'var(--accent)':'var(--border)'};color:${cnt?'#000':'var(--text2)'}">S${s}</button>`;
-    }).join('');
-    episodeHTML = `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
-      <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Bölüm Takibi</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-        ${tabs}
-        <button onclick="addSeasonToMedia('${id}')" style="padding:4px 10px;border-radius:4px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;background:none;border:1px dashed var(--border);color:var(--text3)">+ Sezon</button>
-      </div>
-      <div id="media-episode-grid"></div>
-    </div>`;
-  }
-
-  modal.innerHTML = `<div class="modal" style="max-width:480px;width:95%;max-height:85vh;overflow-y:auto">
-    <div style="display:flex;gap:14px;margin-bottom:16px;align-items:flex-start">
-      ${item.poster ? `<img src="${item.poster}" style="width:80px;height:116px;object-fit:cover;border-radius:5px;flex-shrink:0">` : `<div style="width:80px;height:116px;background:var(--surface2);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:28px">▶</div>`}
-      <div style="flex:1;min-width:0">
-        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3">${escHtml(item.title)}</div>
-        <div style="font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:12px">${item.year||''} · ${typeLabel[item.type]||item.type}</div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Durum</div>
-        <select id="md-status" onchange="updateMediaStatus('${id}',this.value)" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:6px 10px;border-radius:4px;outline:none;cursor:pointer;margin-bottom:12px">
-          <option value="plan" ${item.status==='plan'?'selected':''}>İzleyeceğim</option>
-          <option value="watching" ${item.status==='watching'?'selected':''}>İzliyorum</option>
-          <option value="watched" ${item.status==='watched'?'selected':''}>İzledim</option>
-        </select>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Puan</div>
-        <div style="display:flex;gap:3px;flex-wrap:wrap">
-          ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button onclick="rateMedia('${id}',${n})" style="width:26px;height:26px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;background:${item.rating===n?'var(--accent)':'var(--surface2)'};border:1px solid ${item.rating===n?'var(--accent)':'var(--border)'};color:${item.rating===n?'#000':'var(--text2)'};font-family:'IBM Plex Mono',monospace">${n}</button>`).join('')}
-        </div>
-      </div>
-    </div>
-    ${episodeHTML}
-    <div style="display:flex;gap:8px;margin-top:16px;justify-content:space-between;align-items:center">
-      <button onclick="deleteMediaItem('${id}')" style="background:none;border:1px solid var(--border);color:var(--danger);padding:7px 14px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s" onmouseover="this.style.borderColor='var(--danger)'" onmouseout="this.style.borderColor='var(--border)'">Sil</button>
-      <button onclick="document.getElementById('media-detail-modal').style.display='none'" style="background:var(--accent);border:none;color:#000;padding:7px 20px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Kapat</button>
-    </div>
-  </div>`;
-
-  if (item.type !== 'movie') showSeason(1, id);
-}
+// ─── MEDIA DETAIL MODAL — handled by openMediaDetail() in BS engine ───
 
 function showSeason(season, id) {
   const item = mediaItems.find(m => m.id === id);
@@ -4136,8 +4319,8 @@ async function renderGistStats() {
   const el = document.getElementById('stats-gist-detail');
   if (!el) return;
 
-  const token = localStorage.getItem('notlarim_sync_token');
-  const gistId = localStorage.getItem('notlarim_sync_gist');
+  const token = getSyncToken();
+  const gistId = getSyncGistId();
 
   if (!token) {
     el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Gist sync bağlı değil. Şifreler sekmesinden bağlanabilirsin.</div>';
@@ -4246,6 +4429,258 @@ async function loadBmPreview(bmId) {
     bm.previewImg = false; // işaretle, tekrar deneme
   }
 }
+
+
+// ═══════════════════════════════════════════
+// BOTTOM SHEET ENGINE
+// ═══════════════════════════════════════════
+
+function openSheet(id) {
+  const sheet = document.getElementById(id);
+  const overlay = document.getElementById('bs-overlay');
+  if (!sheet) return;
+  overlay.classList.add('open');
+  sheet.classList.add('open');
+  sheet.classList.remove('peek');
+  document.body.style.overflow = 'hidden';
+  initSheetSwipe(sheet);
+}
+
+function closeSheet(id) {
+  const sheet = document.getElementById(id);
+  if (!sheet) return;
+  sheet.classList.remove('open', 'peek');
+  // Tüm sheetler kapandıysa overlay'i kaldır
+  setTimeout(() => {
+    const anyOpen = document.querySelectorAll('.bottom-sheet.open').length > 0;
+    if (!anyOpen) {
+      document.getElementById('bs-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  }, 380);
+}
+
+function closeAllSheets() {
+  document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('open','peek'));
+  document.getElementById('bs-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Swipe to dismiss
+function initSheetSwipe(sheet) {
+  let startY = 0, currentY = 0, dragging = false;
+  const handle = sheet.querySelector('.bs-handle');
+  const target = handle || sheet;
+
+  function onStart(e) {
+    startY = (e.touches ? e.touches[0].clientY : e.clientY);
+    dragging = true;
+    sheet.style.transition = 'none';
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    currentY = (e.touches ? e.touches[0].clientY : e.clientY);
+    const dy = Math.max(0, currentY - startY);
+    sheet.style.transform = `translateY(${dy}px)`;
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    sheet.style.transition = '';
+    const dy = currentY - startY;
+    if (dy > 120) {
+      sheet.style.transform = '';
+      closeSheet(sheet.id);
+    } else {
+      sheet.style.transform = '';
+    }
+  }
+
+  // Eski listener'ları temizle
+  const clone = target.cloneNode(true);
+  target.parentNode.replaceChild(clone, target);
+  const newTarget = sheet.querySelector('.bs-handle') || sheet;
+  newTarget.addEventListener('touchstart', onStart, {passive:true});
+  newTarget.addEventListener('touchmove', onMove, {passive:true});
+  newTarget.addEventListener('touchend', onEnd);
+  newTarget.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+}
+
+// ── FAB: tek tuş ile sheet aç
+function mobileNewNote() {
+  if (isMobile()) {
+    openSheet('bs-fab');
+  } else {
+    document.getElementById('new-note-btn').click();
+  }
+}
+
+// ── Not bağlam menüsü (uzun basma)
+let bsCtxNoteId = null;
+let longPressTimer = null;
+
+function initNoteCardLongPress() {
+  // renderNoteList her çağrıldığında yeniden bağla
+  document.getElementById('note-list').addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const card = e.target.closest('.note-card');
+    if (card) openNoteCtxSheet(card.dataset.noteId);
+  });
+
+  let lpTarget = null;
+  document.getElementById('note-list').addEventListener('touchstart', e => {
+    const card = e.target.closest('.note-card');
+    if (!card) return;
+    lpTarget = card;
+    longPressTimer = setTimeout(() => {
+      if (lpTarget) openNoteCtxSheet(lpTarget.dataset.noteId);
+    }, 500);
+  }, {passive:true});
+
+  document.getElementById('note-list').addEventListener('touchmove', () => {
+    clearTimeout(longPressTimer);
+  }, {passive:true});
+
+  document.getElementById('note-list').addEventListener('touchend', () => {
+    clearTimeout(longPressTimer);
+  });
+}
+
+function openNoteCtxSheet(noteId) {
+  if (!noteId) return;
+  bsCtxNoteId = noteId;
+  const note = notes.find(n => n.id === noteId);
+  if (!note) return;
+  document.getElementById('bs-note-ctx-title').textContent = note.title || 'Başlıksız Not';
+  document.getElementById('bs-ctx-pin-lbl').textContent = note.pinned ? 'Sabiti Kaldır' : 'Sabitle';
+  openSheet('bs-note-ctx');
+}
+
+function bsCtxPin() {
+  const note = notes.find(n => n.id === bsCtxNoteId);
+  if (!note) return;
+  note.pinned = !note.pinned;
+  saveNotes(notes);
+  renderNoteList();
+  closeSheet('bs-note-ctx');
+  showToast(note.pinned ? 'Not sabitlendi' : 'Sabitleme kaldırıldı');
+}
+
+function bsCtxLock() {
+  closeSheet('bs-note-ctx');
+  selectNote(bsCtxNoteId);
+  setTimeout(() => toggleNoteLock(), 200);
+}
+
+function bsCtxCopy() {
+  const note = notes.find(n => n.id === bsCtxNoteId);
+  if (!note) return;
+  navigator.clipboard.writeText(note.content || '').then(() => {
+    showToast('İçerik kopyalandı');
+  }).catch(() => showToast('Kopyalanamadı'));
+  closeSheet('bs-note-ctx');
+}
+
+function bsCtxDelete() {
+  closeSheet('bs-note-ctx');
+  setTimeout(() => {
+    notes = notes.filter(n => n.id !== bsCtxNoteId);
+    saveNotes(notes);
+    if (activeNoteId === bsCtxNoteId) {
+      activeNoteId = null;
+      document.getElementById('no-note').style.display = 'flex';
+      document.getElementById('editor-content').style.display = 'none';
+    }
+    renderTagList();
+    renderNoteList();
+    showToast('Not silindi');
+  }, 300);
+}
+
+// ── Medya detay: modal yerine bottom sheet kullan (mobilde)
+function openMediaDetail(id) {
+  const item = mediaItems.find(m => m.id === id);
+  if (!item) return;
+
+  if (isMobile()) {
+    openMediaDetailSheet(item);
+    return;
+  }
+
+  // Desktop: orijinal modal
+  const modal = document.getElementById('media-detail-modal');
+  modal.style.display = 'flex';
+  _renderMediaDetailContent(item, modal);
+}
+
+function openMediaDetailSheet(item) {
+  const body = document.getElementById('bs-media-body');
+  const sheet = document.getElementById('bs-media-detail');
+  _renderMediaDetailContent(item, sheet, true);
+  openSheet('bs-media-detail');
+}
+
+function _renderMediaDetailContent(item, container, isSheet) {
+  const id = item.id;
+  const typeLabel = {movie:'Film', series:'Dizi', anime:'Anime'};
+  const statusColor = {watching:'#4ade80', watched:'var(--accent2)', plan:'var(--text3)'};
+  const statusLabel = {watching:'İzliyorum', watched:'İzledim', plan:'İzleyeceğim'};
+  const totalS = item.totalSeasons || 1;
+
+  let episodeHTML = '';
+  if (item.type !== 'movie') {
+    const tabs = Array.from({length:totalS},(_,i)=>i+1).map(s => {
+      const cnt = (item.seasons[s]||[]).length;
+      return `<button onclick="showSeason(${s},'${id}')" id="stab-${s}" style="padding:4px 10px;border-radius:4px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;background:${cnt?'var(--accent)':'var(--surface2)'};border:1px solid ${cnt?'var(--accent)':'var(--border)'};color:${cnt?'#000':'var(--text2)'}">S${s}</button>`;
+    }).join('');
+    episodeHTML = `<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px">Bölüm Takibi</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        ${tabs}
+        <button onclick="addSeasonToMedia('${id}')" style="padding:4px 10px;border-radius:4px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;background:none;border:1px dashed var(--border);color:var(--text3)">+ Sezon</button>
+      </div>
+      <div id="media-episode-grid"></div>
+    </div>`;
+  }
+
+  const innerHTML = `
+    <div style="padding:16px 18px 0">
+      <div style="display:flex;gap:14px;margin-bottom:16px;align-items:flex-start">
+        ${item.poster ? `<img src="${item.poster}" style="width:80px;height:116px;object-fit:cover;border-radius:8px;flex-shrink:0">` : `<div style="width:80px;height:116px;background:var(--surface2);border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:28px">▶</div>`}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.3;font-family:'Playfair Display',serif">${escHtml(item.title)}</div>
+          <div style="font-size:12px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:14px">${item.year||''} · ${typeLabel[item.type]||item.type}</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Durum</div>
+          <select id="md-status" onchange="updateMediaStatus('${id}',this.value)" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border-radius:6px;outline:none;cursor:pointer;margin-bottom:12px">
+            <option value="plan" ${item.status==='plan'?'selected':''}>İzleyeceğim</option>
+            <option value="watching" ${item.status==='watching'?'selected':''}>İzliyorum</option>
+            <option value="watched" ${item.status==='watched'?'selected':''}>İzledim</option>
+          </select>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Puan</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">
+            ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button onclick="rateMedia('${id}',${n})" style="width:28px;height:28px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;background:${item.rating===n?'var(--accent)':'var(--surface2)'};border:1px solid ${item.rating===n?'var(--accent)':'var(--border)'};color:${item.rating===n?'#000':'var(--text2)'};font-family:'IBM Plex Mono',monospace">${n}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      ${episodeHTML}
+      <div style="display:flex;gap:8px;margin-top:18px;margin-bottom:8px;justify-content:space-between;align-items:center">
+        <button onclick="deleteMediaItem('${id}')" style="background:none;border:1px solid var(--border);color:var(--danger);padding:9px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Sil</button>
+        <button onclick="${isSheet ? "closeSheet('bs-media-detail')" : "document.getElementById('media-detail-modal').style.display='none'"}" style="background:var(--accent);border:none;color:#000;padding:9px 22px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Kapat</button>
+      </div>
+    </div>`;
+
+  if (isSheet) {
+    const body = container.querySelector('#bs-media-body') || container;
+    body.innerHTML = innerHTML;
+  } else {
+    container.innerHTML = `<div class="modal" style="max-width:480px;width:95%;max-height:85vh;overflow-y:auto">${innerHTML}</div>`;
+  }
+
+  if (item.type !== 'movie') showSeason(1, id);
+}
+
 
 // ─── KEYBOARD SHORTCUTS ───
 document.addEventListener('keydown', e => {
