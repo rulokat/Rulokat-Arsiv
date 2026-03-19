@@ -1525,7 +1525,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.31</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.32</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1547,7 +1547,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.31</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.32</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2200,6 +2200,11 @@ function getNotes() {
 }
 function saveNotes(notes) {
   if (!sessionPw) return;
+  const existing = localStorage.getItem(NOTES_KEY);
+  if (existing && notes.length === 0) {
+    const check = decrypt(existing, sessionPw);
+    if (Array.isArray(check) && check.length > 0) { console.warn('saveNotes: guard aktif'); return; }
+  }
   localStorage.setItem(NOTES_KEY, encrypt(notes, sessionPw));
 }
 function getSavedPwHash() { return localStorage.getItem(PW_HASH_KEY) || hashPw(DEFAULT_PW); }
@@ -2840,6 +2845,11 @@ function getBookmarks() {
 }
 function saveBookmarks(bms) {
   if (!sessionPw) return;
+  const existing = localStorage.getItem(BM_KEY);
+  if (existing && bms.length === 0) {
+    const check = decrypt(existing, sessionPw);
+    if (Array.isArray(check) && check.length > 0) { console.warn('saveBookmarks: guard aktif'); return; }
+  }
   localStorage.setItem(BM_KEY, encrypt(bms, sessionPw));
 }
 
@@ -3761,6 +3771,15 @@ function getMediaItems() {
 }
 function saveMediaItems(items) {
   if (!sessionPw) return;
+  // Güvenlik: eğer mevcut veri varken boş array geliyorsa kaydetme
+  const existing = localStorage.getItem(MEDIA_KEY);
+  if (existing && items.length === 0) {
+    const check = decrypt(existing, sessionPw);
+    if (Array.isArray(check) && check.length > 0) {
+      console.warn('saveMediaItems: boş array geldi ama mevcut veri var, iptal edildi');
+      return;
+    }
+  }
   localStorage.setItem(MEDIA_KEY, encrypt(items, sessionPw));
 }
 
@@ -4049,7 +4068,9 @@ function patchMediaCard(id) {
 function deleteMediaItem(id) {
   mediaItems = mediaItems.filter(m => m.id !== id);
   saveMediaItems(mediaItems);
+  // hem desktop modal hem mobil sheet kapat
   document.getElementById('media-detail-modal').style.display = 'none';
+  closeSheet('bs-media-detail');
   renderMediaGrid();
   updateMediaSidebarCounts();
   showToast('İçerik silindi');
@@ -4612,7 +4633,7 @@ function openMediaDetail(id) {
   // Desktop: orijinal modal
   const modal = document.getElementById('media-detail-modal');
   modal.style.display = 'flex';
-  _renderMediaDetailContent(item, modal);
+  _renderMediaDetailContent(item, modal, false);
 }
 
 function openMediaDetailSheet(item) {
@@ -4672,8 +4693,8 @@ function _renderMediaDetailContent(item, container, isSheet) {
     </div>`;
 
   if (isSheet) {
-    const body = container.querySelector('#bs-media-body') || container;
-    body.innerHTML = innerHTML;
+    const body = document.getElementById('bs-media-body');
+    if (body) body.innerHTML = innerHTML;
   } else {
     container.innerHTML = `<div class="modal" style="max-width:480px;width:95%;max-height:85vh;overflow-y:auto">${innerHTML}</div>`;
   }
