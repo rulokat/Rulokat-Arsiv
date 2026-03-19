@@ -1372,7 +1372,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.28</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.29</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1394,7 +1394,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.28</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.29</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -1644,6 +1644,10 @@
       <div>
         <div class="stats-section-title">Linkler</div>
         <div id="stats-bm-detail"></div>
+      </div>
+      <div>
+        <div class="stats-section-title">GitHub Gist Depolama</div>
+        <div id="stats-gist-detail"><div style="font-size:12px;color:var(--text3);padding:8px 0">Gist sync bağlı değil.</div></div>
       </div>
     </div>
 
@@ -3804,6 +3808,21 @@ function updateMediaStatus(id, status) {
   const item = mediaItems.find(m => m.id === id);
   if (!item) return;
   item.status = status;
+
+  // Dizi/anime "izledim" yapılınca tüm bölümleri otomatik işaretle
+  if (status === 'watched' && item.type !== 'movie' && item.totalSeasons) {
+    for (let s = 1; s <= item.totalSeasons; s++) {
+      const epCount = (item.seasons[s] && item.seasons[s].length > 0)
+        ? Math.max(...item.seasons[s])  // zaten işaretli varsa en yüksek bölümü al
+        : 24; // varsayılan 24 bölüm
+      // Sadece boşsa doldur, zaten doluysa dokunma
+      if (!item.seasons[s] || item.seasons[s].length === 0) {
+        item.seasons[s] = Array.from({length: epCount}, (_, i) => i + 1);
+      }
+    }
+    showToast('Tüm bölümler izlendi olarak işaretlendi');
+  }
+
   saveMediaItems(mediaItems);
   patchMediaCard(id);
   updateMediaSidebarCounts();
@@ -4042,11 +4061,16 @@ function renderStats() {
   const totalEps = mediaItems.reduce((a,m)=>a+Object.values(m.seasons||{}).reduce((b,eps)=>b+eps.length,0),0);
   const bmUp = bookmarks.filter(b=>b.status==='up').length;
 
+  // Bar genişliği hesaplama — referans her zaman max değer, min %2 görünür olsun
+  function barPct(val, max) {
+    if (!max || !val) return 0;
+    return Math.max(2, Math.round((val / max) * 100));
+  }
+
   // Genel bakış kartları
   document.getElementById('stats-overview-grid').innerHTML = [
     {label:'Not', val:notes.length, sub:`${pinnedCount} sabitlenmiş`, color:'var(--accent)'},
     {label:'Kelime', val:totalWords.toLocaleString('tr-TR'), sub:`${totalChars.toLocaleString('tr-TR')} karakter`, color:'#60a5fa'},
-    {label:'Etiket', val:allTags.length, sub:'benzersiz etiket', color:'var(--accent2)'},
     {label:'Link', val:bookmarks.length, sub:`${bmUp} çevrimiçi`, color:'#4ade80'},
     {label:'İzleme', val:mediaItems.length, sub:`${watchedMedia.length} izlendi`, color:'#a78bfa'},
     {label:'Bölüm', val:totalEps, sub:'toplam izlenen', color:'#f472b6'},
@@ -4066,7 +4090,7 @@ function renderStats() {
   document.getElementById('stats-notes-detail').innerHTML = topTags.length
     ? topTags.map(([ t, cnt ], i) => `<div class="stats-bar-row">
         <div class="stats-bar-label">#${escHtml(t)}</div>
-        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${(cnt/maxTag*100).toFixed(1)}%;background:${tagColors[i%tagColors.length]}"></div></div>
+        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cnt, maxTag)}%;background:${tagColors[i%tagColors.length]}"></div></div>
         <div class="stats-bar-count">${cnt}</div>
       </div>`).join('')
     : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Henüz etiketlenmiş not yok.</div>';
@@ -4081,7 +4105,7 @@ function renderStats() {
       const done = mediaItems.filter(m=>m.type===t&&m.status==='watched').length;
       return `<div class="stats-bar-row">
         <div class="stats-bar-label">${lbl}</div>
-        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${(cnt/maxMedia*100).toFixed(1)}%;background:${typeColors[t]}"></div></div>
+        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cnt, maxMedia)}%;background:${typeColors[t]}"></div></div>
         <div class="stats-bar-count">${cnt}</div>
       </div>
       <div style="font-size:10px;color:var(--text3);padding:0 0 6px 100px">${done} izlendi · ${watchingMedia.filter(m=>m.type===t).length} devam · ${mediaItems.filter(m=>m.type===t&&m.status==='plan').length} planlı</div>`;
@@ -4095,14 +4119,84 @@ function renderStats() {
   document.getElementById('stats-bm-detail').innerHTML = `
     <div class="stats-bar-row" style="margin-bottom:8px">
       <div class="stats-bar-label">Çevrimiçi</div>
-      <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${bookmarks.length?((bmUp/bookmarks.length)*100).toFixed(1):0}%;background:#4ade80"></div></div>
+      <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(bmUp, bookmarks.length)}%;background:#4ade80"></div></div>
       <div class="stats-bar-count">${bmUp}</div>
     </div>` +
     (topBmTags.length ? topBmTags.map(([t,cnt],i)=>`<div class="stats-bar-row">
       <div class="stats-bar-label">#${escHtml(t)}</div>
-      <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${(cnt/maxBm*100).toFixed(1)}%;background:${tagColors[i%tagColors.length]}"></div></div>
+      <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cnt, maxBm)}%;background:${tagColors[i%tagColors.length]}"></div></div>
       <div class="stats-bar-count">${cnt}</div>
     </div>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Etiketli link yok.</div>');
+
+  // Gist depolama bilgisi
+  renderGistStats();
+}
+
+async function renderGistStats() {
+  const el = document.getElementById('stats-gist-detail');
+  if (!el) return;
+
+  const token = localStorage.getItem('notlarim_sync_token');
+  const gistId = localStorage.getItem('notlarim_sync_gist');
+
+  if (!token) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Gist sync bağlı değil. Şifreler sekmesinden bağlanabilirsin.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Yükleniyor...</div>';
+
+  try {
+    // GitHub rate limit ve kullanıcı bilgisi
+    const [rateRes, userRes] = await Promise.all([
+      fetch('https://api.github.com/rate_limit', {headers:{'Authorization':'token '+token}}),
+      fetch('https://api.github.com/user', {headers:{'Authorization':'token '+token}})
+    ]);
+
+    const rate = await rateRes.json();
+    const user = userRes.ok ? await userRes.json() : null;
+
+    const core = rate.resources?.core || {};
+    const remaining = core.remaining ?? '?';
+    const limit = core.limit ?? 5000;
+    const resetTime = core.reset ? new Date(core.reset * 1000).toLocaleTimeString('tr-TR') : '?';
+    const usedPct = limit ? Math.round(((limit - remaining) / limit) * 100) : 0;
+    const barColor = remaining < 100 ? 'var(--danger)' : remaining < 500 ? '#e6a020' : '#4ade80';
+
+    // Gist boyutu
+    let gistInfo = '';
+    if (gistId) {
+      try {
+        const gRes = await fetch('https://api.github.com/gists/' + gistId, {headers:{'Authorization':'token '+token}});
+        if (gRes.ok) {
+          const g = await gRes.json();
+          const files = Object.values(g.files || {});
+          const totalBytes = files.reduce((a,f) => a + (f.size||0), 0);
+          const kb = (totalBytes / 1024).toFixed(1);
+          gistInfo = `<div class="stats-bar-row" style="margin-bottom:12px">
+            <div class="stats-bar-label">Gist boyutu</div>
+            <div style="font-size:12px;color:var(--text2);font-family:'IBM Plex Mono',monospace">${kb} KB · ${files.length} dosya</div>
+          </div>`;
+        }
+      } catch {}
+    }
+
+    el.innerHTML = `
+      ${user ? `<div style="font-size:12px;color:var(--text2);margin-bottom:12px">
+        <span style="color:var(--text3)">Hesap:</span> ${escHtml(user.login)}
+        ${user.plan ? ` · <span style="color:var(--text3)">Plan:</span> ${user.plan.name}` : ''}
+      </div>` : ''}
+      ${gistInfo}
+      <div class="stats-bar-row">
+        <div class="stats-bar-label">API kullanımı</div>
+        <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${usedPct}%;background:${barColor}"></div></div>
+        <div class="stats-bar-count" style="width:60px;font-size:10px">${remaining}/${limit}</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px;padding-left:100px">Saat ${resetTime}'da sıfırlanır</div>
+    `;
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--danger);padding:8px 0">Gist bilgisi alınamadı.</div>';
+  }
 }
 
 // ─── TABLO EKLE ───
