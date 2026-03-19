@@ -1288,7 +1288,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.26</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.27</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1310,7 +1310,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.26</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.27</span></div>
     <div class="search-wrap">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Notlarda ara...">
@@ -3551,7 +3551,7 @@ function renderMediaGrid() {
   grid.innerHTML = filtered.map(item => {
     const watched = Object.values(item.seasons||{}).reduce((a,b)=>a+b.length,0);
     const epText  = item.type!=='movie' && watched>0 ? `${watched} bölüm` : '';
-    return `<div class="media-card" onclick="openMediaDetail('${item.id}')">
+    return `<div class="media-card" data-media-id="${item.id}" onclick="openMediaDetail('${item.id}')">
       <div class="media-poster">
         ${item.poster ? `<img src="${item.poster}" style="width:100%;height:100%;object-fit:cover" loading="lazy">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text3);font-size:32px">▶</div>`}
         <div class="media-type-badge" style="background:${typeColor[item.type]||'var(--text3)'}">${typeLabel[item.type]||item.type}</div>
@@ -3560,11 +3560,11 @@ function renderMediaGrid() {
         <div class="media-title">${escHtml(item.title)}</div>
         <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:4px">${item.year||''}</div>
         <div style="display:flex;align-items:center;gap:4px;font-size:10px">
-          <span style="width:6px;height:6px;border-radius:50%;background:${statusColor[item.status]};flex-shrink:0"></span>
-          <span style="color:${statusColor[item.status]}">${statusLabel[item.status]}</span>
+          <span data-status-dot style="width:6px;height:6px;border-radius:50%;background:${statusColor[item.status]};flex-shrink:0"></span>
+          <span data-status-label style="color:${statusColor[item.status]}">${statusLabel[item.status]}</span>
         </div>
         ${epText ? `<div style="font-size:10px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace">${epText}</div>` : ''}
-        ${item.rating ? `<div style="font-size:11px;color:var(--accent2);margin-top:2px">★ ${item.rating}/10</div>` : ''}
+        <div data-rating style="font-size:11px;color:var(--accent2);margin-top:2px;${item.rating ? '' : 'display:none'}">${item.rating ? '★ '+item.rating+'/10' : ''}</div>
       </div>
     </div>`;
   }).join('');
@@ -3676,7 +3676,7 @@ function updateMediaStatus(id, status) {
   if (!item) return;
   item.status = status;
   saveMediaItems(mediaItems);
-  renderMediaGrid();
+  patchMediaCard(id);
   updateMediaSidebarCounts();
 }
 
@@ -3686,7 +3686,33 @@ function rateMedia(id, rating) {
   item.rating = (item.rating === rating) ? null : rating;
   saveMediaItems(mediaItems);
   openMediaDetail(id);
-  renderMediaGrid();
+  patchMediaCard(id);
+}
+
+// Sadece değişen bilgileri günceller — DOM silmez, afiş titremez
+function patchMediaCard(id) {
+  const item = mediaItems.find(m => m.id === id);
+  if (!item) return;
+  const card = document.querySelector('[data-media-id="' + id + '"]');
+  if (!card) { renderMediaGrid(); return; }
+
+  const statusColor = {watching:"#4ade80",watched:"var(--accent2)",plan:"var(--text3)"};
+  const statusLabel = {watching:"İzliyorum",watched:"İzledim",plan:"İzleyeceğim"};
+
+  const dot = card.querySelector('[data-status-dot]');
+  const lbl = card.querySelector('[data-status-label]');
+  const rat = card.querySelector('[data-rating]');
+
+  if (dot) dot.style.background = statusColor[item.status];
+  if (lbl) { lbl.textContent = statusLabel[item.status]; lbl.style.color = statusColor[item.status]; }
+  if (rat) { rat.textContent = item.rating ? "★ " + item.rating + "/10" : ""; rat.style.display = item.rating ? "" : "none"; }
+
+  if (activeMediaFilter !== "__all__") {
+    const fits = ["watching","watched","plan"].includes(activeMediaFilter)
+      ? item.status === activeMediaFilter
+      : item.type === activeMediaFilter;
+    card.style.display = fits ? "" : "none";
+  }
 }
 
 function deleteMediaItem(id) {
