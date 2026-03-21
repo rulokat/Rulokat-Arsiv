@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.38</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.39</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.38</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.39</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -5187,7 +5187,7 @@ async function fetchNews() {
   }
 }
 
-// CORS proxy fallback (allorigins.win)
+// CORS proxy zinciri — sırayla dener, ilk çalışanı kullanır
 async function fetchNewsViaProxy(type, q, lang) {
   let apiUrl;
   if (type === 'top') {
@@ -5196,36 +5196,74 @@ async function fetchNewsViaProxy(type, q, lang) {
     apiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=${lang}&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
   }
 
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
   const list = document.getElementById('news-list');
 
-  try {
-    const res = await fetch(proxyUrl);
-    const outer = await res.json();
-    const data = JSON.parse(outer.contents);
+  // Proxy listesi — sırayla denir
+  const proxies = [
+    async (u) => {
+      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, {signal: AbortSignal.timeout(8000)});
+      const j = await r.json();
+      return JSON.parse(j.contents);
+    },
+    async (u) => {
+      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(u)}`, {signal: AbortSignal.timeout(8000)});
+      return await r.json();
+    },
+    async (u) => {
+      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, {signal: AbortSignal.timeout(8000)});
+      return await r.json();
+    }
+  ];
 
-    if (data.status === 'error') {
-      if (data.code === 'apiKeyInvalid' || data.code === 'apiKeyExhausted') {
-        list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--danger);font-size:13px">
-          API anahtarı geçersiz veya günlük limit doldu.<br>
-          <a href="https://newsapi.org/register" target="_blank" style="color:var(--accent2)">Yeni anahtar al →</a>
-        </div>`;
-        document.getElementById('news-api-warn').style.display = 'block';
+  let lastErr = null;
+  for (let i = 0; i < proxies.length; i++) {
+    try {
+      list.innerHTML = `<div class="news-loading"><div class="news-spinner"></div>Proxy ${i+1}/${proxies.length} deneniyor...</div>`;
+      const data = await proxies[i](apiUrl);
+
+      if (!data || !data.status) throw new Error('Geçersiz yanıt');
+
+      if (data.status === 'error') {
+        if (data.code === 'apiKeyInvalid' || data.code === 'apiKeyExhausted') {
+          list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--danger);font-size:13px">
+            API anahtarı geçersiz veya günlük limit doldu (100 istek/gün).<br><br>
+            <a href="https://newsapi.org/register" target="_blank" style="color:var(--accent2)">Yeni anahtar al →</a>
+          </div>`;
+          document.getElementById('news-api-warn').style.display = 'block';
+          return;
+        }
+        // Diğer API hataları
+        list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">API Hatası: ${escHtml(data.message||'Bilinmeyen hata')}</div>`;
         return;
       }
-      list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">Hata: ${escHtml(data.message||'Bilinmeyen hata')}</div>`;
-      return;
-    }
 
-    renderNewsCards(data.articles || []);
-    setNewsStatus(type === 'top' ? 'Gündem haberleri' : '"' + q + '" sonuçları', (data.articles||[]).length);
-  } catch(err) {
-    list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;line-height:1.8">
-      Bağlantı hatası.<br>
-      <small style="font-size:11px">newsapi.org erişilemez veya proxy çalışmıyor olabilir.</small>
-    </div>`;
-    setNewsStatus('Bağlantı hatası');
+      // Başarılı
+      renderNewsCards(data.articles || []);
+      setNewsStatus(type === 'top' ? 'Gündem haberleri' : '"' + q + '" sonuçları', (data.articles||[]).length);
+      return;
+
+    } catch(err) {
+      lastErr = err;
+      console.warn(`Proxy ${i+1} başarısız:`, err.message);
+      // Sonraki proxy'yi dene
+    }
   }
+
+  // Tüm proxy'ler başarısız
+  list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;line-height:2">
+    <div style="font-size:28px;opacity:0.2;margin-bottom:8px">📡</div>
+    Tüm bağlantı yolları başarısız.<br>
+    <small style="font-size:11px;opacity:0.7">
+      NewsAPI ücretsiz plan sadece sunucu taraflı çalışır.<br>
+      Aşağıdaki alternatifi deneyin:
+    </small><br><br>
+    <a href="https://newsapi.org/v2/top-headlines?language=${lang}&pageSize=20&apiKey=${newsApiKey}" 
+       target="_blank" 
+       style="color:var(--accent2);font-size:12px;border:1px solid var(--border);padding:6px 14px;border-radius:5px;text-decoration:none">
+      Tarayıcıda Doğrudan Aç →
+    </a>
+  </div>`;
+  setNewsStatus('Bağlantı başarısız');
 }
 
 function saveNewsAsBookmark(url, title, source) {
