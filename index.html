@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.42</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.43</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.42</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.43</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2037,11 +2037,8 @@
     <div id="news-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
       <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;flex-wrap:wrap;">
         <input type="text" id="news-search" placeholder="Konu ara... (ör: ukraine, ai, economy)" style="flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:6px 12px;border-radius:5px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')fetchNews()">
-        <select id="news-lang" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:6px 8px;border-radius:5px;outline:none;cursor:pointer">
-          <option value="tr">🇹🇷 Türkçe</option>
-          <option value="en">🇬🇧 English</option>
-          <option value="de">🇩🇪 Deutsch</option>
-        </select>
+        <span id="news-lang" style="display:none">en</span>
+        <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap">HN · EN</span>
         <button onclick="fetchNews()" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Ara</button>
         <button onclick="fetchTopNews()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">Gündem</button>
       </div>
@@ -2050,12 +2047,13 @@
       <input type="hidden" id="news-api-key-input">
       <!-- KATEGORI HIZLI ERİŞİM -->
       <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none">
-        <button class="news-cat-btn active" data-cat="top" onclick="newsQuickCat(this)">🔥 Gündem</button>
-        <button class="news-cat-btn" data-cat="conflict" onclick="newsQuickCat(this)">⚔️ Çatışma</button>
+        <button class="news-cat-btn active" data-cat="top" onclick="newsQuickCat(this)">🔥 Top</button>
+        <button class="news-cat-btn" data-cat="new" onclick="newsQuickCat(this)">🆕 Yeni</button>
+        <button class="news-cat-btn" data-cat="best" onclick="newsQuickCat(this)">⭐ Best</button>
         <button class="news-cat-btn" data-cat="tech" onclick="newsQuickCat(this)">🤖 Teknoloji</button>
-        <button class="news-cat-btn" data-cat="economy" onclick="newsQuickCat(this)">📈 Ekonomi</button>
         <button class="news-cat-btn" data-cat="science" onclick="newsQuickCat(this)">🔬 Bilim</button>
-        <button class="news-cat-btn" data-cat="sports" onclick="newsQuickCat(this)">⚽ Spor</button>
+        <button class="news-cat-btn" data-cat="economy" onclick="newsQuickCat(this)">📈 Ekonomi</button>
+        <button class="news-cat-btn" data-cat="conflict" onclick="newsQuickCat(this)">⚔️ Çatışma</button>
       </div>
       <!-- HABER LİSTESİ -->
       <div id="news-list" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
@@ -5026,32 +5024,36 @@ document.addEventListener('keydown', e => {
 
 <script>
 // ══════════════════════════════════════════════
-//  RULOKAT HABERLER — Wikimedia API
-//  CORS tam destekli, API anahtarı yok, ücretsiz
+//  RULOKAT HABERLER — HackerNews + Algolia API
+//  CORS tam destekli · API anahtarı yok · Ücretsiz
 // ══════════════════════════════════════════════
 
+const HN_BASE    = 'https://hacker-news.firebaseio.com/v0';
+const ALGOLIA    = 'https://hn.algolia.com/api/v1';
 let newsInitDone = false;
+let newsCache    = {};  // basit cache
 
-// Wikimedia current events API — origin=* ile CORS sorunu yok
-// https://api.wikimedia.org/wiki/Current_events
-const WM_BASE = 'https://api.wikimedia.org/feed/v1/wikipedia';
-
-// Dil → Wikipedia dil kodu
-const LANG_MAP = { tr: 'tr', en: 'en', de: 'de' };
-
-// Kategori → arama terimi (Wikipedia search)
-const CAT_QUERY = {
-  top:      null,           // current events
-  conflict: 'war conflict savaş',
-  tech:     'technology artificial intelligence',
-  economy:  'economy financial markets',
-  science:  'science research space',
-  sports:   'sports championship',
+// Kategori → Algolia tags
+const CAT_TAGS = {
+  top:      null,
+  tech:     'technology',
+  science:  'science',
+  economy:  'economy',
+  conflict: 'war',
+  sports:   'sports',
 };
 
 function initNewsPanel() {
   document.getElementById('news-api-warn').style.display = 'none';
-  if (!newsInitDone) { loadCurrentEvents(); newsInitDone = true; }
+  if (!newsInitDone) { loadHNFeed('top'); newsInitDone = true; }
+}
+
+function fetchTopNews()  { loadHNFeed('top'); }
+
+function fetchNews() {
+  const q = document.getElementById('news-search').value.trim();
+  if (!q) { loadHNFeed('top'); return; }
+  searchHN(q);
 }
 
 function newsQuickCat(btn) {
@@ -5059,161 +5061,148 @@ function newsQuickCat(btn) {
   btn.classList.add('active');
   const cat = btn.dataset.cat || 'top';
   document.getElementById('news-search').value = '';
-  if (cat === 'top') loadCurrentEvents();
-  else loadWikiSearch(CAT_QUERY[cat] || cat);
+  loadHNFeed(cat);
 }
 
-function fetchTopNews() { loadCurrentEvents(); }
-
-function fetchNews() {
-  const q = document.getElementById('news-search').value.trim();
-  if (!q) { loadCurrentEvents(); return; }
-  loadWikiSearch(q);
-}
-
-// ── Wikimedia Current Events ──
-async function loadCurrentEvents() {
+// ── Top/New/Best hikayeleri çek ──
+async function loadHNFeed(cat) {
   const list = document.getElementById('news-list');
   list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Yükleniyor...</div>';
   setNewsStatus('Yükleniyor...');
 
-  const lang = LANG_MAP[document.getElementById('news-lang').value] || 'en';
-  const today = new Date();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const dd = String(today.getDate()).padStart(2,'0');
-
-  // Try today, then yesterday if empty
-  for (const offset of [0, 1, 2]) {
-    const d = new Date(today); d.setDate(d.getDate() - offset);
-    const m2 = String(d.getMonth()+1).padStart(2,'0');
-    const d2 = String(d.getDate()).padStart(2,'0');
-    const url = `${WM_BASE}/${lang}/news/${m2}/${d2}`;
-    try {
-      const res = await fetch(url, {
-        headers: { 'Api-User-Agent': 'Rulokat/1.0 (rulokat-arsiv)' },
-        signal: AbortSignal.timeout(10000)
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      const stories = data.news || data.stories || data.items || [];
-      if (stories.length === 0) continue;
-      renderWikiNews(stories, lang);
-      setNewsStatus('Güncel olaylar', stories.length);
-      return;
-    } catch(e) { continue; }
-  }
-
-  // Fallback: Wikipedia search
-  await loadWikiSearch('güncel olaylar current events', true);
-}
-
-// ── Wikipedia Article Search ──
-async function loadWikiSearch(q, isFallback=false) {
-  const list = document.getElementById('news-list');
-  if (!isFallback) {
-    list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Aranıyor...</div>';
-    setNewsStatus('Aranıyor: ' + q);
-  }
-
-  const lang = LANG_MAP[document.getElementById('news-lang').value] || 'en';
-
-  // Wikipedia search API — CORS destekli, origin=* ile
-  const searchUrl = `https://${lang}.wikipedia.org/w/api.php?` +
-    `action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=20` +
-    `&srprop=snippet|titlesnippet&format=json&origin=*`;
-
   try {
-    const res = await fetch(searchUrl, { signal: AbortSignal.timeout(10000) });
-    const data = await res.json();
-    const results = data?.query?.search || [];
+    let articles;
 
-    if (results.length === 0) {
-      list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Sonuç bulunamadı</div>';
-      return;
+    if (cat === 'top' || cat === 'new' || cat === 'best') {
+      // HN Firebase API — topstories/newstories/beststories
+      const feedType = cat === 'new' ? 'newstories' : cat === 'best' ? 'beststories' : 'topstories';
+      const idsRes = await fetch(`${HN_BASE}/${feedType}.json`, { signal: AbortSignal.timeout(8000) });
+      const ids = await idsRes.json();
+      // İlk 30 hikayeyi paralel çek
+      const top30 = ids.slice(0, 30);
+      const stories = await Promise.all(
+        top30.map(id =>
+          fetch(`${HN_BASE}/item/${id}.json`, { signal: AbortSignal.timeout(5000) })
+            .then(r => r.json())
+            .catch(() => null)
+        )
+      );
+      articles = stories.filter(s => s && s.title && s.type === 'story');
+    } else {
+      // Diğer kategoriler → Algolia arama
+      const q = CAT_TAGS[cat] || cat;
+      const res = await fetch(
+        `${ALGOLIA}/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=30`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      const data = await res.json();
+      articles = (data.hits || []).map(h => ({
+        id:          h.objectID,
+        title:       h.title,
+        url:         h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+        score:       h.points,
+        descendants: h.num_comments,
+        by:          h.author,
+        time:        h.created_at_i,
+        domain:      h.url ? (() => { try { return new URL(h.url).hostname.replace('www.',''); } catch(e){ return ''; } })() : 'news.ycombinator.com',
+      }));
     }
 
-    renderWikiSearch(results, lang, q);
-    setNewsStatus(isFallback ? 'Gündem' : `"${q}" sonuçları`, results.length);
+    renderHNCards(articles, cat);
+    setNewsStatus(catLabel(cat), articles.length);
 
   } catch(err) {
     showNewsError(list, err.message);
   }
 }
 
-// ── Render: Wikimedia News format ──
-function renderWikiNews(stories, lang) {
+// ── Algolia arama ──
+async function searchHN(q) {
   const list = document.getElementById('news-list');
-  list.innerHTML = stories.map(story => {
-    // story.links = array of articles
-    const links = story.links || [];
-    const mainArticle = links[0] || {};
-    const title = mainArticle.titles?.normalized || mainArticle.title || 'Haber';
-    const thumb = mainArticle.thumbnail?.source || '';
-    const desc  = story.story
-      ? story.story.replace(/<[^>]*>/g,'').slice(0,200)
-      : (mainArticle.extract || '').slice(0,200);
-    const wikiUrl = mainArticle.content_urls?.desktop?.page ||
-      `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+  list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Aranıyor...</div>';
+  setNewsStatus('Aranıyor: ' + q);
 
-    const img = thumb ? `<img class="news-card-img" src="${escHtml(thumb)}" loading="lazy" onerror="this.style.display='none'">` : '';
-    const relatedLinks = links.slice(1,4).map(l =>
-      `<a href="${escHtml(l.content_urls?.desktop?.page||'#')}" target="_blank" rel="noopener"
-         style="font-size:10px;color:var(--accent2);text-decoration:none;border:1px solid var(--tag-border);padding:2px 6px;border-radius:3px;background:var(--tag-bg)"
-       >${escHtml(l.titles?.normalized||l.title||'')}</a>`
-    ).join('');
+  try {
+    const res = await fetch(
+      `${ALGOLIA}/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=30`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    const data = await res.json();
+    const articles = (data.hits || []).map(h => ({
+      id:          h.objectID,
+      title:       h.title,
+      url:         h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
+      score:       h.points,
+      descendants: h.num_comments,
+      by:          h.author,
+      time:        h.created_at_i,
+      domain:      h.url ? (() => { try { return new URL(h.url).hostname.replace('www.',''); } catch(e){ return ''; } })() : 'news.ycombinator.com',
+    }));
 
-    const safeUrl = escHtml(wikiUrl);
-    const safeTitle = escHtml(title).replace(/'/g,"&#39;");
+    renderHNCards(articles, null);
+    setNewsStatus(`"${q}" sonuçları`, articles.length);
+  } catch(err) {
+    showNewsError(list, err.message);
+  }
+}
+
+function catLabel(cat) {
+  return {top:'En İyi Haberler', new:'En Yeni', best:'En İyiler', tech:'Teknoloji', science:'Bilim', economy:'Ekonomi', conflict:'Çatışma & Savaş', sports:'Spor'}[cat] || cat;
+}
+
+// ── Kartları render et ──
+function renderHNCards(articles, cat) {
+  const list = document.getElementById('news-list');
+  if (!articles || articles.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Sonuç bulunamadı</div>';
+    return;
+  }
+
+  list.innerHTML = articles.map((a, i) => {
+    const domain  = a.domain || (a.url ? (() => { try { return new URL(a.url).hostname.replace('www.',''); } catch(e){ return ''; } })() : '');
+    const hnUrl   = `https://news.ycombinator.com/item?id=${a.id}`;
+    const destUrl = a.url && a.url !== hnUrl ? a.url : hnUrl;
+    const score   = a.score || 0;
+    const comments= a.descendants || 0;
+    const timeStr = a.time ? newsTimeAgo(a.time * 1000) : '';
+    const safeUrl   = escHtml(destUrl);
+    const safeTitle = escHtml(a.title||'').replace(/'/g,"&#39;");
+    const safeDomain= escHtml(domain).replace(/'/g,"&#39;");
+
+    // Score rengi
+    const scoreColor = score > 300 ? 'var(--accent)' : score > 100 ? 'var(--accent2)' : 'var(--text3)';
 
     return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
-      ${img}
       <div class="news-card-body">
-        <div class="news-card-source">
-          <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0;animation:pulse 2s infinite"></span>
-          Wikipedia Güncel Olaylar
+        <div class="news-card-source" style="justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="width:5px;height:5px;border-radius:50%;background:${scoreColor};display:inline-block;flex-shrink:0"></span>
+            <span>${escHtml(domain||'HackerNews')}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text3)">
+            ${score ? `<span style="color:${scoreColor}">▲ ${score}</span>` : ''}
+            ${comments ? `<span>💬 ${comments}</span>` : ''}
+          </div>
         </div>
-        <div class="news-card-title">${escHtml(title)}</div>
-        ${desc ? `<div class="news-card-desc">${escHtml(desc)}</div>` : ''}
-        ${relatedLinks ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${relatedLinks}</div>` : ''}
+        <div class="news-card-title">${escHtml(a.title||'')}</div>
         <div class="news-card-meta">
-          <span class="news-card-time">Wikipedia</span>
-          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','Wikipedia')">+ Kaydet</button>
+          <span class="news-card-time">${timeStr}${a.by ? ' · ' + escHtml(a.by) : ''}</span>
+          <div style="display:flex;gap:4px">
+            <a href="${escHtml(hnUrl)}" target="_blank" rel="noopener"
+               onclick="event.stopPropagation()"
+               style="background:none;border:1px solid var(--border);color:var(--text3);padding:3px 7px;border-radius:4px;font-size:10px;text-decoration:none;font-family:'IBM Plex Mono',monospace;transition:all 0.15s"
+               onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'"
+               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">HN</a>
+            <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','${safeDomain}')">+ Kaydet</button>
+          </div>
         </div>
       </div>
     </a>`;
   }).join('');
 }
 
-// ── Render: Wikipedia Search format ──
-function renderWikiSearch(results, lang, q) {
-  const list = document.getElementById('news-list');
-  list.innerHTML = results.map(item => {
-    const title   = item.title || '';
-    const snippet = (item.snippet || '').replace(/<[^>]*>/g,'').slice(0,200);
-    const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g,'_'))}`;
-    const safeUrl   = escHtml(wikiUrl);
-    const safeTitle = escHtml(title).replace(/'/g,"&#39;");
-
-    return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
-      <div class="news-card-body">
-        <div class="news-card-source">
-          <span style="width:5px;height:5px;border-radius:50%;background:var(--accent2);display:inline-block;flex-shrink:0"></span>
-          Wikipedia · ${escHtml(lang.toUpperCase())}
-        </div>
-        <div class="news-card-title">${escHtml(title)}</div>
-        ${snippet ? `<div class="news-card-desc">${escHtml(snippet)}</div>` : ''}
-        <div class="news-card-meta">
-          <span class="news-card-time">Wikipedia</span>
-          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','Wikipedia')">+ Kaydet</button>
-        </div>
-      </div>
-    </a>`;
-  }).join('');
-}
-
-function newsTimeAgo(dateStr) {
-  if (!dateStr) return '';
-  const diff = Date.now() - new Date(dateStr).getTime();
+function newsTimeAgo(ms) {
+  const diff = Date.now() - ms;
   const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
   if (m < 2)  return 'Az önce';
   if (m < 60) return m + ' dk önce';
@@ -5223,7 +5212,7 @@ function newsTimeAgo(dateStr) {
 
 function setNewsStatus(msg, count) {
   const el = document.getElementById('news-status-text');
-  if (el) el.textContent = count !== undefined ? msg + ' · ' + count + ' öğe' : msg;
+  if (el) el.textContent = count !== undefined ? msg + ' · ' + count + ' haber' : msg;
   const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
   const lu = document.getElementById('news-last-update');
   if (lu) lu.textContent = 'Son: ' + now;
@@ -5234,7 +5223,7 @@ function showNewsError(list, msg) {
     <div style="font-size:36px;opacity:0.15;margin-bottom:12px">📡</div>
     Bağlantı hatası.<br>
     <small style="font-size:11px;opacity:0.7">${escHtml(msg||'')}</small><br><br>
-    <button onclick="loadCurrentEvents()"
+    <button onclick="loadHNFeed('top')"
       style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 16px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">
       ↺ Tekrar Dene
     </button>
