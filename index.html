@@ -1102,7 +1102,7 @@
   .theme-dot { width: 10px; height: 10px; border-radius: 50%; }
 
   /* ── EXPORT/IMPORT ── */
-  .export-modal { width: 380px; }
+  .export-modal { width: 420px; max-height: 85vh; overflow-y: auto; }
   .export-btn-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
   .exp-btn {
     display: flex; align-items: center; gap: 10px;
@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.46</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.47</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.46</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.47</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -1890,6 +1890,17 @@
             <span class="acc-arrow" id="acc-arrow-news"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
           </button>
           <div class="acc-body" id="acc-body-news"></div>
+        </div>
+
+        <!-- YEDEKLE — sidebar hızlı erişim -->
+        <div class="acc-group" id="acc-backup" style="border-bottom:1px solid var(--border)">
+          <button class="acc-header" onclick="openExportModal()" style="font-weight:500">
+            <span class="acc-header-left">
+              <span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M7 11l5 5l5-5"/><path d="M12 4v12"/></svg></span>
+              Yedekle & Geri Yükle
+            </span>
+            <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">☁️</span>
+          </button>
         </div>
 
         <!-- İSTATİSTİK -->
@@ -3105,7 +3116,7 @@ function showToast(msg) {
 }
 
 // ─── ACCORDION SIDEBAR ───
-const ACC_TABS = ['notes','bm','pw','media','canvas','news','stats'];
+const ACC_TABS = ['notes','bm','pw','media','canvas','news','backup','stats'];
 let currentTab = 'notes';
 
 function toggleAcc(tab) {
