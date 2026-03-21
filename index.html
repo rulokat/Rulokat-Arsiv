@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.39</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.40</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.39</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.40</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2049,7 +2049,7 @@
       <div id="news-api-warn" style="display:none;padding:12px 16px;background:rgba(230,58,15,0.08);border-bottom:1px solid var(--tag-border);">
         <div style="font-size:12px;color:var(--accent2);margin-bottom:6px;font-weight:500">⚠ NewsAPI anahtarı gerekli</div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.6">
-          <a href="https://newsapi.org/register" target="_blank" style="color:var(--accent2)">newsapi.org</a>'dan ücretsiz hesap aç (günde 100 istek).
+          <a href="https://gnews.io/register" target="_blank" style="color:var(--accent2)">gnews.io</a>'dan ücretsiz hesap aç → API Keys → anahtarı kopyala (günde 100 istek, CORS destekli).
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <input type="text" id="news-api-key-input" placeholder="API anahtarını yapıştır..." style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 10px;border-radius:4px;outline:none">
@@ -5034,55 +5034,55 @@ document.addEventListener('keydown', e => {
 
 <script>
 // ══════════════════════════════════════════════
-//  RULOKAT HABERLER MODÜLİ — NewsAPI
+//  RULOKAT HABERLER — GNews API (CORS destekli)
+//  gnews.io → ücretsiz hesap → 100 istek/gün
 // ══════════════════════════════════════════════
 
-const NEWS_API_KEY_STORAGE = 'rulokat_newsapi_key';
-let newsApiKey = localStorage.getItem(NEWS_API_KEY_STORAGE) || '';
+const NEWS_KEY_STORE = 'rulokat_gnews_key';
+let gnewsKey = localStorage.getItem(NEWS_KEY_STORE) || '';
 let newsInitDone = false;
 
 function saveNewsApiKey() {
   const val = document.getElementById('news-api-key-input').value.trim();
   if (!val) { showToast('API anahtarı boş'); return; }
-  newsApiKey = val;
-  localStorage.setItem(NEWS_API_KEY_STORAGE, val);
+  gnewsKey = val;
+  localStorage.setItem(NEWS_KEY_STORE, val);
   document.getElementById('news-api-warn').style.display = 'none';
   showToast('API anahtarı kaydedildi ✓');
   fetchTopNews();
 }
 
 function initNewsPanel() {
-  if (!newsApiKey) {
+  if (!gnewsKey) {
     document.getElementById('news-api-warn').style.display = 'block';
     return;
   }
   document.getElementById('news-api-warn').style.display = 'none';
-  if (!newsInitDone) {
-    fetchTopNews();
-    newsInitDone = true;
-  }
+  if (!newsInitDone) { fetchTopNews(); newsInitDone = true; }
 }
 
 function newsQuickCat(btn) {
   document.querySelectorAll('.news-cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (btn.dataset.top) {
-    fetchTopNews();
-  } else {
-    document.getElementById('news-search').value = btn.dataset.q;
-    fetchNews();
-  }
+  if (btn.dataset.top) { fetchTopNews(); }
+  else { document.getElementById('news-search').value = btn.dataset.q; fetchNews(); }
 }
 
 function newsTimeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  const h = Math.floor(diff / 3600000);
-  const d = Math.floor(diff / 86400000);
+  const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
   if (m < 2)  return 'Az önce';
   if (m < 60) return m + ' dk önce';
   if (h < 24) return h + ' sa önce';
   return d + ' gün önce';
+}
+
+function setNewsStatus(msg, count) {
+  const el = document.getElementById('news-status-text');
+  if (el) el.textContent = count !== undefined ? msg + ' · ' + count + ' haber' : msg;
+  const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  const lu = document.getElementById('news-last-update');
+  if (lu) lu.textContent = 'Son güncelleme: ' + now;
 }
 
 function renderNewsCards(articles) {
@@ -5092,78 +5092,55 @@ function renderNewsCards(articles) {
     return;
   }
   list.innerHTML = articles.map(a => {
-    const domain = a.url ? new URL(a.url).hostname.replace('www.','') : '';
-    const imgHtml = a.urlToImage
-      ? `<img class="news-card-img" src="${escHtml(a.urlToImage)}" loading="lazy" onerror="this.style.display='none'">`
-      : '';
-    const sourceName = (a.source && a.source.name) ? escHtml(a.source.name) : domain;
-    return `<a class="news-card" href="${escHtml(a.url)}" target="_blank" rel="noopener">
-      ${imgHtml}
+    const domain = (() => { try { return new URL(a.url).hostname.replace('www.',''); } catch(e){ return ''; } })();
+    const src = (a.source && a.source.name) ? escHtml(a.source.name) : escHtml(domain);
+    const img = a.image ? `<img class="news-card-img" src="${escHtml(a.image)}" loading="lazy" onerror="this.style.display='none'">` : '';
+    const safeTitle = escHtml(a.title||'').replace(/\\/g,'').replace(/'/g,'&#39;');
+    const safeSrc   = src.replace(/'/g,'&#39;');
+    const safeUrl   = escHtml(a.url||'');
+    return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
+      ${img}
       <div class="news-card-body">
         <div class="news-card-source">
-          <span class="news-blink" style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0"></span>
-          ${sourceName}
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0;animation:pulse 2s infinite"></span>
+          ${src}
         </div>
-        <div class="news-card-title">${escHtml(a.title || '')}</div>
+        <div class="news-card-title">${escHtml(a.title||'')}</div>
         ${a.description ? `<div class="news-card-desc">${escHtml(a.description)}</div>` : ''}
         <div class="news-card-meta">
           <span class="news-card-time">${a.publishedAt ? newsTimeAgo(a.publishedAt) : ''}</span>
-          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${escHtml(a.url)}','${escHtml((a.title||'').replace(/'/g,'\''))}','${escHtml((a.source&&a.source.name||domain).replace(/'/g,'\''))}')">+ Kaydet</button>
+          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','${safeSrc}')">+ Kaydet</button>
         </div>
       </div>
     </a>`;
   }).join('');
-
-  const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('news-last-update').textContent = 'Son güncelleme: ' + now;
-}
-
-function setNewsStatus(msg, count) {
-  document.getElementById('news-status-text').textContent = msg;
-  if (count !== undefined) {
-    document.getElementById('news-status-text').textContent = msg + ' · ' + count + ' haber';
-  }
 }
 
 async function fetchTopNews() {
-  if (!newsApiKey) { initNewsPanel(); return; }
+  if (!gnewsKey) { initNewsPanel(); return; }
   const lang = document.getElementById('news-lang').value;
   const list = document.getElementById('news-list');
   list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Yükleniyor...</div>';
   setNewsStatus('Yükleniyor...');
 
-  // NewsAPI /top-headlines — CORS: only works with client-side key via proxy or direct
-  // Direct browser request only works on localhost with newsapi.org developer plan
-  // We use the everything endpoint which works better for CORS via a proxy approach
-  const url = `https://newsapi.org/v2/top-headlines?language=${lang}&pageSize=20&apiKey=${newsApiKey}`;
-
+  // GNews top-headlines — CORS destekli, token parametresi
+  const url = `https://gnews.io/api/v4/top-headlines?lang=${lang}&max=20&token=${gnewsKey}`;
   try {
     const res = await fetch(url);
-    if (res.status === 426 || res.status === 401) {
-      // CORS blocked — try via allorigins proxy
-      await fetchNewsViaProxy('top', '', lang);
-      return;
-    }
     const data = await res.json();
-    if (data.status === 'error') {
-      if (data.code === 'apiKeyInvalid') {
-        showToast('Geçersiz API anahtarı');
-        document.getElementById('news-api-warn').style.display = 'block';
-        return;
-      }
-      // Fallback to proxy
-      await fetchNewsViaProxy('top', '', lang);
+    if (data.errors) {
+      handleGNewsError(data.errors, list);
       return;
     }
     renderNewsCards(data.articles || []);
     setNewsStatus('Gündem haberleri', (data.articles||[]).length);
-  } catch(e) {
-    await fetchNewsViaProxy('top', '', lang);
+  } catch(err) {
+    showNewsError(list, err.message);
   }
 }
 
 async function fetchNews() {
-  if (!newsApiKey) { initNewsPanel(); return; }
+  if (!gnewsKey) { initNewsPanel(); return; }
   const q = document.getElementById('news-search').value.trim();
   if (!q) { fetchTopNews(); return; }
   const lang = document.getElementById('news-lang').value;
@@ -5171,119 +5148,66 @@ async function fetchNews() {
   list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Aranıyor...</div>';
   setNewsStatus('Aranıyor: ' + q);
 
-  const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=${lang}&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
-
+  const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=${lang}&max=20&sortby=publishedAt&token=${gnewsKey}`;
   try {
     const res = await fetch(url);
     const data = await res.json();
-    if (data.status === 'error') {
-      await fetchNewsViaProxy('search', q, lang);
+    if (data.errors) {
+      handleGNewsError(data.errors, list);
       return;
     }
     renderNewsCards(data.articles || []);
     setNewsStatus('"' + q + '" sonuçları', (data.articles||[]).length);
-  } catch(e) {
-    await fetchNewsViaProxy('search', q, lang);
+  } catch(err) {
+    showNewsError(list, err.message);
   }
 }
 
-// CORS proxy zinciri — sırayla dener, ilk çalışanı kullanır
-async function fetchNewsViaProxy(type, q, lang) {
-  let apiUrl;
-  if (type === 'top') {
-    apiUrl = `https://newsapi.org/v2/top-headlines?language=${lang}&pageSize=20&apiKey=${newsApiKey}`;
+function handleGNewsError(errors, list) {
+  const msg = Array.isArray(errors) ? errors.join(' ') : String(errors);
+  if (msg.includes('token') || msg.includes('API key') || msg.includes('unauthorized')) {
+    list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--danger);font-size:13px;line-height:2">
+      API anahtarı geçersiz.<br>
+      <a href="https://gnews.io/register" target="_blank" style="color:var(--accent2)">gnews.io'dan yeni anahtar al →</a>
+    </div>`;
+    document.getElementById('news-api-warn').style.display = 'block';
+  } else if (msg.includes('limit') || msg.includes('quota')) {
+    list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;line-height:2">
+      Günlük limit doldu (100 istek).<br>
+      <small>Yarın tekrar deneyin veya <a href="https://gnews.io/pricing" target="_blank" style="color:var(--accent2)">planı yükselt</a></small>
+    </div>`;
   } else {
-    apiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=${lang}&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
+    list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">API Hatası: ${escHtml(msg)}</div>`;
   }
+  setNewsStatus('Hata');
+}
 
-  const list = document.getElementById('news-list');
-
-  // Proxy listesi — sırayla denir
-  const proxies = [
-    async (u) => {
-      const r = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, {signal: AbortSignal.timeout(8000)});
-      const j = await r.json();
-      return JSON.parse(j.contents);
-    },
-    async (u) => {
-      const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(u)}`, {signal: AbortSignal.timeout(8000)});
-      return await r.json();
-    },
-    async (u) => {
-      const r = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, {signal: AbortSignal.timeout(8000)});
-      return await r.json();
-    }
-  ];
-
-  let lastErr = null;
-  for (let i = 0; i < proxies.length; i++) {
-    try {
-      list.innerHTML = `<div class="news-loading"><div class="news-spinner"></div>Proxy ${i+1}/${proxies.length} deneniyor...</div>`;
-      const data = await proxies[i](apiUrl);
-
-      if (!data || !data.status) throw new Error('Geçersiz yanıt');
-
-      if (data.status === 'error') {
-        if (data.code === 'apiKeyInvalid' || data.code === 'apiKeyExhausted') {
-          list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--danger);font-size:13px">
-            API anahtarı geçersiz veya günlük limit doldu (100 istek/gün).<br><br>
-            <a href="https://newsapi.org/register" target="_blank" style="color:var(--accent2)">Yeni anahtar al →</a>
-          </div>`;
-          document.getElementById('news-api-warn').style.display = 'block';
-          return;
-        }
-        // Diğer API hataları
-        list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">API Hatası: ${escHtml(data.message||'Bilinmeyen hata')}</div>`;
-        return;
-      }
-
-      // Başarılı
-      renderNewsCards(data.articles || []);
-      setNewsStatus(type === 'top' ? 'Gündem haberleri' : '"' + q + '" sonuçları', (data.articles||[]).length);
-      return;
-
-    } catch(err) {
-      lastErr = err;
-      console.warn(`Proxy ${i+1} başarısız:`, err.message);
-      // Sonraki proxy'yi dene
-    }
-  }
-
-  // Tüm proxy'ler başarısız
+function showNewsError(list, msg) {
   list.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;line-height:2">
     <div style="font-size:28px;opacity:0.2;margin-bottom:8px">📡</div>
-    Tüm bağlantı yolları başarısız.<br>
-    <small style="font-size:11px;opacity:0.7">
-      NewsAPI ücretsiz plan sadece sunucu taraflı çalışır.<br>
-      Aşağıdaki alternatifi deneyin:
-    </small><br><br>
-    <a href="https://newsapi.org/v2/top-headlines?language=${lang}&pageSize=20&apiKey=${newsApiKey}" 
-       target="_blank" 
-       style="color:var(--accent2);font-size:12px;border:1px solid var(--border);padding:6px 14px;border-radius:5px;text-decoration:none">
-      Tarayıcıda Doğrudan Aç →
-    </a>
+    Bağlantı hatası.<br>
+    <small style="font-size:11px;opacity:0.7">${escHtml(msg||'')}</small>
   </div>`;
-  setNewsStatus('Bağlantı başarısız');
+  setNewsStatus('Bağlantı hatası');
 }
 
 function saveNewsAsBookmark(url, title, source) {
   if (!url) return;
-  const existing = bookmarks.find(b => b.url === url);
-  if (existing) { showToast('Bu haber zaten kayıtlı'); return; }
-  const bm = {
-    id: Date.now().toString(), url, title: title || url,
-    desc: 'Kaynak: ' + source, tags: ['haber'],
-    status: 'unknown', lastChecked: null, createdAt: Date.now()
-  };
-  bookmarks.unshift(bm);
+  if (bookmarks.find(b => b.url === url)) { showToast('Bu haber zaten kayıtlı'); return; }
+  bookmarks.unshift({
+    id: Date.now().toString(), url,
+    title: title || url, desc: 'Kaynak: ' + source,
+    tags: ['haber'], status: 'unknown', lastChecked: null, createdAt: Date.now()
+  });
   saveBookmarks(bookmarks);
   showToast('Bookmark olarak kaydedildi ✓');
 }
 
-// API key input → enter tuşu
+// Enter tuşu
 document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('news-api-key-input');
-  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') saveNewsApiKey(); });
+  document.getElementById('news-api-key-input')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveNewsApiKey();
+  });
 });
 </script>
 
