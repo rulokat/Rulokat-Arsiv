@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.48</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.49</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.48</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.49</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2051,36 +2051,23 @@
 
       <!-- Başlık -->
       <div style="padding:16px 16px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Gofile Upload</span>
-          <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px">Ücretsiz · 10 gün</span>
-        </div>
+        <div style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700;margin-bottom:4px">Gofile Upload</div>
         <div style="font-size:11px;color:var(--text3)">Dosyayı seç, linki al — paylaş veya başka cihazda kullan</div>
       </div>
 
-      <!-- DROP ZONE -->
+      <!-- DROP ZONE — tıklayınca seç, seçince direkt yükle -->
       <div id="gf-dropzone"
-        style="margin:16px;border:2px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;flex-shrink:0"
+        style="margin:16px;border:2px dashed var(--border);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:all 0.2s;flex-shrink:0"
         onclick="document.getElementById('gf-file-input').click()"
         ondragover="gfDragOver(event)" ondragleave="gfDragLeave(event)" ondrop="gfDrop(event)">
-        <div style="font-size:36px;margin-bottom:8px;opacity:0.4">☁️</div>
-        <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:4px">Dosya seç veya buraya sürükle</div>
-        <div style="font-size:11px;color:var(--text3)">Her türlü dosya · Maksimum boyut yok</div>
+        <div style="font-size:40px;margin-bottom:10px;opacity:0.35">☁️</div>
+        <div style="font-size:14px;color:var(--text2);font-weight:500;margin-bottom:6px">Dosya seç veya buraya sürükle</div>
+        <div style="font-size:11px;color:var(--text3);line-height:1.7">Her türlü dosya · Boyut sınırı yok<br>⚠ Ücretsiz yüklemeler 10 gün sonra silinir</div>
         <input type="file" id="gf-file-input" multiple style="display:none" onchange="gfFilesSelected(this.files)">
       </div>
 
-      <!-- SEÇİLİ DOSYALAR LİSTESİ -->
+      <!-- YÜKLEME LİSTESİ -->
       <div id="gf-file-list" style="flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:8px"></div>
-
-      <!-- YÜKLE BUTONU -->
-      <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
-        <button id="gf-upload-btn" onclick="gfUploadAll()"
-          style="width:100%;background:var(--accent);border:none;color:#000;padding:11px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px"
-          onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'" disabled>
-          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
-          Gofile'a Yükle
-        </button>
-      </div>
 
     </div>
 
@@ -3213,7 +3200,12 @@ function switchSidebarTab(tab) {
   if (tab === 'stats')  { renderStats(); }
   if (tab === 'canvas') { cvLoad(); cvRender(); }
   if (tab === 'news')   { initNewsPanel(); }
-  if (tab === 'gofile') { initGofilePanel(); }
+  if (tab === 'gofile') {
+    // Mobilde de panel göster
+    const gfp2 = document.getElementById('gofile-panel');
+    if (gfp2) gfp2.style.display = 'flex';
+    initGofilePanel();
+  }
 }
 
 // ─── BOOKMARK STORAGE ───
@@ -6189,12 +6181,13 @@ function gfDrop(e) {
   gfFilesSelected(e.dataTransfer.files);
 }
 
-// ── Dosya seçildi ──
+// ── Dosya seçildi → direkt yükle ──
 function gfFilesSelected(fileList) {
   if (!fileList || fileList.length === 0) return;
   for (const f of fileList) gfFiles.push({ file: f, status: 'pending', link: null });
   gfRenderList();
-  document.getElementById('gf-upload-btn').disabled = false;
+  // Seçilir seçilmez hemen yükle
+  gfUploadAll();
 }
 
 function gfRemoveFile(idx) {
@@ -6265,9 +6258,6 @@ async function gfUploadAll() {
   if (pending.length === 0) return;
 
   gfUploading = true;
-  const btn = document.getElementById('gf-upload-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="news-spinner" style="width:15px;height:15px;border-color:rgba(0,0,0,0.3);border-top-color:#000"></div> Yükleniyor...';
 
   // En iyi sunucuyu bul
   let server = 'store1';
@@ -6318,27 +6308,19 @@ async function gfUploadAll() {
   }
 
   gfUploading = false;
-  btn.disabled = false;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Tekrar Yükle`;
 
-  // Başarısız olanlar varsa butonu aktif tut, hepsi başardıysa sıfırla
   const allDone = gfFiles.every(f => f.status === 'done');
   if (allDone) {
+    showToast('Tüm dosyalar yüklendi ✓');
     setTimeout(() => {
-      // 3 saniye sonra listeyi temizle, yeni yüklemeye hazır
-      btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Yeni Dosya Yükle`;
-      btn.onclick = () => {
-        gfFiles = gfFiles.filter(f => f.status !== 'done');
-        gfRenderList();
-        if (gfFiles.length === 0) btn.disabled = true;
-        btn.onclick = gfUploadAll;
-        btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Gofile'a Yükle`;
-      };
-    }, 3000);
+      gfFiles = [];
+      gfRenderList();
+      const inp = document.getElementById('gf-file-input');
+      if (inp) inp.value = '';
+    }, 4000);
   } else {
-    // Başarısızları pending'e çevir, tekrar dene
+    // Hatalıları pending'e al, dropzone'dan tekrar seçilebilir
     gfFiles.filter(f => f.status === 'error').forEach(f => f.status = 'pending');
-    btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Tekrar Dene`;
     gfRenderList();
   }
 }
