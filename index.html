@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.43</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.44</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.43</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.44</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2035,38 +2035,56 @@
 
     <!-- HABERLER PANELİ -->
     <div id="news-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;flex-wrap:wrap;">
-        <input type="text" id="news-search" placeholder="Konu ara... (ör: ukraine, ai, economy)" style="flex:1;min-width:140px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:6px 12px;border-radius:5px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')fetchNews()">
-        <span id="news-lang" style="display:none">en</span>
-        <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap">HN · EN</span>
-        <button onclick="fetchNews()" style="background:var(--accent);border:none;color:#000;padding:6px 14px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;transition:opacity 0.2s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Ara</button>
-        <button onclick="fetchTopNews()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">Gündem</button>
-      </div>
-      <!-- API KEY UYARISI -->
-      <div id="news-api-warn" style="display:none"></div>
-      <input type="hidden" id="news-api-key-input">
-      <!-- KATEGORI HIZLI ERİŞİM -->
-      <div style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none">
-        <button class="news-cat-btn active" data-cat="top" onclick="newsQuickCat(this)">🔥 Top</button>
-        <button class="news-cat-btn" data-cat="new" onclick="newsQuickCat(this)">🆕 Yeni</button>
-        <button class="news-cat-btn" data-cat="best" onclick="newsQuickCat(this)">⭐ Best</button>
-        <button class="news-cat-btn" data-cat="tech" onclick="newsQuickCat(this)">🤖 Teknoloji</button>
-        <button class="news-cat-btn" data-cat="science" onclick="newsQuickCat(this)">🔬 Bilim</button>
-        <button class="news-cat-btn" data-cat="economy" onclick="newsQuickCat(this)">📈 Ekonomi</button>
-        <button class="news-cat-btn" data-cat="conflict" onclick="newsQuickCat(this)">⚔️ Çatışma</button>
-      </div>
-      <!-- HABER LİSTESİ -->
-      <div id="news-list" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
-        <div style="text-align:center;padding:60px 20px;color:var(--text3);font-size:13px">
-          <div style="font-size:32px;opacity:0.2;margin-bottom:12px">📰</div>
-          Gündem veya konu arayın
+
+      <!-- ÜSTTBAR -->
+      <div style="padding:12px 16px 0;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
+        <!-- Başlık + Durum -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Haberler</span>
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 2s infinite"></span>
+            <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace" id="news-last-update"></span>
+          </div>
+          <button onclick="newsRefresh()" title="Yenile" style="background:none;border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:13px" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺</button>
+        </div>
+        <!-- Arama -->
+        <div style="position:relative;margin-bottom:10px">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;font-size:13px">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg>
+          </span>
+          <input type="text" id="news-search" placeholder="ara: war, AI, bitcoin, space..."
+            style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 36px 8px 32px;border-radius:6px;outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+            onkeydown="if(event.key==='Enter')fetchNews()" oninput="if(this.value==='')loadHNFeed(newsActiveCat)">
+          <button onclick="document.getElementById('news-search').value='';loadHNFeed(newsActiveCat)" id="news-clear-btn"
+            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px;display:none">✕</button>
+        </div>
+        <!-- Kategoriler -->
+        <div style="display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px">
+          <button class="news-cat-btn active" data-cat="top"      onclick="newsQuickCat(this)">🔥 Gündem</button>
+          <button class="news-cat-btn"        data-cat="new"      onclick="newsQuickCat(this)">⚡ Yeni</button>
+          <button class="news-cat-btn"        data-cat="conflict" onclick="newsQuickCat(this)">⚔️ Savaş</button>
+          <button class="news-cat-btn"        data-cat="tech"     onclick="newsQuickCat(this)">🤖 Teknoloji</button>
+          <button class="news-cat-btn"        data-cat="science"  onclick="newsQuickCat(this)">🔬 Bilim</button>
+          <button class="news-cat-btn"        data-cat="economy"  onclick="newsQuickCat(this)">📈 Ekonomi</button>
+          <button class="news-cat-btn"        data-cat="best"     onclick="newsQuickCat(this)">⭐ En İyi</button>
         </div>
       </div>
-      <!-- ALT DURUM -->
-      <div id="news-status" style="padding:6px 14px;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;border-top:1px solid var(--border);flex-shrink:0;display:flex;justify-content:space-between;align-items:center">
-        <span id="news-status-text">—</span>
-        <span id="news-last-update" style="opacity:0.5"></span>
+
+      <!-- DURUM ŞERIDI -->
+      <div id="news-status" style="display:none;padding:5px 16px;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0">
+        <span id="news-status-text"></span>
       </div>
+
+      <!-- HABER LİSTESİ -->
+      <div id="news-list" style="flex:1;overflow-y:auto;padding:0">
+        <div style="text-align:center;padding:60px 20px;color:var(--text3);font-size:13px">
+          <div style="font-size:40px;opacity:0.15;margin-bottom:12px">📰</div>
+          Yükleniyor...
+        </div>
+      </div>
+      <div id="news-api-warn" style="display:none"></div>
+      <input type="hidden" id="news-api-key-input">
     </div>
 
     <!-- BOOKMARK PANEL -->
@@ -5024,176 +5042,226 @@ document.addEventListener('keydown', e => {
 
 <script>
 // ══════════════════════════════════════════════
-//  RULOKAT HABERLER — HackerNews + Algolia API
-//  CORS tam destekli · API anahtarı yok · Ücretsiz
+//  RULOKAT HABERLER v2 — HN Firebase + Algolia
+//  CORS tam destekli · Anahtarsız · Taze içerik
 // ══════════════════════════════════════════════
 
-const HN_BASE    = 'https://hacker-news.firebaseio.com/v0';
-const ALGOLIA    = 'https://hn.algolia.com/api/v1';
-let newsInitDone = false;
-let newsCache    = {};  // basit cache
+const HN_BASE  = 'https://hacker-news.firebaseio.com/v0';
+const ALGOLIA  = 'https://hn.algolia.com/api/v1';
 
-// Kategori → Algolia tags
-const CAT_TAGS = {
-  top:      null,
-  tech:     'technology',
-  science:  'science',
-  economy:  'economy',
-  conflict: 'war',
-  sports:   'sports',
+let newsInitDone  = false;
+let newsActiveCat = 'top';
+let newsLoading   = false;
+
+// Algolia sorgu etiketleri
+const CAT_Q = {
+  conflict: 'war ukraine russia israel gaza conflict military',
+  tech:     'artificial intelligence OpenAI Google Apple Microsoft',
+  science:  'science NASA space climate research',
+  economy:  'economy inflation fed interest rates market stocks',
 };
 
 function initNewsPanel() {
   document.getElementById('news-api-warn').style.display = 'none';
   if (!newsInitDone) { loadHNFeed('top'); newsInitDone = true; }
 }
-
 function fetchTopNews()  { loadHNFeed('top'); }
+function newsRefresh()   { loadHNFeed(newsActiveCat); }
+function saveNewsApiKey(){ initNewsPanel(); }
 
 function fetchNews() {
   const q = document.getElementById('news-search').value.trim();
-  if (!q) { loadHNFeed('top'); return; }
+  const clr = document.getElementById('news-clear-btn');
+  if (clr) clr.style.display = q ? 'block' : 'none';
+  if (!q) { loadHNFeed(newsActiveCat); return; }
   searchHN(q);
 }
 
 function newsQuickCat(btn) {
   document.querySelectorAll('.news-cat-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const cat = btn.dataset.cat || 'top';
+  newsActiveCat = btn.dataset.cat || 'top';
   document.getElementById('news-search').value = '';
-  loadHNFeed(cat);
+  const clr = document.getElementById('news-clear-btn');
+  if (clr) clr.style.display = 'none';
+  loadHNFeed(newsActiveCat);
 }
 
-// ── Top/New/Best hikayeleri çek ──
+// ── Top / New / Best — Firebase, sonra tarihe göre sırala ──
 async function loadHNFeed(cat) {
-  const list = document.getElementById('news-list');
-  list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Yükleniyor...</div>';
-  setNewsStatus('Yükleniyor...');
+  if (newsLoading) return;
+  newsLoading = true;
+  setNewsLoading();
 
   try {
-    let articles;
-
-    if (cat === 'top' || cat === 'new' || cat === 'best') {
-      // HN Firebase API — topstories/newstories/beststories
-      const feedType = cat === 'new' ? 'newstories' : cat === 'best' ? 'beststories' : 'topstories';
-      const idsRes = await fetch(`${HN_BASE}/${feedType}.json`, { signal: AbortSignal.timeout(8000) });
-      const ids = await idsRes.json();
-      // İlk 30 hikayeyi paralel çek
-      const top30 = ids.slice(0, 30);
-      const stories = await Promise.all(
-        top30.map(id =>
-          fetch(`${HN_BASE}/item/${id}.json`, { signal: AbortSignal.timeout(5000) })
-            .then(r => r.json())
-            .catch(() => null)
-        )
-      );
-      articles = stories.filter(s => s && s.title && s.type === 'story');
-    } else {
-      // Diğer kategoriler → Algolia arama
-      const q = CAT_TAGS[cat] || cat;
-      const res = await fetch(
-        `${ALGOLIA}/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=30`,
-        { signal: AbortSignal.timeout(8000) }
-      );
-      const data = await res.json();
-      articles = (data.hits || []).map(h => ({
-        id:          h.objectID,
-        title:       h.title,
-        url:         h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
-        score:       h.points,
-        descendants: h.num_comments,
-        by:          h.author,
-        time:        h.created_at_i,
-        domain:      h.url ? (() => { try { return new URL(h.url).hostname.replace('www.',''); } catch(e){ return ''; } })() : 'news.ycombinator.com',
-      }));
+    if (cat === 'conflict' || cat === 'tech' || cat === 'science' || cat === 'economy') {
+      await searchHNAlgolia(CAT_Q[cat], cat);
+      return;
     }
+
+    const feedType = { top:'topstories', new:'newstories', best:'beststories' }[cat] || 'topstories';
+    const idsRes = await fetch(`${HN_BASE}/${feedType}.json`, { signal: AbortSignal.timeout(8000) });
+    const ids    = await idsRes.json();
+
+    // Top 40 çek, sonra filtrele + sırala
+    const top40 = ids.slice(0, 40);
+    const stories = await Promise.all(
+      top40.map(id =>
+        fetch(`${HN_BASE}/item/${id}.json`, { signal: AbortSignal.timeout(5000) })
+          .then(r => r.json()).catch(() => null)
+      )
+    );
+
+    let articles = stories
+      .filter(s => s && s.title && s.type === 'story' && s.url)
+      .sort((a, b) => b.time - a.time);  // En yeni önce
 
     renderHNCards(articles, cat);
     setNewsStatus(catLabel(cat), articles.length);
-
   } catch(err) {
-    showNewsError(list, err.message);
+    showNewsError(err.message);
+  } finally {
+    newsLoading = false;
   }
 }
 
-// ── Algolia arama ──
+// ── Algolia Arama (anahtar kelime) ──
 async function searchHN(q) {
-  const list = document.getElementById('news-list');
-  list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Aranıyor...</div>';
-  setNewsStatus('Aranıyor: ' + q);
+  if (newsLoading) return;
+  newsLoading = true;
+  setNewsLoading('Aranıyor...');
+  await searchHNAlgolia(q, null);
+  newsLoading = false;
+}
 
+async function searchHNAlgolia(q, cat) {
   try {
-    const res = await fetch(
-      `${ALGOLIA}/search?query=${encodeURIComponent(q)}&tags=story&hitsPerPage=30`,
-      { signal: AbortSignal.timeout(8000) }
-    );
-    const data = await res.json();
-    const articles = (data.hits || []).map(h => ({
+    // Son 7 günün haberleri — numericFilters ile filtrele
+    const since7d = Math.floor(Date.now()/1000) - (7 * 24 * 3600);
+    const url = `${ALGOLIA}/search?query=${encodeURIComponent(q)}`
+      + `&tags=story`
+      + `&numericFilters=created_at_i>${since7d}`
+      + `&hitsPerPage=30`
+      + `&typoTolerance=false`;
+
+    let res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    let data = await res.json();
+    let hits = data.hits || [];
+
+    // Eğer 7 günde az sonuç varsa 30 güne genişlet
+    if (hits.length < 5) {
+      const since30d = Math.floor(Date.now()/1000) - (30 * 24 * 3600);
+      const url2 = `${ALGOLIA}/search?query=${encodeURIComponent(q)}`
+        + `&tags=story`
+        + `&numericFilters=created_at_i>${since30d}`
+        + `&hitsPerPage=30`;
+      res  = await fetch(url2, { signal: AbortSignal.timeout(8000) });
+      data = await res.json();
+      hits = data.hits || [];
+    }
+
+    // En yeni önce sırala
+    hits.sort((a, b) => b.created_at_i - a.created_at_i);
+
+    const articles = hits.map(h => ({
       id:          h.objectID,
       title:       h.title,
       url:         h.url || `https://news.ycombinator.com/item?id=${h.objectID}`,
-      score:       h.points,
-      descendants: h.num_comments,
-      by:          h.author,
+      score:       h.points || 0,
+      descendants: h.num_comments || 0,
+      by:          h.author || '',
       time:        h.created_at_i,
-      domain:      h.url ? (() => { try { return new URL(h.url).hostname.replace('www.',''); } catch(e){ return ''; } })() : 'news.ycombinator.com',
+      domain:      h.url ? getDomain(h.url) : 'news.ycombinator.com',
     }));
 
-    renderHNCards(articles, null);
-    setNewsStatus(`"${q}" sonuçları`, articles.length);
+    renderHNCards(articles, cat || 'search');
+    const label = cat ? catLabel(cat) : `"${q}"`;
+    setNewsStatus(label, articles.length);
   } catch(err) {
-    showNewsError(list, err.message);
+    showNewsError(err.message);
+  } finally {
+    newsLoading = false;
   }
 }
 
-function catLabel(cat) {
-  return {top:'En İyi Haberler', new:'En Yeni', best:'En İyiler', tech:'Teknoloji', science:'Bilim', economy:'Ekonomi', conflict:'Çatışma & Savaş', sports:'Spor'}[cat] || cat;
+function getDomain(url) {
+  try { return new URL(url).hostname.replace('www.',''); } catch(e){ return ''; }
 }
 
-// ── Kartları render et ──
+function catLabel(cat) {
+  return {top:'Gündem',new:'En Yeni',best:'En İyiler',conflict:'Savaş & Çatışma',tech:'Teknoloji',science:'Bilim',economy:'Ekonomi'}[cat] || cat;
+}
+
+// ── Kart Render ──
 function renderHNCards(articles, cat) {
   const list = document.getElementById('news-list');
+
   if (!articles || articles.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Sonuç bulunamadı</div>';
+    list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text3)">
+      <div style="font-size:36px;opacity:0.15;margin-bottom:10px">🔍</div>
+      <div style="font-size:13px">Son 30 günde sonuç bulunamadı</div>
+    </div>`;
     return;
   }
 
   list.innerHTML = articles.map((a, i) => {
-    const domain  = a.domain || (a.url ? (() => { try { return new URL(a.url).hostname.replace('www.',''); } catch(e){ return ''; } })() : '');
-    const hnUrl   = `https://news.ycombinator.com/item?id=${a.id}`;
-    const destUrl = a.url && a.url !== hnUrl ? a.url : hnUrl;
-    const score   = a.score || 0;
-    const comments= a.descendants || 0;
-    const timeStr = a.time ? newsTimeAgo(a.time * 1000) : '';
+    const hnUrl     = `https://news.ycombinator.com/item?id=${a.id}`;
+    const destUrl   = a.url && a.url !== hnUrl ? a.url : hnUrl;
+    const score     = a.score || 0;
+    const comments  = a.descendants || 0;
+    const timeStr   = newsTimeAgo(a.time * 1000);
+    const isRecent  = (Date.now()/1000 - a.time) < 3600;  // 1 saatten yeni
+    const isToday   = (Date.now()/1000 - a.time) < 86400; // Bugünkü
+
+    const scoreBar  = score > 0 ? Math.min(100, Math.round(score / 5)) : 0;
+    const scoreColor= score > 400 ? 'var(--accent)' : score > 150 ? 'var(--accent2)' : score > 50 ? '#f59e0b' : 'var(--text3)';
+
     const safeUrl   = escHtml(destUrl);
     const safeTitle = escHtml(a.title||'').replace(/'/g,"&#39;");
-    const safeDomain= escHtml(domain).replace(/'/g,"&#39;");
+    const safeDomain= escHtml(a.domain||'').replace(/'/g,"&#39;");
 
-    // Score rengi
-    const scoreColor = score > 300 ? 'var(--accent)' : score > 100 ? 'var(--accent2)' : 'var(--text3)';
+    const freshBadge = isRecent
+      ? `<span style="font-size:9px;background:rgba(230,58,15,0.15);color:var(--accent);border:1px solid rgba(230,58,15,0.3);padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace;letter-spacing:0.3px">CANLI</span>`
+      : isToday
+      ? `<span style="font-size:9px;background:rgba(255,122,80,0.1);color:var(--accent2);border:1px solid rgba(255,122,80,0.25);padding:1px 5px;border-radius:3px;font-family:'IBM Plex Mono',monospace">BUGÜN</span>`
+      : '';
 
     return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
       <div class="news-card-body">
-        <div class="news-card-source" style="justify-content:space-between">
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="width:5px;height:5px;border-radius:50%;background:${scoreColor};display:inline-block;flex-shrink:0"></span>
-            <span>${escHtml(domain||'HackerNews')}</span>
+        <!-- Üst: kaynak + rozet -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:6px">
+          <div style="display:flex;align-items:center;gap:5px;min-width:0">
+            <img src="https://www.google.com/s2/favicons?domain=${escHtml(a.domain||'ycombinator.com')}&sz=16"
+                 style="width:14px;height:14px;border-radius:2px;flex-shrink:0"
+                 onerror="this.style.display='none'">
+            <span style="font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'IBM Plex Mono',monospace">${escHtml(a.domain||'HN')}</span>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text3)">
-            ${score ? `<span style="color:${scoreColor}">▲ ${score}</span>` : ''}
-            ${comments ? `<span>💬 ${comments}</span>` : ''}
+          <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+            ${freshBadge}
+            <span style="font-size:10px;color:var(--text3);white-space:nowrap">${timeStr}</span>
           </div>
         </div>
-        <div class="news-card-title">${escHtml(a.title||'')}</div>
-        <div class="news-card-meta">
-          <span class="news-card-time">${timeStr}${a.by ? ' · ' + escHtml(a.by) : ''}</span>
-          <div style="display:flex;gap:4px">
-            <a href="${escHtml(hnUrl)}" target="_blank" rel="noopener"
-               onclick="event.stopPropagation()"
-               style="background:none;border:1px solid var(--border);color:var(--text3);padding:3px 7px;border-radius:4px;font-size:10px;text-decoration:none;font-family:'IBM Plex Mono',monospace;transition:all 0.15s"
-               onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'"
+
+        <!-- Başlık -->
+        <div class="news-card-title" style="font-size:13px;line-height:1.45;margin-bottom:8px;font-weight:500;color:var(--text)">${escHtml(a.title||'')}</div>
+
+        <!-- Alt: puan çubuğu + aksiyonlar -->
+        <div style="display:flex;align-items:center;gap:8px">
+          <!-- Puan çubuğu -->
+          <div style="flex:1;display:flex;align-items:center;gap:6px">
+            <div style="flex:1;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;max-width:80px">
+              <div style="width:${scoreBar}%;height:100%;background:${scoreColor};border-radius:2px;transition:width 0.4s ease"></div>
+            </div>
+            <span style="font-size:10px;color:${scoreColor};font-family:'IBM Plex Mono',monospace;flex-shrink:0">▲${score}</span>
+            ${comments ? `<span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;flex-shrink:0">💬${comments}</span>` : ''}
+          </div>
+          <!-- Butonlar -->
+          <div style="display:flex;gap:4px;flex-shrink:0">
+            <a href="${escHtml(hnUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
+               style="font-size:10px;color:var(--text3);border:1px solid var(--border);padding:3px 7px;border-radius:4px;text-decoration:none;font-family:'IBM Plex Mono',monospace;transition:all 0.12s;background:none"
+               onmouseover="this.style.borderColor='#f97316';this.style.color='#f97316'"
                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">HN</a>
-            <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','${safeDomain}')">+ Kaydet</button>
+            <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','${safeDomain}')">＋</button>
           </div>
         </div>
       </div>
@@ -5201,34 +5269,51 @@ function renderHNCards(articles, cat) {
   }).join('');
 }
 
+// ── Yardımcılar ──
 function newsTimeAgo(ms) {
   const diff = Date.now() - ms;
   const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
-  if (m < 2)  return 'Az önce';
-  if (m < 60) return m + ' dk önce';
-  if (h < 24) return h + ' sa önce';
-  return d + ' gün önce';
+  if (m <  2)  return 'az önce';
+  if (m < 60)  return m + 'dk';
+  if (h < 24)  return h + 'sa';
+  if (d <  7)  return d + 'g';
+  return Math.floor(d/7) + 'hft';
+}
+
+function setNewsLoading(msg) {
+  const list = document.getElementById('news-list');
+  list.innerHTML = `<div class="news-loading" style="padding:48px 20px">
+    <div class="news-spinner"></div>
+    <span style="color:var(--text3);font-size:13px">${msg||'Yükleniyor...'}</span>
+  </div>`;
+  setNewsStatus(msg || '...');
 }
 
 function setNewsStatus(msg, count) {
+  const st = document.getElementById('news-status');
   const el = document.getElementById('news-status-text');
-  if (el) el.textContent = count !== undefined ? msg + ' · ' + count + ' haber' : msg;
-  const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  if (!el) return;
+  if (count !== undefined) {
+    el.textContent = msg + ' · ' + count + ' haber';
+    if (st) st.style.display = 'block';
+  } else {
+    el.textContent = msg;
+    if (st) st.style.display = 'block';
+  }
   const lu = document.getElementById('news-last-update');
-  if (lu) lu.textContent = 'Son: ' + now;
+  if (lu) lu.textContent = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
 }
 
-function showNewsError(list, msg) {
-  list.innerHTML = `<div style="padding:32px 20px;text-align:center;color:var(--text3);font-size:13px;line-height:2.2">
-    <div style="font-size:36px;opacity:0.15;margin-bottom:12px">📡</div>
-    Bağlantı hatası.<br>
-    <small style="font-size:11px;opacity:0.7">${escHtml(msg||'')}</small><br><br>
-    <button onclick="loadHNFeed('top')"
-      style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 16px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">
-      ↺ Tekrar Dene
-    </button>
+function showNewsError(msg) {
+  const list = document.getElementById('news-list');
+  list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--text3);font-size:13px;line-height:2">
+    <div style="font-size:32px;opacity:0.15;margin-bottom:8px">📡</div>
+    Bağlantı hatası<br>
+    <small style="font-size:11px;opacity:0.6">${escHtml(msg||'')}</small><br><br>
+    <button onclick="newsRefresh()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 16px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">↺ Tekrar Dene</button>
   </div>`;
   setNewsStatus('Bağlantı hatası');
+  newsLoading = false;
 }
 
 function saveNewsAsBookmark(url, title, source) {
@@ -5236,11 +5321,11 @@ function saveNewsAsBookmark(url, title, source) {
   if (bookmarks.find(b => b.url === url)) { showToast('Bu haber zaten kayıtlı'); return; }
   bookmarks.unshift({
     id: Date.now().toString(), url,
-    title: title || url, desc: 'Kaynak: ' + source,
+    title: title || url, desc: 'Kaynak: ' + (source||'HackerNews'),
     tags: ['haber'], status: 'unknown', lastChecked: null, createdAt: Date.now()
   });
   saveBookmarks(bookmarks);
-  showToast('Bookmark olarak kaydedildi ✓');
+  showToast('Kaydedildi ✓');
 }
 
 function saveNewsApiKey() {
