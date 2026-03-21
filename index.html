@@ -1626,7 +1626,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.34</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.35</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1648,7 +1648,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.34</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.35</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -4877,426 +4877,378 @@ document.addEventListener('keydown', e => {
   <div class="cv-picker-list" id="cv-picker-list"></div>
 </div>
 
+
 <script>
 // ══════════════════════════════════════════════
-//  RULOKAT KANVAS MODÜLÜ
+//  RULOKAT KANVAS MODÜLÜ — v2 (temiz, hızlı)
 // ══════════════════════════════════════════════
 
 const CV_KEY = 'rulokat_canvas_v1';
 
 // ── STATE ──
-let cvNodes = [];      // {id, type:'note'|'bm'|'free', refId, x, y, w, label, body, tags, color}
-let cvEdges = [];      // {id, from, to}
-let cvTool = 'select'; // select | pan | connect
+let cvNodes = [];
+let cvEdges = [];
+let cvTool  = 'select';
 let cvScale = 1;
-let cvOX = 0, cvOY = 0; // world offset
-let cvDragging = null;   // {nodeId, startX, startY, origX, origY}
-let cvPanning  = null;   // {startX, startY, origOX, origOY}
-let cvConnFrom = null;   // nodeId being connected from
-let cvPreviewLine = null;
-let cvPickerMode = null; // 'note' | 'bm'
-let cvPickerPos  = {x:200, y:200};
+let cvOX = 80, cvOY = 80;
+let cvDragging    = null;
+let cvPanning     = null;
+let cvConnFrom    = null;
+let cvPickerMode  = null;
 let cvSelectedNode = null;
 let cvSelectedEdge = null;
 let cvSurfaceReady = false;
+let cvRafId = null;
 
+// ── STORAGE ──
 function cvLoad() {
   try {
     const raw = localStorage.getItem(CV_KEY);
     if (!raw) return;
     const d = JSON.parse(raw);
-    cvNodes = d.nodes || [];
-    cvEdges = d.edges || [];
-    cvOX    = d.ox    || 80;
-    cvOY    = d.oy    || 80;
-    cvScale = d.scale || 1;
-  } catch {}
+    cvNodes = Array.isArray(d.nodes) ? d.nodes : [];
+    cvEdges = Array.isArray(d.edges) ? d.edges : [];
+    cvOX    = typeof d.ox === 'number' ? d.ox : 80;
+    cvOY    = typeof d.oy === 'number' ? d.oy : 80;
+    cvScale = typeof d.scale === 'number' ? d.scale : 1;
+  } catch(e) { console.warn('cvLoad error', e); }
 }
 
 function cvSave() {
-  localStorage.setItem(CV_KEY, JSON.stringify({
-    nodes: cvNodes, edges: cvEdges, ox: cvOX, oy: cvOY, scale: cvScale
-  }));
+  try {
+    localStorage.setItem(CV_KEY, JSON.stringify({
+      nodes: cvNodes, edges: cvEdges, ox: cvOX, oy: cvOY, scale: cvScale
+    }));
+  } catch(e) {}
 }
 
-// ── RENDER ──
+// ── WORLD TRANSFORM ──
+function cvApplyTransform() {
+  const world = document.getElementById('cv-world');
+  if (world) world.style.transform = `translate(${cvOX}px,${cvOY}px) scale(${cvScale})`;
+  const zl = document.getElementById('cv-zoom-label');
+  if (zl) zl.textContent = Math.round(cvScale * 100) + '%';
+}
+
+// ── FULL RENDER (only called when nodes change) ──
 function cvRender() {
-  const world  = document.getElementById('cv-world');
-  const svgEl  = document.getElementById('cv-svg');
-  const empty  = document.getElementById('cv-empty');
-  const zLabel = document.getElementById('cv-zoom-label');
-  const info   = document.getElementById('cv-info');
+  const world = document.getElementById('cv-world');
+  if (!world) return;
 
-  world.style.transform = `translate(${cvOX}px,${cvOY}px) scale(${cvScale})`;
-  zLabel.textContent = Math.round(cvScale*100) + '%';
+  const empty = document.getElementById('cv-empty');
+  if (empty) empty.style.display = cvNodes.length === 0 ? 'flex' : 'none';
 
-  if (cvNodes.length === 0) empty.style.display = 'flex';
-  else empty.style.display = 'none';
+  const info = document.getElementById('cv-info');
+  if (info) info.textContent = cvNodes.length ? `${cvNodes.length} düğüm · ${cvEdges.length} bağlantı` : '';
 
-  info.textContent = cvNodes.length ? `${cvNodes.length} düğüm · ${cvEdges.length} bağlantı` : '';
-
-  // Remove old nodes (keep svg)
-  world.querySelectorAll('.cv-node').forEach(n => n.remove());
-
-  // Render nodes
-  cvNodes.forEach(nd => {
-    const el = document.createElement('div');
-    el.className = `cv-node ${nd.type}-node ${nd.id === cvSelectedNode ? 'selected' : ''}`;
-    el.dataset.id = nd.id;
-    el.style.left = nd.x + 'px';
-    el.style.top  = nd.y + 'px';
-    if (nd.w) el.style.width = nd.w + 'px';
-
-    const typeLabel = nd.type === 'note' ? 'Not' : nd.type === 'bm' ? 'Link' : 'Metin';
-    const typeClass = nd.type === 'note' ? 't-note' : nd.type === 'bm' ? 't-bm' : 't-free';
-
-    const tags = (nd.tags || []).slice(0,3).map(t =>
-      `<span class="cv-node-tag">#${escHtml(t)}</span>`).join('');
-
-    if (nd.type === 'free') {
-      el.innerHTML = `
-        <div class="cv-node-header">
-          <span class="cv-node-type ${typeClass}">${typeLabel}</span>
-          <span class="cv-node-title" style="flex:1"></span>
-          <button class="cv-node-btn del" onclick="cvDeleteNode('${nd.id}')" title="Sil">✕</button>
-        </div>
-        <textarea class="cv-free-edit" data-nid="${nd.id}" placeholder="Metin girin...">${escHtml(nd.label||'')}</textarea>`;
-      const ta = el.querySelector('.cv-free-edit');
-      ta.addEventListener('input', () => {
-        const n2 = cvNodes.find(x=>x.id===nd.id);
-        if (n2) { n2.label = ta.value; cvSave(); }
-      });
-      ta.addEventListener('mousedown', e => e.stopPropagation());
-    } else {
-      const bodyText = nd.body ? escHtml(nd.body.slice(0,100)) : '';
-      const hasUrl = nd.url;
-      el.innerHTML = `
-        <div class="cv-node-header">
-          <span class="cv-node-type ${typeClass}">${typeLabel}</span>
-          <span class="cv-node-title">${escHtml(nd.label||'')}</span>
-        </div>
-        ${bodyText ? `<div class="cv-node-body">${bodyText}</div>` : ''}
-        <div class="cv-node-footer">
-          <div class="cv-node-tags">${tags}</div>
-          <div class="cv-node-actions">
-            ${hasUrl ? `<button class="cv-node-btn" onclick="window.open('${escHtml(nd.url)}','_blank')" title="Aç">↗</button>` : ''}
-            <button class="cv-node-btn del" onclick="cvDeleteNode('${nd.id}')" title="Sil">✕</button>
-          </div>
-        </div>`;
-    }
-
-    // Drag
-    el.addEventListener('mousedown', cvNodeMouseDown);
-    el.addEventListener('touchstart', cvNodeTouchStart, {passive:false});
-
-    world.appendChild(el);
+  // Remove stale node elements
+  const existingIds = new Set(cvNodes.map(n => n.id));
+  world.querySelectorAll('.cv-node').forEach(el => {
+    if (!existingIds.has(el.dataset.id)) el.remove();
   });
 
-  // Render edges (SVG)
-  // Clear old edges
-  svgEl.querySelectorAll('.cv-edge-g').forEach(e=>e.remove());
+  // Add/update nodes
+  cvNodes.forEach(nd => {
+    let el = world.querySelector(`.cv-node[data-id="${nd.id}"]`);
+    if (!el) {
+      el = cvCreateNodeEl(nd);
+      world.appendChild(el);
+    }
+    // Always update position
+    el.style.left = nd.x + 'px';
+    el.style.top  = nd.y + 'px';
+    el.classList.toggle('selected', nd.id === cvSelectedNode);
+  });
+
+  cvRenderEdges();
+  cvApplyTransform();
+}
+
+function cvCreateNodeEl(nd) {
+  const el = document.createElement('div');
+  el.className = `cv-node ${nd.type}-node`;
+  el.dataset.id = nd.id;
+  el.style.left = nd.x + 'px';
+  el.style.top  = nd.y + 'px';
+  if (nd.w) el.style.width = nd.w + 'px';
+
+  const typeLabel = {note:'Not', bm:'Link', free:'Metin'}[nd.type] || nd.type;
+  const typeClass = {note:'t-note', bm:'t-bm', free:'t-free'}[nd.type] || '';
+  const tags = (nd.tags||[]).slice(0,3).map(t =>
+    `<span class="cv-node-tag">#${escHtml(t)}</span>`).join('');
+
+  if (nd.type === 'free') {
+    el.innerHTML = `
+      <div class="cv-node-header">
+        <span class="cv-node-type ${typeClass}">${typeLabel}</span>
+        <button class="cv-node-btn del" data-action="del" title="Sil">✕</button>
+      </div>
+      <textarea class="cv-free-edit" placeholder="Metin girin...">${escHtml(nd.label||'')}</textarea>`;
+    const ta = el.querySelector('textarea');
+    ta.addEventListener('input', () => {
+      const n2 = cvNodes.find(x=>x.id===nd.id);
+      if (n2) { n2.label = ta.value; cvSave(); }
+    });
+    ta.addEventListener('mousedown', e => e.stopPropagation());
+    ta.addEventListener('pointerdown', e => e.stopPropagation());
+  } else {
+    const bodyText = nd.body ? escHtml(nd.body.slice(0,120)) : '';
+    el.innerHTML = `
+      <div class="cv-node-header">
+        <span class="cv-node-type ${typeClass}">${typeLabel}</span>
+        <span class="cv-node-title">${escHtml(nd.label||'')}</span>
+      </div>
+      ${bodyText ? `<div class="cv-node-body">${bodyText}</div>` : ''}
+      <div class="cv-node-footer">
+        <div class="cv-node-tags">${tags}</div>
+        <div class="cv-node-actions">
+          ${nd.url ? `<button class="cv-node-btn" data-action="open" title="Aç">↗</button>` : ''}
+          <button class="cv-node-btn del" data-action="del" title="Sil">✕</button>
+        </div>
+      </div>`;
+  }
+
+  // Button actions via delegation
+  el.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    if (btn.dataset.action === 'del') { e.stopPropagation(); cvDeleteNode(nd.id); }
+    if (btn.dataset.action === 'open' && nd.url) { e.stopPropagation(); window.open(nd.url,'_blank'); }
+  });
+
+  // Drag
+  el.addEventListener('pointerdown', cvNodePointerDown);
+
+  return el;
+}
+
+// ── EDGE RENDER ──
+function cvRenderEdges() {
+  const svgEl = document.getElementById('cv-svg');
+  if (!svgEl) return;
+  svgEl.querySelectorAll('.cv-edge-g').forEach(e => e.remove());
 
   cvEdges.forEach(edge => {
-    const fromNode = cvNodes.find(n=>n.id===edge.from);
-    const toNode   = cvNodes.find(n=>n.id===edge.to);
-    if (!fromNode || !toNode) return;
+    const fn = cvNodes.find(n => n.id === edge.from);
+    const tn = cvNodes.find(n => n.id === edge.to);
+    if (!fn || !tn) return;
 
-    const fw = fromNode.w || 180;
-    const tw = toNode.w || 180;
-
-    // Center points
-    const x1 = fromNode.x + fw/2;
-    const y1 = fromNode.y + 40;
-    const x2 = toNode.x + tw/2;
-    const y2 = toNode.y + 40;
-
-    // Cubic bezier
-    const dx = Math.abs(x2-x1) * 0.5;
-    const d  = `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
-
-    const isSelected = edge.id === cvSelectedEdge;
-    const strokeColor = isSelected ? 'var(--accent)' : 'var(--text3)';
-    const marker = isSelected ? 'url(#cv-arrow-sel)' : 'url(#cv-arrow)';
+    const fw = fn.w || 200, tw = tn.w || 200;
+    const x1 = fn.x + fw/2, y1 = fn.y + 40;
+    const x2 = tn.x + tw/2, y2 = tn.y + 40;
+    const cpx = Math.abs(x2 - x1) * 0.45;
+    const d = `M${x1},${y1} C${x1+cpx},${y1} ${x2-cpx},${y2} ${x2},${y2}`;
+    const isSel = edge.id === cvSelectedEdge;
 
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.classList.add('cv-edge-g');
     g.dataset.edgeId = edge.id;
 
-    // Hit area (wider invisible path for easier clicking)
+    // Wide hit area
     const hit = document.createElementNS('http://www.w3.org/2000/svg','path');
-    hit.setAttribute('d', d);
-    hit.setAttribute('stroke', 'transparent');
-    hit.setAttribute('stroke-width', '12');
-    hit.setAttribute('fill', 'none');
-    hit.style.cursor = 'pointer';
-    hit.style.pointerEvents = 'stroke';
-    hit.addEventListener('click', (e) => {
-      e.stopPropagation();
-      cvSelectedEdge = edge.id;
-      cvSelectedNode = null;
-      cvRender();
+    hit.setAttribute('d', d); hit.setAttribute('stroke','transparent');
+    hit.setAttribute('stroke-width','14'); hit.setAttribute('fill','none');
+    hit.style.cursor = 'pointer'; hit.style.pointerEvents = 'stroke';
+    hit.addEventListener('click', e2 => {
+      e2.stopPropagation();
+      cvSelectedEdge = edge.id; cvSelectedNode = null; cvRenderEdges();
     });
 
+    // Visible line
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d', d);
-    path.setAttribute('stroke', strokeColor);
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('marker-end', marker);
+    path.setAttribute('stroke', isSel ? 'var(--accent)' : 'var(--text3)');
+    path.setAttribute('stroke-width', isSel ? '2' : '1.5');
+    path.setAttribute('fill','none');
+    path.setAttribute('marker-end', isSel ? 'url(#cv-arrow-sel)' : 'url(#cv-arrow)');
     path.style.pointerEvents = 'none';
 
-    // Delete button at midpoint
-    const mx = (x1+x2)/2;
-    const my = (y1+y2)/2;
-    const delG = document.createElementNS('http://www.w3.org/2000/svg','g');
-    delG.style.cursor = 'pointer';
-    delG.style.pointerEvents = 'all';
-    delG.addEventListener('click', (e) => { e.stopPropagation(); cvDeleteEdge(edge.id); });
+    // Delete button at midpoint (visible on hover/select)
+    const mx = (x1+x2)/2, my = (y1+y2)/2;
+    const dg = document.createElementNS('http://www.w3.org/2000/svg','g');
+    dg.style.pointerEvents = 'all'; dg.style.cursor = 'pointer';
+    dg.addEventListener('click', e2 => { e2.stopPropagation(); cvDeleteEdge(edge.id); });
 
-    const delCirc = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    delCirc.setAttribute('cx', mx); delCirc.setAttribute('cy', my); delCirc.setAttribute('r', 8);
-    delCirc.setAttribute('fill', isSelected ? 'var(--danger)' : 'var(--surface2)');
-    delCirc.setAttribute('stroke', 'var(--border)');
-    delCirc.setAttribute('stroke-width', '1');
-    delCirc.style.opacity = isSelected ? '1' : '0';
-    delCirc.style.transition = 'opacity 0.15s';
+    const dc = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dc.setAttribute('cx',mx); dc.setAttribute('cy',my); dc.setAttribute('r',8);
+    dc.setAttribute('fill', isSel ? 'var(--danger)' : 'var(--surface)');
+    dc.setAttribute('stroke','var(--border)'); dc.setAttribute('stroke-width','1');
+    dc.style.opacity = isSel ? '1' : '0'; dc.style.transition = 'opacity 0.15s';
 
-    const delText = document.createElementNS('http://www.w3.org/2000/svg','text');
-    delText.setAttribute('x', mx); delText.setAttribute('y', my+4);
-    delText.setAttribute('text-anchor', 'middle');
-    delText.setAttribute('font-size', '10');
-    delText.setAttribute('fill', '#fff');
-    delText.style.opacity = isSelected ? '1' : '0';
-    delText.style.transition = 'opacity 0.15s';
-    delText.textContent = '✕';
+    const dt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    dt.setAttribute('x',mx); dt.setAttribute('y',my+4);
+    dt.setAttribute('text-anchor','middle'); dt.setAttribute('font-size','10');
+    dt.setAttribute('fill','#fff'); dt.style.opacity = isSel ? '1' : '0';
+    dt.style.transition = 'opacity 0.15s'; dt.textContent = '✕';
 
-    // Hover to show del btn
-    g.addEventListener('mouseenter', () => {
-      delCirc.style.opacity = '1';
-      delText.style.opacity = '1';
-    });
-    g.addEventListener('mouseleave', () => {
-      if (edge.id !== cvSelectedEdge) {
-        delCirc.style.opacity = '0';
-        delText.style.opacity = '0';
-      }
+    g.addEventListener('mouseenter',() => { dc.style.opacity='1'; dt.style.opacity='1'; });
+    g.addEventListener('mouseleave',() => {
+      if (edge.id !== cvSelectedEdge) { dc.style.opacity='0'; dt.style.opacity='0'; }
     });
 
-    delG.appendChild(delCirc);
-    delG.appendChild(delText);
-    g.appendChild(hit);
-    g.appendChild(path);
-    g.appendChild(delG);
+    dg.appendChild(dc); dg.appendChild(dt);
+    g.appendChild(hit); g.appendChild(path); g.appendChild(dg);
     svgEl.appendChild(g);
   });
 }
 
-// ── TOOL SWITCHING ──
-function cvSetTool(tool) {
-  cvTool = tool;
-  const surf = document.getElementById('cv-surface');
-  surf.className = tool === 'pan' ? 'pan-mode' : tool === 'connect' ? 'connect-mode' : '';
-  ['select','pan','connect'].forEach(t => {
-    document.getElementById('cv-tool-'+t)?.classList.toggle('active', t===tool);
-  });
-  if (tool !== 'connect') {
-    cvConnFrom = null;
-    document.getElementById('cv-svg').querySelectorAll('.cv-preview-line').forEach(e=>e.remove());
-  }
-}
-
-// ── NODE DRAGGING ──
-function cvNodeMouseDown(e) {
-  if (cvTool === 'pan') return;
-  if (e.target.closest('.cv-node-btn') || e.target.tagName === 'TEXTAREA') return;
+// ── POINTER-BASED NODE DRAG (smooth, no re-render during drag) ──
+function cvNodePointerDown(e) {
+  if (e.target.closest('[data-action]') || e.target.tagName === 'TEXTAREA') return;
   e.stopPropagation();
 
-  const nodeEl = e.currentTarget;
-  const id = nodeEl.dataset.id;
+  const el = e.currentTarget;
+  const id = el.dataset.id;
+  const nd = cvNodes.find(n => n.id === id);
+  if (!nd) return;
 
+  // Connect mode
   if (cvTool === 'connect') {
     if (!cvConnFrom) {
       cvConnFrom = id;
-      nodeEl.classList.add('selected');
-      showToast('Bağlanacak hedef düğümü seçin');
+      el.classList.add('selected');
+      showToast('Hedef düğümü seçin');
     } else if (cvConnFrom !== id) {
       cvCreateEdge(cvConnFrom, id);
       cvConnFrom = null;
+      cvRender();
     }
     return;
   }
 
-  cvSelectedNode = id;
-  cvSelectedEdge = null;
+  // Select
+  cvSelectedNode = id; cvSelectedEdge = null;
+  document.querySelectorAll('.cv-node').forEach(n =>
+    n.classList.toggle('selected', n.dataset.id === id));
 
-  const nd = cvNodes.find(n=>n.id===id);
-  if (!nd) return;
+  if (cvTool === 'pan') return;
 
-  const surfRect = document.getElementById('cv-surface').getBoundingClientRect();
-  cvDragging = {
-    id,
-    startMX: e.clientX,
-    startMY: e.clientY,
-    origX: nd.x,
-    origY: nd.y
+  // Drag with pointer capture (smooth!)
+  el.setPointerCapture(e.pointerId);
+
+  const startX = e.clientX, startY = e.clientY;
+  const origX = nd.x, origY = nd.y;
+
+  const onMove = ev => {
+    nd.x = Math.max(0, origX + (ev.clientX - startX) / cvScale);
+    nd.y = Math.max(0, origY + (ev.clientY - startY) / cvScale);
+    el.style.left = nd.x + 'px';
+    el.style.top  = nd.y + 'px';
+    // Only update edges during drag (no full re-render)
+    cvRenderEdges();
   };
 
-  const onMove = (mv) => {
-    if (!cvDragging) return;
-    const dx = (mv.clientX - cvDragging.startMX) / cvScale;
-    const dy = (mv.clientY - cvDragging.startMY) / cvScale;
-    nd.x = Math.max(0, cvDragging.origX + dx);
-    nd.y = Math.max(0, cvDragging.origY + dy);
-    nodeEl.style.left = nd.x + 'px';
-    nodeEl.style.top  = nd.y + 'px';
-    cvRenderEdgesOnly();
-  };
   const onUp = () => {
-    cvDragging = null;
+    el.removeEventListener('pointermove', onMove);
+    el.removeEventListener('pointerup', onUp);
     cvSave();
-    cvRender();
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', onUp);
   };
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('mouseup', onUp);
-  cvRender();
+
+  el.addEventListener('pointermove', onMove);
+  el.addEventListener('pointerup', onUp);
 }
 
-function cvNodeTouchStart(e) {
-  if (e.touches.length !== 1) return;
-  const touch = e.touches[0];
-  const fake = { clientX: touch.clientX, clientY: touch.clientY,
-    currentTarget: e.currentTarget, target: e.target, stopPropagation: () => e.stopPropagation() };
-  cvNodeMouseDown(fake);
-}
-
-// Only re-render SVG edges (cheaper during drag)
-function cvRenderEdgesOnly() {
-  const svgEl = document.getElementById('cv-svg');
-  svgEl.querySelectorAll('.cv-edge-g').forEach(e=>e.remove());
-  cvEdges.forEach(edge => {
-    const fromNode = cvNodes.find(n=>n.id===edge.from);
-    const toNode   = cvNodes.find(n=>n.id===edge.to);
-    if (!fromNode || !toNode) return;
-    const fw = fromNode.w||180, tw = toNode.w||180;
-    const x1=fromNode.x+fw/2, y1=fromNode.y+40, x2=toNode.x+tw/2, y2=toNode.y+40;
-    const dx = Math.abs(x2-x1)*0.5;
-    const d = `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.classList.add('cv-edge-g');
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',d); path.setAttribute('stroke','var(--text3)');
-    path.setAttribute('stroke-width','1.5'); path.setAttribute('fill','none');
-    path.setAttribute('marker-end','url(#cv-arrow)');
-    g.appendChild(path);
-    svgEl.appendChild(g);
-  });
-}
-
-// ── SURFACE PAN & ZOOM ──
+// ── SURFACE PAN + ZOOM ──
 function cvInitSurface() {
   const surf = document.getElementById('cv-surface');
+  if (!surf) return;
 
-  // Pan with mouse on surface background
-  surf.addEventListener('mousedown', (e) => {
-    if (e.target !== surf && e.target !== document.getElementById('cv-world') &&
-        e.target !== document.getElementById('cv-svg') && e.target !== document.getElementById('cv-empty')) {
-      // Clicking canvas bg but not a node
-      if (!e.target.closest('.cv-node') && !e.target.closest('.cv-edge-g')) {
-        cvSelectedNode = null;
-        cvSelectedEdge = null;
-        cvRender();
-      }
-      if (cvTool !== 'pan' && e.target === surf) {
-        // pan anyway on background click in select mode
-      }
-    }
-    if (cvTool !== 'pan' && e.target !== surf) return;
-    cvPanning = { startX: e.clientX, startY: e.clientY, origOX: cvOX, origOY: cvOY };
-    const onMove = (mv) => {
-      if (!cvPanning) return;
-      cvOX = cvPanning.origOX + mv.clientX - cvPanning.startX;
-      cvOY = cvPanning.origOY + mv.clientY - cvPanning.startY;
-      document.getElementById('cv-world').style.transform = `translate(${cvOX}px,${cvOY}px) scale(${cvScale})`;
+  // Pan
+  surf.addEventListener('pointerdown', e => {
+    if (e.target.closest('.cv-node') || e.target.closest('.cv-edge-g')) return;
+
+    // Deselect on bg click
+    cvSelectedNode = null; cvSelectedEdge = null;
+    document.querySelectorAll('.cv-node.selected').forEach(n => n.classList.remove('selected'));
+    cvRenderEdges();
+
+    if (cvTool !== 'pan' && cvTool !== 'select') return;
+
+    surf.setPointerCapture(e.pointerId);
+    const startX = e.clientX, startY = e.clientY;
+    const origOX = cvOX, origOY = cvOY;
+
+    const onMove = mv => {
+      cvOX = origOX + mv.clientX - startX;
+      cvOY = origOY + mv.clientY - startY;
+      cvApplyTransform();
     };
     const onUp = () => {
-      cvPanning = null;
+      surf.removeEventListener('pointermove', onMove);
+      surf.removeEventListener('pointerup', onUp);
       cvSave();
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
     };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    surf.addEventListener('pointermove', onMove);
+    surf.addEventListener('pointerup', onUp);
   });
 
-  // Zoom with wheel
-  surf.addEventListener('wheel', (e) => {
+  // Zoom
+  surf.addEventListener('wheel', e => {
     e.preventDefault();
     const rect = surf.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(3, Math.max(0.2, cvScale * delta));
-    // zoom toward mouse
-    cvOX = mx - (mx - cvOX) * (newScale / cvScale);
-    cvOY = my - (my - cvOY) * (newScale / cvScale);
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const factor = e.deltaY > 0 ? 0.92 : 1.08;
+    const newScale = Math.min(3, Math.max(0.15, cvScale * factor));
+    cvOX = mx - (mx - cvOX) * newScale / cvScale;
+    cvOY = my - (my - cvOY) * newScale / cvScale;
     cvScale = newScale;
-    document.getElementById('cv-world').style.transform = `translate(${cvOX}px,${cvOY}px) scale(${cvScale})`;
-    document.getElementById('cv-zoom-label').textContent = Math.round(cvScale*100)+'%';
+    cvApplyTransform();
     cvSave();
-  }, {passive:false});
+  }, { passive: false });
 
-  // Double-click on background → free text node
-  surf.addEventListener('dblclick', (e) => {
+  // Double-click → free text node
+  surf.addEventListener('dblclick', e => {
     if (e.target.closest('.cv-node')) return;
     const rect = surf.getBoundingClientRect();
-    const wx = (e.clientX - rect.left - cvOX) / cvScale;
-    const wy = (e.clientY - rect.top  - cvOY) / cvScale;
-    cvPickerPos = {x: wx, y: wy};
-    cvAddFreeNodeAt(wx, wy);
+    cvAddFreeNodeAt(
+      (e.clientX - rect.left - cvOX) / cvScale,
+      (e.clientY - rect.top  - cvOY) / cvScale
+    );
   });
 
-  // Right-click context
-  surf.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    const nodeEl = e.target.closest('.cv-node');
-    if (nodeEl) {
-      cvSelectedNode = nodeEl.dataset.id;
-      cvRender();
-    }
-  });
-
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
+  // Keyboard
+  document.addEventListener('keydown', e => {
     if (currentTab !== 'canvas') return;
+    if (e.target.matches('input,textarea')) return;
     if (e.key === 'v' || e.key === 'V') cvSetTool('select');
     if (e.key === 'h' || e.key === 'H') cvSetTool('pan');
     if (e.key === 'c' || e.key === 'C') cvSetTool('connect');
-    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.target.matches('input,textarea')) {
-      if (cvSelectedNode) { cvDeleteNode(cvSelectedNode); }
-      if (cvSelectedEdge) { cvDeleteEdge(cvSelectedEdge); }
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (cvSelectedNode) cvDeleteNode(cvSelectedNode);
+      if (cvSelectedEdge) cvDeleteEdge(cvSelectedEdge);
     }
     if (e.key === 'Escape') {
-      cvConnFrom = null;
-      cvSelectedNode = null;
-      cvSelectedEdge = null;
+      cvConnFrom = null; cvSelectedNode = null; cvSelectedEdge = null;
       cvSetTool('select');
-      cvRender();
+      document.querySelectorAll('.cv-node.selected').forEach(n => n.classList.remove('selected'));
+      cvRenderEdges();
     }
   });
+
+  cvSurfaceReady = true;
+}
+
+// ── TOOL SWITCH ──
+function cvSetTool(tool) {
+  cvTool = tool;
+  const surf = document.getElementById('cv-surface');
+  if (surf) surf.className = {pan:'pan-mode', connect:'connect-mode'}[tool] || '';
+  ['select','pan','connect'].forEach(t =>
+    document.getElementById('cv-tool-'+t)?.classList.toggle('active', t===tool));
+  if (tool !== 'connect') cvConnFrom = null;
 }
 
 // ── ADD NODES ──
 function cvOpenPicker(mode) {
   cvPickerMode = mode;
   const picker = document.getElementById('cv-picker');
-  const title  = document.getElementById('cv-picker-title');
-  const search = document.getElementById('cv-picker-search');
-  title.textContent = mode === 'note' ? 'Not Seç' : 'Bookmark Seç';
+  if (!picker) return;
+  document.getElementById('cv-picker-title').textContent = mode === 'note' ? 'Not Seç' : 'Bookmark Seç';
+  // Position near toolbar
+  picker.style.left = '160px';
+  picker.style.top  = '96px';
   picker.classList.add('visible');
-  picker.style.left = '200px';
-  picker.style.top  = '100px';
+  const search = document.getElementById('cv-picker-search');
   search.value = '';
   search.focus();
   cvRenderPicker('');
@@ -5305,172 +5257,171 @@ function cvOpenPicker(mode) {
 function cvRenderPicker(q) {
   const list = document.getElementById('cv-picker-list');
   const mode = cvPickerMode;
-  const items = mode === 'note'
-    ? notes.filter(n => !q || (n.title||'').toLowerCase().includes(q.toLowerCase()))
-    : bookmarks.filter(b => !q || (b.title||'').toLowerCase().includes(q.toLowerCase()));
+  const src  = mode === 'note' ? notes : bookmarks;
+  const ql   = q.toLowerCase();
+  const items = src.filter(x => {
+    const title = mode === 'note' ? (x.title||'') : (x.title||x.url||'');
+    return !ql || title.toLowerCase().includes(ql);
+  });
 
-  if (items.length === 0) {
+  if (!items.length) {
     list.innerHTML = `<div class="cv-picker-empty">${mode==='note'?'Not bulunamadı':'Bookmark bulunamadı'}</div>`;
     return;
   }
-
   list.innerHTML = items.slice(0,30).map(item => {
-    const id   = item.id;
     const title = mode === 'note' ? (item.title||'Başlıksız Not') : (item.title||item.url);
     const sub   = mode === 'note'
-      ? ((item.tags||[]).map(t=>'#'+t).join(' ') || (item.content||'').slice(0,40))
-      : (item.url||'').slice(0,40);
-    return `<div class="cv-picker-item" onclick="cvAddNode('${mode}','${escHtml(id)}')">
-      <span class="cv-node-type ${mode==='note'?'t-note':'t-bm'}" style="font-size:9px;padding:2px 4px">${mode==='note'?'NOT':'LNK'}</span>
+      ? ((item.tags||[]).map(t=>'#'+t).join(' ') || (item.content||'').replace(/[#*`>_~]/g,'').slice(0,50))
+      : (item.url||'').slice(0,50);
+    const typeClass = mode === 'note' ? 't-note' : 't-bm';
+    const typeLbl   = mode === 'note' ? 'NOT' : 'LNK';
+    return `<div class="cv-picker-item" data-refid="${escHtml(item.id)}">
+      <span class="cv-node-type ${typeClass}" style="font-size:9px;padding:2px 4px">${typeLbl}</span>
       <div style="flex:1;min-width:0">
         <div class="cv-picker-item-title">${escHtml(title)}</div>
         <div class="cv-picker-item-sub">${escHtml(sub)}</div>
       </div>
     </div>`;
   }).join('');
+
+  // Single delegated click handler
+  list.onclick = e => {
+    const item = e.target.closest('[data-refid]');
+    if (item) cvAddNode(mode, item.dataset.refid);
+  };
 }
 
-document.getElementById('cv-picker-search').addEventListener('input', (e) => {
-  cvRenderPicker(e.target.value);
-});
-
-document.addEventListener('click', (e) => {
+document.getElementById('cv-picker-search').addEventListener('input', e => cvRenderPicker(e.target.value));
+document.addEventListener('pointerdown', e => {
   const picker = document.getElementById('cv-picker');
-  if (picker.classList.contains('visible') && !picker.contains(e.target)) {
+  if (picker?.classList.contains('visible') && !picker.contains(e.target)) {
     picker.classList.remove('visible');
   }
 });
 
 function cvAddNode(type, refId) {
-  document.getElementById('cv-picker').classList.remove('visible');
-  const existing = cvNodes.filter(n=>n.refId===refId);
-  if (existing.length > 0) { showToast('Bu öğe zaten kanvasta mevcut'); return; }
+  document.getElementById('cv-picker')?.classList.remove('visible');
+
+  // Check duplicate by string comparison
+  if (cvNodes.some(n => n.refId === refId && n.type === type)) {
+    showToast('Bu öğe zaten kanvasta'); return;
+  }
 
   let label='', body='', tags=[], url='';
   if (type === 'note') {
-    const n = notes.find(x=>x.id===refId);
-    if (!n) return;
+    const n = notes.find(x => x.id === refId);
+    if (!n) { showToast('Not bulunamadı'); return; }
     label = n.title || 'Başlıksız Not';
     body  = (n.content||'').replace(/[#*`>_~]/g,'').slice(0,120);
     tags  = n.tags || [];
   } else {
-    const b = bookmarks.find(x=>x.id===refId);
-    if (!b) return;
+    const b = bookmarks.find(x => x.id === refId);
+    if (!b) { showToast('Bookmark bulunamadı'); return; }
     label = b.title || b.url;
     body  = b.desc || '';
     tags  = b.tags || [];
     url   = b.url;
   }
 
-  // Place in visible center
   const surf = document.getElementById('cv-surface');
-  const rect = surf.getBoundingClientRect();
-  const cx = (rect.width/2  - cvOX) / cvScale - 90;
-  const cy = (rect.height/2 - cvOY) / cvScale - 40;
-  const jitter = () => (Math.random()-0.5)*80;
-
+  const rect = surf ? surf.getBoundingClientRect() : {width:800,height:600};
+  const jitter = () => (Math.random()-0.5)*100;
   const nd = {
-    id: 'cv_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-    type, refId, x: Math.max(20,cx+jitter()), y: Math.max(20,cy+jitter()),
+    id:    'cv_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    type, refId,
+    x: Math.max(20, (rect.width/2  - cvOX)/cvScale - 100 + jitter()),
+    y: Math.max(20, (rect.height/2 - cvOY)/cvScale -  50 + jitter()),
     w: 200, label, body, tags, url
   };
   cvNodes.push(nd);
-  cvSave();
-  cvRender();
-  showToast('Kanvasa eklendi');
+  cvSave(); cvRender();
+  showToast('Kanvasa eklendi ✓');
 }
 
 function cvAddFreeNode() {
   const surf = document.getElementById('cv-surface');
-  const rect = surf.getBoundingClientRect();
-  const cx = (rect.width/2  - cvOX) / cvScale - 90;
-  const cy = (rect.height/2 - cvOY) / cvScale - 40;
-  cvAddFreeNodeAt(cx, cy);
+  const rect = surf ? surf.getBoundingClientRect() : {width:800,height:600};
+  cvAddFreeNodeAt(
+    (rect.width/2  - cvOX)/cvScale - 90,
+    (rect.height/2 - cvOY)/cvScale - 30
+  );
 }
 
 function cvAddFreeNodeAt(wx, wy) {
   const nd = {
-    id: 'cv_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-    type:'free', refId:null, x:Math.max(10,wx-80), y:Math.max(10,wy-20),
-    w:180, label:'', body:'', tags:[]
+    id:    'cv_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    type:'free', refId:null,
+    x: Math.max(10, wx-80), y: Math.max(10, wy-20),
+    w:180, label:'', body:'', tags:[], url:''
   };
   cvNodes.push(nd);
-  cvSave();
-  cvRender();
-  // Focus textarea
-  setTimeout(() => {
-    const ta = document.querySelector(`[data-nid="${nd.id}"]`);
-    if (ta) ta.focus();
-  }, 60);
+  cvSave(); cvRender();
+  setTimeout(() => document.querySelector(`textarea[data-nid="${nd.id}"], .cv-node[data-id="${nd.id}"] textarea`)?.focus(), 60);
 }
 
 // ── EDGES ──
 function cvCreateEdge(fromId, toId) {
-  const exists = cvEdges.find(e=>
-    (e.from===fromId && e.to===toId) || (e.from===toId && e.to===fromId));
-  if (exists) { showToast('Bu bağlantı zaten var'); return; }
+  if (cvEdges.some(e => (e.from===fromId&&e.to===toId)||(e.from===toId&&e.to===fromId))) {
+    showToast('Bağlantı zaten var'); return;
+  }
   cvEdges.push({
-    id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    id: 'e_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
     from: fromId, to: toId
   });
-  cvSave();
-  cvRender();
-  showToast('Bağlantı oluşturuldu');
+  cvSave(); cvRenderEdges();
+  showToast('Bağlantı oluşturuldu ✓');
 }
 
 function cvDeleteEdge(id) {
-  cvEdges = cvEdges.filter(e=>e.id!==id);
-  if (cvSelectedEdge===id) cvSelectedEdge=null;
-  cvSave();
-  cvRender();
+  cvEdges = cvEdges.filter(e => e.id !== id);
+  if (cvSelectedEdge === id) cvSelectedEdge = null;
+  cvSave(); cvRenderEdges();
   showToast('Bağlantı silindi');
 }
 
 // ── DELETE NODE ──
 function cvDeleteNode(id) {
-  cvNodes = cvNodes.filter(n=>n.id!==id);
-  cvEdges = cvEdges.filter(e=>e.from!==id && e.to!==id);
-  if (cvSelectedNode===id) cvSelectedNode=null;
-  cvSave();
-  cvRender();
+  cvNodes = cvNodes.filter(n => n.id !== id);
+  cvEdges = cvEdges.filter(e => e.from !== id && e.to !== id);
+  if (cvSelectedNode === id) cvSelectedNode = null;
+  cvSave(); cvRender();
   showToast('Düğüm silindi');
 }
 
 // ── FIT ALL ──
 function cvFitAll() {
-  if (cvNodes.length===0) return;
+  if (!cvNodes.length) return;
   const surf = document.getElementById('cv-surface');
-  const rect = surf.getBoundingClientRect();
+  const rect = surf ? surf.getBoundingClientRect() : {width:800,height:600};
   const pad  = 60;
-  const minX = Math.min(...cvNodes.map(n=>n.x));
-  const minY = Math.min(...cvNodes.map(n=>n.y));
-  const maxX = Math.max(...cvNodes.map(n=>n.x+(n.w||180)));
-  const maxY = Math.max(...cvNodes.map(n=>n.y+120));
-  const scaleX = (rect.width  - pad*2) / (maxX-minX);
-  const scaleY = (rect.height - pad*2) / (maxY-minY);
-  cvScale = Math.min(1.5, Math.max(0.2, Math.min(scaleX, scaleY)));
+  const minX = Math.min(...cvNodes.map(n => n.x));
+  const minY = Math.min(...cvNodes.map(n => n.y));
+  const maxX = Math.max(...cvNodes.map(n => n.x + (n.w||200)));
+  const maxY = Math.max(...cvNodes.map(n => n.y + 120));
+  const sX = (rect.width  - pad*2) / Math.max(1, maxX-minX);
+  const sY = (rect.height - pad*2) / Math.max(1, maxY-minY);
+  cvScale = Math.min(1.5, Math.max(0.2, Math.min(sX, sY)));
   cvOX = pad - minX*cvScale;
   cvOY = pad - minY*cvScale;
-  cvRender();
-  cvSave();
+  cvApplyTransform(); cvSave();
 }
 
 // ── CLEAR ──
 function cvClearAll() {
-  if (cvNodes.length===0) return;
+  if (!cvNodes.length) return;
   if (!confirm('Tüm kanvas silinecek. Emin misiniz?')) return;
-  cvNodes=[]; cvEdges=[]; cvSelectedNode=null; cvSelectedEdge=null;
+  cvNodes=[]; cvEdges=[];
+  cvSelectedNode=null; cvSelectedEdge=null;
   cvSave(); cvRender();
   showToast('Kanvas temizlendi');
 }
 
-// ── INIT & TAB HOOK ──
+// ── INIT ──
 function cvInit() {
   cvLoad();
-  if (!cvSurfaceReady) {
-    cvInitSurface();
-    cvSurfaceReady = true;
-  }
+  if (!cvSurfaceReady) cvInitSurface();
   cvRender();
-}</script>
+}
+</script>
 </body>
+</html>
