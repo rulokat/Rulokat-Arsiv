@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.41</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.42</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.41</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.42</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -5026,30 +5026,32 @@ document.addEventListener('keydown', e => {
 
 <script>
 // ══════════════════════════════════════════════
-//  RULOKAT HABERLER — RSS (API anahtarı yok)
-//  Google News RSS + seçili kaynaklar
-//  rss2json.com ile JSON'a çeviriliyor (ücretsiz)
+//  RULOKAT HABERLER — Wikimedia API
+//  CORS tam destekli, API anahtarı yok, ücretsiz
 // ══════════════════════════════════════════════
 
 let newsInitDone = false;
 
-// RSS kaynakları — kategori bazlı
-const NEWS_FEEDS = {
-  top:      'https://news.google.com/rss?hl=tr&gl=TR&ceid=TR:tr',
-  en_top:   'https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en',
-  conflict: 'https://news.google.com/rss/search?q=war+conflict+savaş&hl=tr&gl=TR&ceid=TR:tr',
-  tech:     'https://news.google.com/rss/search?q=technology+AI+yapay+zeka&hl=tr&gl=TR&ceid=TR:tr',
-  economy:  'https://news.google.com/rss/search?q=ekonomi+economy+finance&hl=tr&gl=TR&ceid=TR:tr',
-  science:  'https://news.google.com/rss/search?q=bilim+science+space&hl=tr&gl=TR&ceid=TR:tr',
-  sports:   'https://news.google.com/rss/search?q=spor+sports&hl=tr&gl=TR&ceid=TR:tr',
-};
+// Wikimedia current events API — origin=* ile CORS sorunu yok
+// https://api.wikimedia.org/wiki/Current_events
+const WM_BASE = 'https://api.wikimedia.org/feed/v1/wikipedia';
 
-// rss2json.com — ücretsiz, CORS yok, kayıt yok (dakikada 1 istek)
-const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+// Dil → Wikipedia dil kodu
+const LANG_MAP = { tr: 'tr', en: 'en', de: 'de' };
+
+// Kategori → arama terimi (Wikipedia search)
+const CAT_QUERY = {
+  top:      null,           // current events
+  conflict: 'war conflict savaş',
+  tech:     'technology artificial intelligence',
+  economy:  'economy financial markets',
+  science:  'science research space',
+  sports:   'sports championship',
+};
 
 function initNewsPanel() {
   document.getElementById('news-api-warn').style.display = 'none';
-  if (!newsInitDone) { fetchRSS('top'); newsInitDone = true; }
+  if (!newsInitDone) { loadCurrentEvents(); newsInitDone = true; }
 }
 
 function newsQuickCat(btn) {
@@ -5057,106 +5059,156 @@ function newsQuickCat(btn) {
   btn.classList.add('active');
   const cat = btn.dataset.cat || 'top';
   document.getElementById('news-search').value = '';
-  fetchRSS(cat);
+  if (cat === 'top') loadCurrentEvents();
+  else loadWikiSearch(CAT_QUERY[cat] || cat);
 }
 
-function fetchTopNews() { fetchRSS('top'); }
+function fetchTopNews() { loadCurrentEvents(); }
 
 function fetchNews() {
   const q = document.getElementById('news-search').value.trim();
-  if (!q) { fetchRSS('top'); return; }
-  const lang = document.getElementById('news-lang').value;
-  const feedUrl = lang === 'en'
-    ? `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-US&gl=US&ceid=US:en`
-    : `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=tr&gl=TR&ceid=TR:tr`;
-  fetchRSSUrl(feedUrl, '"' + q + '" sonuçları');
+  if (!q) { loadCurrentEvents(); return; }
+  loadWikiSearch(q);
 }
 
-async function fetchRSS(cat) {
-  const lang = document.getElementById('news-lang').value;
-  let feedUrl = NEWS_FEEDS[cat] || NEWS_FEEDS.top;
-  // İngilizce seçiliyse
-  if (lang === 'en' && cat === 'top') feedUrl = NEWS_FEEDS.en_top;
-  const labels = {top:'Gündem', conflict:'Çatışma & Savaş', tech:'Teknoloji', economy:'Ekonomi', science:'Bilim', sports:'Spor'};
-  fetchRSSUrl(feedUrl, labels[cat] || 'Haberler');
-}
-
-async function fetchRSSUrl(feedUrl, label) {
+// ── Wikimedia Current Events ──
+async function loadCurrentEvents() {
   const list = document.getElementById('news-list');
   list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Yükleniyor...</div>';
   setNewsStatus('Yükleniyor...');
 
-  const url = RSS2JSON + encodeURIComponent(feedUrl) + '&count=30';
+  const lang = LANG_MAP[document.getElementById('news-lang').value] || 'en';
+  const today = new Date();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+
+  // Try today, then yesterday if empty
+  for (const offset of [0, 1, 2]) {
+    const d = new Date(today); d.setDate(d.getDate() - offset);
+    const m2 = String(d.getMonth()+1).padStart(2,'0');
+    const d2 = String(d.getDate()).padStart(2,'0');
+    const url = `${WM_BASE}/${lang}/news/${m2}/${d2}`;
+    try {
+      const res = await fetch(url, {
+        headers: { 'Api-User-Agent': 'Rulokat/1.0 (rulokat-arsiv)' },
+        signal: AbortSignal.timeout(10000)
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      const stories = data.news || data.stories || data.items || [];
+      if (stories.length === 0) continue;
+      renderWikiNews(stories, lang);
+      setNewsStatus('Güncel olaylar', stories.length);
+      return;
+    } catch(e) { continue; }
+  }
+
+  // Fallback: Wikipedia search
+  await loadWikiSearch('güncel olaylar current events', true);
+}
+
+// ── Wikipedia Article Search ──
+async function loadWikiSearch(q, isFallback=false) {
+  const list = document.getElementById('news-list');
+  if (!isFallback) {
+    list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Aranıyor...</div>';
+    setNewsStatus('Aranıyor: ' + q);
+  }
+
+  const lang = LANG_MAP[document.getElementById('news-lang').value] || 'en';
+
+  // Wikipedia search API — CORS destekli, origin=* ile
+  const searchUrl = `https://${lang}.wikipedia.org/w/api.php?` +
+    `action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=20` +
+    `&srprop=snippet|titlesnippet&format=json&origin=*`;
 
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const res = await fetch(searchUrl, { signal: AbortSignal.timeout(10000) });
     const data = await res.json();
+    const results = data?.query?.search || [];
 
-    if (data.status !== 'ok') {
-      // rss2json rate limit veya hata — alternatif proxy dene
-      await fetchRSSFallback(feedUrl, label);
+    if (results.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Sonuç bulunamadı</div>';
       return;
     }
 
-    const articles = (data.items || []).map(item => ({
-      title:       item.title,
-      description: item.description ? item.description.replace(/<[^>]*>/g,'').slice(0,200) : '',
-      url:         item.link,
-      image:       item.thumbnail || item.enclosure?.link || null,
-      publishedAt: item.pubDate,
-      source:      { name: item.author || (data.feed && data.feed.title) || 'Google Haberler' }
-    }));
-
-    renderNewsCards(articles);
-    setNewsStatus(label, articles.length);
+    renderWikiSearch(results, lang, q);
+    setNewsStatus(isFallback ? 'Gündem' : `"${q}" sonuçları`, results.length);
 
   } catch(err) {
-    await fetchRSSFallback(feedUrl, label);
+    showNewsError(list, err.message);
   }
 }
 
-// Yedek: allorigins proxy ile XML parse
-async function fetchRSSFallback(feedUrl, label) {
+// ── Render: Wikimedia News format ──
+function renderWikiNews(stories, lang) {
   const list = document.getElementById('news-list');
-  list.innerHTML = '<div class="news-loading"><div class="news-spinner"></div>Alternatif yol deneniyor...</div>';
+  list.innerHTML = stories.map(story => {
+    // story.links = array of articles
+    const links = story.links || [];
+    const mainArticle = links[0] || {};
+    const title = mainArticle.titles?.normalized || mainArticle.title || 'Haber';
+    const thumb = mainArticle.thumbnail?.source || '';
+    const desc  = story.story
+      ? story.story.replace(/<[^>]*>/g,'').slice(0,200)
+      : (mainArticle.extract || '').slice(0,200);
+    const wikiUrl = mainArticle.content_urls?.desktop?.page ||
+      `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title)}`;
 
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(feedUrl)}`;
+    const img = thumb ? `<img class="news-card-img" src="${escHtml(thumb)}" loading="lazy" onerror="this.style.display='none'">` : '';
+    const relatedLinks = links.slice(1,4).map(l =>
+      `<a href="${escHtml(l.content_urls?.desktop?.page||'#')}" target="_blank" rel="noopener"
+         style="font-size:10px;color:var(--accent2);text-decoration:none;border:1px solid var(--tag-border);padding:2px 6px;border-radius:3px;background:var(--tag-bg)"
+       >${escHtml(l.titles?.normalized||l.title||'')}</a>`
+    ).join('');
 
-  try {
-    const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
-    const outer = await res.json();
-    const xml = new DOMParser().parseFromString(outer.contents, 'text/xml');
-    const items = Array.from(xml.querySelectorAll('item')).slice(0, 30);
+    const safeUrl = escHtml(wikiUrl);
+    const safeTitle = escHtml(title).replace(/'/g,"&#39;");
 
-    if (items.length === 0) throw new Error('RSS parse hatası');
+    return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
+      ${img}
+      <div class="news-card-body">
+        <div class="news-card-source">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0;animation:pulse 2s infinite"></span>
+          Wikipedia Güncel Olaylar
+        </div>
+        <div class="news-card-title">${escHtml(title)}</div>
+        ${desc ? `<div class="news-card-desc">${escHtml(desc)}</div>` : ''}
+        ${relatedLinks ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${relatedLinks}</div>` : ''}
+        <div class="news-card-meta">
+          <span class="news-card-time">Wikipedia</span>
+          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','Wikipedia')">+ Kaydet</button>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+}
 
-    const articles = items.map(item => {
-      const mediaUrl = item.querySelector('media\\:content, content')?.getAttribute('url') || null;
-      return {
-        title:       item.querySelector('title')?.textContent || '',
-        description: item.querySelector('description')?.textContent?.replace(/<[^>]*>/g,'').slice(0,200) || '',
-        url:         item.querySelector('link')?.textContent || '',
-        image:       mediaUrl,
-        publishedAt: item.querySelector('pubDate')?.textContent || '',
-        source:      { name: item.querySelector('source')?.textContent || 'Google Haberler' }
-      };
-    });
+// ── Render: Wikipedia Search format ──
+function renderWikiSearch(results, lang, q) {
+  const list = document.getElementById('news-list');
+  list.innerHTML = results.map(item => {
+    const title   = item.title || '';
+    const snippet = (item.snippet || '').replace(/<[^>]*>/g,'').slice(0,200);
+    const wikiUrl = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g,'_'))}`;
+    const safeUrl   = escHtml(wikiUrl);
+    const safeTitle = escHtml(title).replace(/'/g,"&#39;");
 
-    renderNewsCards(articles);
-    setNewsStatus(label, articles.length);
-
-  } catch(err) {
-    list.innerHTML = `<div style="padding:32px 20px;text-align:center;color:var(--text3);font-size:13px;line-height:2.2">
-      <div style="font-size:36px;opacity:0.15;margin-bottom:12px">📡</div>
-      Haberlere şu an ulaşılamıyor.<br>
-      <small style="font-size:11px;opacity:0.7">İnternet bağlantınızı kontrol edin veya birkaç dakika sonra tekrar deneyin.</small><br><br>
-      <button onclick="fetchRSSUrl('${escHtml(feedUrl)}','${escHtml(label)}')" 
-        style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 16px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">
-        ↺ Tekrar Dene
-      </button>
-    </div>`;
-    setNewsStatus('Bağlantı hatası');
-  }
+    return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
+      <div class="news-card-body">
+        <div class="news-card-source">
+          <span style="width:5px;height:5px;border-radius:50%;background:var(--accent2);display:inline-block;flex-shrink:0"></span>
+          Wikipedia · ${escHtml(lang.toUpperCase())}
+        </div>
+        <div class="news-card-title">${escHtml(title)}</div>
+        ${snippet ? `<div class="news-card-desc">${escHtml(snippet)}</div>` : ''}
+        <div class="news-card-meta">
+          <span class="news-card-time">Wikipedia</span>
+          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','Wikipedia')">+ Kaydet</button>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
 }
 
 function newsTimeAgo(dateStr) {
@@ -5171,41 +5223,23 @@ function newsTimeAgo(dateStr) {
 
 function setNewsStatus(msg, count) {
   const el = document.getElementById('news-status-text');
-  if (el) el.textContent = count !== undefined ? msg + ' · ' + count + ' haber' : msg;
+  if (el) el.textContent = count !== undefined ? msg + ' · ' + count + ' öğe' : msg;
   const now = new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
   const lu = document.getElementById('news-last-update');
-  if (lu) lu.textContent = 'Son güncelleme: ' + now;
+  if (lu) lu.textContent = 'Son: ' + now;
 }
 
-function renderNewsCards(articles) {
-  const list = document.getElementById('news-list');
-  if (!articles || articles.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Sonuç bulunamadı</div>';
-    return;
-  }
-  list.innerHTML = articles.map(a => {
-    const domain = (() => { try { return new URL(a.url).hostname.replace('www.',''); } catch(e){ return ''; } })();
-    const src = (a.source && a.source.name) ? escHtml(a.source.name) : escHtml(domain);
-    const img = a.image ? `<img class="news-card-img" src="${escHtml(a.image)}" loading="lazy" onerror="this.style.display='none'">` : '';
-    const safeUrl   = escHtml(a.url||'');
-    const safeTitle = escHtml(a.title||'').replace(/'/g,'&#39;');
-    const safeSrc   = src.replace(/'/g,'&#39;');
-    return `<a class="news-card" href="${safeUrl}" target="_blank" rel="noopener">
-      ${img}
-      <div class="news-card-body">
-        <div class="news-card-source">
-          <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;flex-shrink:0;animation:pulse 2s infinite"></span>
-          ${src}
-        </div>
-        <div class="news-card-title">${escHtml(a.title||'')}</div>
-        ${a.description ? `<div class="news-card-desc">${escHtml(a.description)}</div>` : ''}
-        <div class="news-card-meta">
-          <span class="news-card-time">${newsTimeAgo(a.publishedAt)}</span>
-          <button class="news-save-btn" onclick="event.preventDefault();event.stopPropagation();saveNewsAsBookmark('${safeUrl}','${safeTitle}','${safeSrc}')">+ Kaydet</button>
-        </div>
-      </div>
-    </a>`;
-  }).join('');
+function showNewsError(list, msg) {
+  list.innerHTML = `<div style="padding:32px 20px;text-align:center;color:var(--text3);font-size:13px;line-height:2.2">
+    <div style="font-size:36px;opacity:0.15;margin-bottom:12px">📡</div>
+    Bağlantı hatası.<br>
+    <small style="font-size:11px;opacity:0.7">${escHtml(msg||'')}</small><br><br>
+    <button onclick="loadCurrentEvents()"
+      style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:7px 16px;border-radius:5px;font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">
+      ↺ Tekrar Dene
+    </button>
+  </div>`;
+  setNewsStatus('Bağlantı hatası');
 }
 
 function saveNewsAsBookmark(url, title, source) {
@@ -5220,7 +5254,6 @@ function saveNewsAsBookmark(url, title, source) {
   showToast('Bookmark olarak kaydedildi ✓');
 }
 
-// API key kayıt (artık gerekmiyor ama UI uyumu için bırakıldı)
 function saveNewsApiKey() {
   document.getElementById('news-api-warn').style.display = 'none';
   initNewsPanel();
