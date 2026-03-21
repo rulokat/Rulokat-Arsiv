@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.47</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.48</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.47</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.48</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -1893,14 +1893,16 @@
         </div>
 
         <!-- YEDEKLE — sidebar hızlı erişim -->
-        <div class="acc-group" id="acc-backup" style="border-bottom:1px solid var(--border)">
-          <button class="acc-header" onclick="openExportModal()" style="font-weight:500">
+        <!-- GOFİLE UPLOAD -->
+        <div class="acc-group" id="acc-gofile">
+          <button class="acc-header" onclick="toggleAcc('gofile')">
             <span class="acc-header-left">
-              <span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M7 11l5 5l5-5"/><path d="M12 4v12"/></svg></span>
-              Yedekle & Geri Yükle
+              <span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg></span>
+              Gofile Upload
             </span>
-            <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">☁️</span>
+            <span class="acc-arrow" id="acc-arrow-gofile"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
           </button>
+          <div class="acc-body" id="acc-body-gofile"></div>
         </div>
 
         <!-- İSTATİSTİK -->
@@ -2042,6 +2044,44 @@
         </div>
         <div id="cv-zoom-label">100%</div>
       </div>
+    </div>
+
+    <!-- GOFİLE UPLOAD PANELİ -->
+    <div id="gofile-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
+
+      <!-- Başlık -->
+      <div style="padding:16px 16px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Gofile Upload</span>
+          <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:3px">Ücretsiz · 10 gün</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">Dosyayı seç, linki al — paylaş veya başka cihazda kullan</div>
+      </div>
+
+      <!-- DROP ZONE -->
+      <div id="gf-dropzone"
+        style="margin:16px;border:2px dashed var(--border);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;flex-shrink:0"
+        onclick="document.getElementById('gf-file-input').click()"
+        ondragover="gfDragOver(event)" ondragleave="gfDragLeave(event)" ondrop="gfDrop(event)">
+        <div style="font-size:36px;margin-bottom:8px;opacity:0.4">☁️</div>
+        <div style="font-size:13px;color:var(--text2);font-weight:500;margin-bottom:4px">Dosya seç veya buraya sürükle</div>
+        <div style="font-size:11px;color:var(--text3)">Her türlü dosya · Maksimum boyut yok</div>
+        <input type="file" id="gf-file-input" multiple style="display:none" onchange="gfFilesSelected(this.files)">
+      </div>
+
+      <!-- SEÇİLİ DOSYALAR LİSTESİ -->
+      <div id="gf-file-list" style="flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:8px"></div>
+
+      <!-- YÜKLE BUTONU -->
+      <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0">
+        <button id="gf-upload-btn" onclick="gfUploadAll()"
+          style="width:100%;background:var(--accent);border:none;color:#000;padding:11px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px"
+          onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'" disabled>
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+          Gofile'a Yükle
+        </button>
+      </div>
+
     </div>
 
     <!-- HABERLER PANELİ -->
@@ -3116,7 +3156,7 @@ function showToast(msg) {
 }
 
 // ─── ACCORDION SIDEBAR ───
-const ACC_TABS = ['notes','bm','pw','media','canvas','news','backup','stats'];
+const ACC_TABS = ['notes','bm','pw','media','canvas','news','gofile','stats'];
 let currentTab = 'notes';
 
 function toggleAcc(tab) {
@@ -3163,6 +3203,8 @@ function switchSidebarTab(tab) {
     if (cvp) cvp.style.display = tab === 'canvas' ? 'flex' : 'none';
     const nwp = document.getElementById('news-panel');
     if (nwp) nwp.style.display = tab === 'news' ? 'flex' : 'none';
+    const gfp = document.getElementById('gofile-panel');
+    if (gfp) gfp.style.display = tab === 'gofile' ? 'flex' : 'none';
     document.getElementById('new-note-btn').style.display   = tab === 'notes'  ? 'flex' : 'none';
   }
   if (tab === 'bm')     { renderBmTagList(); renderBookmarks(); }
@@ -3171,6 +3213,7 @@ function switchSidebarTab(tab) {
   if (tab === 'stats')  { renderStats(); }
   if (tab === 'canvas') { cvLoad(); cvRender(); }
   if (tab === 'news')   { initNewsPanel(); }
+  if (tab === 'gofile') { initGofilePanel(); }
 }
 
 // ─── BOOKMARK STORAGE ───
@@ -6114,5 +6157,210 @@ function cvInit() {
   cvRender();
 }
 </script>
+
+<script>
+// ══════════════════════════════════════════════
+//  RULOKAT GOFİLE UPLOAD MODÜLÜ
+//  Dosya seç → Gofile'a yükle → Link al
+// ══════════════════════════════════════════════
+
+let gfFiles = [];      // seçili dosyalar
+let gfUploading = false;
+
+function initGofilePanel() {
+  // Panel her açılışında sadece bir kere init gerekiyor
+}
+
+// ── Drag & Drop ──
+function gfDragOver(e) {
+  e.preventDefault();
+  const dz = document.getElementById('gf-dropzone');
+  dz.style.borderColor = 'var(--accent)';
+  dz.style.background  = 'rgba(230,58,15,0.05)';
+}
+function gfDragLeave(e) {
+  const dz = document.getElementById('gf-dropzone');
+  dz.style.borderColor = 'var(--border)';
+  dz.style.background  = '';
+}
+function gfDrop(e) {
+  e.preventDefault();
+  gfDragLeave(e);
+  gfFilesSelected(e.dataTransfer.files);
+}
+
+// ── Dosya seçildi ──
+function gfFilesSelected(fileList) {
+  if (!fileList || fileList.length === 0) return;
+  for (const f of fileList) gfFiles.push({ file: f, status: 'pending', link: null });
+  gfRenderList();
+  document.getElementById('gf-upload-btn').disabled = false;
+}
+
+function gfRemoveFile(idx) {
+  gfFiles.splice(idx, 1);
+  gfRenderList();
+  if (gfFiles.length === 0) document.getElementById('gf-upload-btn').disabled = true;
+}
+
+// ── Liste render ──
+function gfRenderList() {
+  const el = document.getElementById('gf-file-list');
+  if (gfFiles.length === 0) { el.innerHTML = ''; return; }
+
+  el.innerHTML = gfFiles.map((item, i) => {
+    const f    = item.file;
+    const size = gfFormatSize(f.size);
+    const ext  = f.name.split('.').pop().toUpperCase().slice(0,5);
+
+    let statusHTML = '';
+    if (item.status === 'pending') {
+      statusHTML = `<button onclick="gfRemoveFile(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1;transition:color 0.15s" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text3)'">✕</button>`;
+    } else if (item.status === 'uploading') {
+      statusHTML = `<div class="news-spinner" style="width:14px;height:14px;flex-shrink:0"></div>`;
+    } else if (item.status === 'done') {
+      statusHTML = `<span style="color:#4ade80;font-size:16px">✓</span>`;
+    } else if (item.status === 'error') {
+      statusHTML = `<span style="color:var(--danger);font-size:12px">✗</span>`;
+    }
+
+    let linkHTML = '';
+    if (item.status === 'done' && item.link) {
+      linkHTML = `<div style="display:flex;gap:5px;margin-top:6px;align-items:center">
+        <input type="text" value="${escHtml(item.link)}" readonly
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 8px;border-radius:4px;outline:none;cursor:text">
+        <button onclick="gfCopyLink(${i})"
+          style="background:var(--accent);border:none;color:#000;padding:5px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'IBM Plex Sans',sans-serif">
+          Kopyala
+        </button>
+        <a href="${escHtml(item.link)}" target="_blank" rel="noopener"
+          style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 8px;border-radius:4px;font-size:11px;text-decoration:none;white-space:nowrap">
+          Aç ↗
+        </a>
+      </div>`;
+    } else if (item.status === 'error') {
+      linkHTML = `<div style="font-size:11px;color:var(--danger);margin-top:4px">${escHtml(item.error || 'Yükleme başarısız')}</div>`;
+    }
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;transition:border-color 0.15s">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="font-size:9px;font-weight:700;color:var(--accent2);font-family:'IBM Plex Mono',monospace">${escHtml(ext)}</span>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(f.name)}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">${size}</div>
+        </div>
+        ${statusHTML}
+      </div>
+      ${linkHTML}
+    </div>`;
+  }).join('');
+}
+
+// ── Hepsini yükle ──
+async function gfUploadAll() {
+  if (gfUploading) return;
+  const pending = gfFiles.filter(f => f.status === 'pending');
+  if (pending.length === 0) return;
+
+  gfUploading = true;
+  const btn = document.getElementById('gf-upload-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="news-spinner" style="width:15px;height:15px;border-color:rgba(0,0,0,0.3);border-top-color:#000"></div> Yükleniyor...';
+
+  // En iyi sunucuyu bul
+  let server = 'store1';
+  try {
+    const srvRes = await fetch('https://api.gofile.io/servers', { signal: AbortSignal.timeout(6000) });
+    const srvData = await srvRes.json();
+    if (srvData.status === 'ok' && srvData.data?.servers?.length > 0) {
+      server = srvData.data.servers[0].name;
+    }
+  } catch(e) {}
+
+  // Dosyaları sırayla yükle
+  for (let i = 0; i < gfFiles.length; i++) {
+    const item = gfFiles[i];
+    if (item.status !== 'pending') continue;
+
+    item.status = 'uploading';
+    gfRenderList();
+
+    try {
+      const form = new FormData();
+      form.append('file', item.file);
+
+      const res  = await fetch(`https://${server}.gofile.io/contents/uploadfile`, {
+        method: 'POST', body: form,
+        signal: AbortSignal.timeout(120000)  // 2 dakika timeout
+      });
+      const data = await res.json();
+
+      if (data.status !== 'ok') throw new Error(data.status || 'Sunucu hatası');
+
+      const code = data.data?.parentFolder || data.data?.folderId || data.data?.code;
+      item.link   = `https://gofile.io/d/${code}`;
+      item.status = 'done';
+
+      // Otomatik kopyala (ilk dosya)
+      if (pending.indexOf(item) === 0) {
+        navigator.clipboard?.writeText(item.link).catch(()=>{});
+        showToast('Link kopyalandı ✓ — ' + item.file.name);
+      }
+
+    } catch(err) {
+      item.status = 'error';
+      item.error  = err.message;
+    }
+
+    gfRenderList();
+  }
+
+  gfUploading = false;
+  btn.disabled = false;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Tekrar Yükle`;
+
+  // Başarısız olanlar varsa butonu aktif tut, hepsi başardıysa sıfırla
+  const allDone = gfFiles.every(f => f.status === 'done');
+  if (allDone) {
+    setTimeout(() => {
+      // 3 saniye sonra listeyi temizle, yeni yüklemeye hazır
+      btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Yeni Dosya Yükle`;
+      btn.onclick = () => {
+        gfFiles = gfFiles.filter(f => f.status !== 'done');
+        gfRenderList();
+        if (gfFiles.length === 0) btn.disabled = true;
+        btn.onclick = gfUploadAll;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Gofile'a Yükle`;
+      };
+    }, 3000);
+  } else {
+    // Başarısızları pending'e çevir, tekrar dene
+    gfFiles.filter(f => f.status === 'error').forEach(f => f.status = 'pending');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M12 12v9"/><path d="M8 17l4-4 4 4"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg> Tekrar Dene`;
+    gfRenderList();
+  }
+}
+
+function gfCopyLink(idx) {
+  const item = gfFiles[idx];
+  if (!item?.link) return;
+  navigator.clipboard?.writeText(item.link)
+    .then(() => showToast('Link kopyalandı ✓'))
+    .catch(() => {
+      const inp = document.querySelector(`#gf-file-list input[value="${item.link}"]`);
+      if (inp) { inp.select(); document.execCommand('copy'); showToast('Kopyalandı ✓'); }
+    });
+}
+
+function gfFormatSize(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024, sizes = ['B','KB','MB','GB','TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+</script>
+
 </body>
 </html>
