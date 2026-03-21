@@ -1626,7 +1626,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.35</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.37</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1648,7 +1648,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.35</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.37</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -3318,13 +3318,26 @@ applyTheme(savedTheme);
 function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
 
 function exportData() {
-  const data = { version: 3, exportedAt: new Date().toISOString(), notes: getNotes(), bookmarks: getBookmarks(), mediaItems: getMediaItems(), vault: getVault() };
+  // Bellekteki state kullan — storage'dan tekrar decrypt etme
+  // Kanvas verisini localStorage'dan oku (şifresiz JSON olarak saklanıyor)
+  let canvasData = null;
+  try { const raw = localStorage.getItem('rulokat_canvas_v1'); if (raw) canvasData = JSON.parse(raw); } catch(e) {}
+  const data = {
+    version: 3,
+    exportedAt: new Date().toISOString(),
+    notes:      notes,
+    bookmarks:  bookmarks,
+    mediaItems: mediaItems,
+    vault:      vault,
+    canvas:     canvasData
+  };
+  const counts = notes.length + ' not, ' + bookmarks.length + ' link, ' + mediaItems.length + ' film/dizi, ' + (canvasData && canvasData.nodes ? canvasData.nodes.length : 0) + ' kanvas düğümü';
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `notlarim-yedek-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = 'rulokat-yedek-' + new Date().toISOString().slice(0,10) + '.json';
   a.click();
-  showToast('Yedek dosyası indirildi ✓');
+  showToast('Yedek alındı ✓ (' + counts + ')');
 }
 
 function importData(e) {
@@ -3334,30 +3347,52 @@ function importData(e) {
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      // Merge notes
-      const existingNoteIds = new Set(notes.map(n => n.id));
-      const newNotes = (data.notes || []).filter(n => !existingNoteIds.has(n.id));
-      notes = [...notes, ...newNotes];
-      saveNotes(notes);
-      // Merge bookmarks
-      const existingBmIds = new Set(bookmarks.map(b => b.id));
-      const newBms = (data.bookmarks || []).filter(b => !existingBmIds.has(b.id));
-      bookmarks = [...bookmarks, ...newBms];
-      saveBookmarks(bookmarks);
-      // Merge media items
+      if (!data.version) { showToast('Hatalı dosya formatı'); return; }
+
+      // Tam yükle: yedekteki her şeyi tam olarak geri getir
+      // Mevcut veride olmayanları ekle (silinen öğeler de dahil)
+      const existingNoteIds  = new Set(notes.map(n => n.id));
+      const existingBmIds    = new Set(bookmarks.map(b => b.id));
       const existingMediaIds = new Set(mediaItems.map(m => m.id));
-      const newMedia = (data.mediaItems || []).filter(m => !existingMediaIds.has(m.id));
-      mediaItems = [...mediaItems, ...newMedia];
-      saveMediaItems(mediaItems);
-      // Merge vault
       const existingVaultIds = new Set(vault.map(v => v.id));
-      const newVault = (data.vault || []).filter(v => !existingVaultIds.has(v.id));
-      vault = [...vault, ...newVault];
+
+      const newNotes  = (data.notes      || []).filter(n => !existingNoteIds.has(n.id));
+      const newBms    = (data.bookmarks  || []).filter(b => !existingBmIds.has(b.id));
+      const newMedia  = (data.mediaItems || []).filter(m => !existingMediaIds.has(m.id));
+      const newVault  = (data.vault      || []).filter(v => !existingVaultIds.has(v.id));
+
+      // Ayrıca mevcut veride olanları yedekten güncelle (overwrite)
+      notes      = [...notes.filter(n => !data.notes?.find(x=>x.id===n.id)),      ...(data.notes      || [])];
+      bookmarks  = [...bookmarks.filter(b => !data.bookmarks?.find(x=>x.id===b.id)), ...(data.bookmarks  || [])];
+      mediaItems = [...mediaItems.filter(m => !data.mediaItems?.find(x=>x.id===m.id)), ...(data.mediaItems || [])];
+      vault      = [...vault.filter(v => !data.vault?.find(x=>x.id===v.id)),      ...(data.vault      || [])];
+
+      saveNotes(notes);
+      saveBookmarks(bookmarks);
+      saveMediaItems(mediaItems);
       saveVault(vault);
+
+      // Kanvas verisini geri yükle
+      if (data.canvas) {
+        try {
+          localStorage.setItem('rulokat_canvas_v1', JSON.stringify(data.canvas));
+          // Kanvas state'i güncelle
+          cvNodes = Array.isArray(data.canvas.nodes) ? data.canvas.nodes : [];
+          cvEdges = Array.isArray(data.canvas.edges) ? data.canvas.edges : [];
+          cvOX    = data.canvas.ox    || 80;
+          cvOY    = data.canvas.oy    || 80;
+          cvScale = data.canvas.scale || 1;
+          if (currentTab === 'canvas') cvRender();
+        } catch(e) {}
+      }
+
       renderTagList(); renderNoteList(); renderMediaGrid(); renderPwGrid();
+      updateMediaSidebarCounts();
       document.getElementById('export-modal').style.display = 'none';
-      showToast(`İçe aktarıldı: +${newNotes.length} not, +${newBms.length} bookmark, +${newMedia.length} film/dizi ✓`);
-    } catch { showToast('Hatalı dosya formatı'); }
+      const total = (data.notes||[]).length + (data.mediaItems||[]).length + (data.bookmarks||[]).length;
+      const cvCount = data.canvas && data.canvas.nodes ? data.canvas.nodes.length : 0;
+      showToast('Yedek yüklendi ✓ ' + total + ' öğe' + (cvCount ? ', ' + cvCount + ' kanvas düğümü' : '') + ' geri getirildi');
+    } catch(err) { console.error(err); showToast('Hatalı dosya formatı: ' + err.message); }
   };
   reader.readAsText(file);
   e.target.value = '';
