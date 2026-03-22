@@ -1769,7 +1769,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.61</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.62</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -4513,12 +4513,21 @@ async function syncPush() {
       const {poster, ...rest} = m; // poster çıkar
       return rest;
     });
+    // Kanvas verisi
+    const canvasPayload = {
+      nodes: cvNodes,
+      edges: cvEdges,
+      ox: cvOX, oy: cvOY, scale: cvScale
+    };
+
     const payload = {
       syncedAt: new Date().toISOString(),
       notes: getNotes(),
       bookmarks: getBookmarks(),
       vault: getVault(),
+      cards: getCards(),
       mediaItems: mediaForCloud,
+      canvas: canvasPayload,
       pwHash: getSavedPwHash()
     };
     await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -4578,7 +4587,28 @@ async function syncPull() {
     mediaItems = [...(data.mediaItems || []), ...localOnlyMedia];
     saveMediaItems(mediaItems);
 
+    // Kartları güncelle (merge)
+    if (data.cards && Array.isArray(data.cards)) {
+      const localCards = getCards();
+      const cloudCardIds = new Set(data.cards.map(c => c.id));
+      const localOnlyCards = localCards.filter(c => !cloudCardIds.has(c.id));
+      cards = [...data.cards, ...localOnlyCards];
+      saveCards(cards);
+    }
+
+    // Kanvası güncelle (cloud kazanır — kanvas merge karmaşık)
+    if (data.canvas) {
+      cvNodes = Array.isArray(data.canvas.nodes) ? data.canvas.nodes : [];
+      cvEdges = Array.isArray(data.canvas.edges) ? data.canvas.edges : [];
+      cvOX    = data.canvas.ox    || 0;
+      cvOY    = data.canvas.oy    || 0;
+      cvScale = data.canvas.scale || 1;
+      cvSave();
+    }
+
     renderTagList(); renderNoteList(); renderMediaGrid();
+    // Kanvas aktif sekmede ise render et
+    if (currentTab === 'canvas') { cvRender(); }
     const syncDate = new Date(data.syncedAt).toLocaleString('tr-TR');
     updateSyncStatus(`Senkronize: ${new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}`, '#4ade80');
     showToast(`Buluttan yüklendi ✓ (${syncDate})`);
