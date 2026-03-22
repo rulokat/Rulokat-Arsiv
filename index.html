@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.50</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.51</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.50</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.51</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -1777,17 +1777,7 @@
             <span class="acc-arrow" id="acc-arrow-pw"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
           </button>
           <div class="acc-body" id="acc-body-pw">
-            <!-- ŞİFRE / KART SEKMELERİ -->
-            <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0">
-              <button id="pw-tab-pass" onclick="switchPwTab('pass')"
-                style="flex:1;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--accent);padding:9px 6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s">
-                🔑 Şifreler
-              </button>
-              <button id="pw-tab-card" onclick="switchPwTab('card')"
-                style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);padding:9px 6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s">
-                💳 Kartlar
-              </button>
-            </div>
+
             <div style="padding:10px 14px 6px">
               <div id="pw-stats" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text2)"></div>
             </div>
@@ -2007,6 +1997,14 @@
         <div id="stats-bm-detail"></div>
       </div>
       <div>
+        <div class="stats-section-title">Kartlar &amp; Şifreler</div>
+        <div id="stats-cards-detail"></div>
+      </div>
+      <div>
+        <div class="stats-section-title">Kanvas</div>
+        <div id="stats-canvas-detail"></div>
+      </div>
+      <div>
         <div class="stats-section-title">GitHub Gist Depolama</div>
         <div id="stats-gist-detail"><div style="font-size:12px;color:var(--text3);padding:8px 0">Gist sync bağlı değil.</div></div>
       </div>
@@ -2083,54 +2081,41 @@
 
     <!-- DASHBOARD PANELİ -->
     <div id="dash-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
-
       <!-- Toolbar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
         <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Dashboard</span>
         <button onclick="dashRefresh()" style="background:none;border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:14px;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺</button>
       </div>
+      <div style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px">
 
-      <div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px">
-
-        <!-- HAVA + DÖVİZ -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <!-- Hava Durumu -->
-          <div id="dash-weather" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;min-height:90px;display:flex;flex-direction:column;justify-content:space-between">
+        <!-- HAVA DURUMU — tam genişlik, 7 günlük -->
+        <div id="dash-weather" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace">Hava Durumu</div>
-            <div style="text-align:center;color:var(--text3);font-size:11px;margin-top:8px">Yükleniyor...</div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="text" id="dash-city-input" placeholder="İstanbul"
+                style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:11px;padding:4px 8px;border-radius:4px;outline:none;width:100px;transition:border-color 0.2s"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+                onkeydown="if(event.key==='Enter')dashSaveCity()">
+              <button onclick="dashSaveCity()" style="background:var(--accent);border:none;color:#000;padding:4px 10px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Ara</button>
+            </div>
           </div>
-          <!-- Döviz -->
-          <div id="dash-fx" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;min-height:90px">
-            <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:8px">Döviz</div>
-            <div style="color:var(--text3);font-size:11px">Yükleniyor...</div>
-          </div>
+          <div id="dash-weather-body" style="color:var(--text3);font-size:12px">Yükleniyor...</div>
         </div>
 
-        <!-- BÜTÇE ÖZETİ -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)">
-            <span style="font-size:13px;font-weight:500;color:var(--text)">Bu Ay Harcama</span>
-            <button onclick="toggleAcc('pw');setTimeout(()=>showCardTab(),100)" style="font-size:11px;color:var(--accent2);background:none;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Kartlar →</button>
-          </div>
-          <div id="dash-budget" style="padding:12px 14px">
-            <div style="color:var(--text3);font-size:12px">Henüz harcama yok</div>
-          </div>
+        <!-- DÖVİZ — tam genişlik, yön oklarıyla -->
+        <div id="dash-fx" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:10px">Döviz Kurları</div>
+          <div id="dash-fx-body" style="color:var(--text3);font-size:12px">Yükleniyor...</div>
         </div>
 
-        <!-- HIZLI İSTATİSTİKLER -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="dash-stats-grid">
-        </div>
-
-        <!-- ŞEHİR AYARI -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
-          <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Hava durumu için şehir</div>
-          <div style="display:flex;gap:6px">
-            <input type="text" id="dash-city-input" placeholder="İstanbul" value=""
-              style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:6px 10px;border-radius:5px;outline:none;transition:border-color 0.2s"
-              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-              onkeydown="if(event.key==='Enter')dashSaveCity()">
-            <button onclick="dashSaveCity()" style="background:var(--accent);border:none;color:#000;padding:6px 12px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Kaydet</button>
+        <!-- KARTLAR ÖZETİ -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+            <span style="font-size:12px;font-weight:500;color:var(--text)">💳 Kartlarım</span>
+            <button onclick="toggleAcc('pw')" style="font-size:11px;color:var(--accent2);background:none;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Yönet →</button>
           </div>
+          <div id="dash-budget" style="padding:10px 14px"><div style="color:var(--text3);font-size:12px">Yükleniyor...</div></div>
         </div>
 
       </div>
@@ -2162,29 +2147,29 @@
     </div>
 
     <!-- PASSWORD MANAGER PANEL -->
-    <div id="pw-panel">
-      <!-- ŞİFRE PANEL -->
-      <div id="pw-pass-view" style="display:flex;flex:1;flex-direction:column;overflow:hidden">
-        <div class="pw-toolbar">
-          <input type="text" class="pw-search" id="pw-search" placeholder="Site veya kullanıcı ara...">
-          <button class="btn-add-pw" onclick="openPwEntry(null)">
+    <div id="pw-panel" style="flex-direction:row;overflow:hidden;">
+      <!-- ŞİFRE PANEL (sol) -->
+      <div id="pw-pass-view" style="display:flex;flex:1;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)">
+        <div class="pw-toolbar" style="border-bottom:2px solid var(--accent)">
+          <span style="font-size:11px;font-weight:600;color:var(--accent);font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px">🔑 ŞİFRELER</span>
+          <input type="text" class="pw-search" id="pw-search" placeholder="Ara..." style="flex:1">
+          <button class="btn-add-pw" onclick="openPwEntry(null)" title="Şifre ekle">
             <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
-            Ekle
           </button>
         </div>
-        <div class="pw-grid" id="pw-grid"></div>
+        <div class="pw-grid" id="pw-grid" style="flex:1;overflow-y:auto"></div>
       </div>
 
-      <!-- KREDİ KARTI PANEL -->
-      <div id="pw-card-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
-        <div class="pw-toolbar">
-          <input type="text" class="pw-search" id="card-search" placeholder="Kart ara..." oninput="renderCardGrid()">
-          <button class="btn-add-pw" onclick="openCardEntry(null)">
+      <!-- KREDİ KARTI PANEL (sağ) -->
+      <div id="pw-card-view" style="display:flex;flex:1;flex-direction:column;overflow:hidden">
+        <div class="pw-toolbar" style="border-bottom:2px solid #4ade80">
+          <span style="font-size:11px;font-weight:600;color:#4ade80;font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px">💳 KARTLAR</span>
+          <input type="text" class="pw-search" id="card-search" placeholder="Ara..." style="flex:1" oninput="renderCardGrid()">
+          <button class="btn-add-pw" onclick="openCardEntry(null)" title="Kart ekle">
             <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
-            Ekle
           </button>
         </div>
-        <div id="card-grid" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px"></div>
+        <div id="card-grid" style="flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
 
@@ -4934,6 +4919,15 @@ function goToPw() {
 }
 
 // ─── İSTATİSTİK ───
+function barRow(label, val, max, total, color) {
+  const pct = total > 0 ? Math.round((val/max)*100) : 0;
+  return `<div class="stats-bar-row">
+    <div class="stats-bar-label">${label}</div>
+    <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    <div class="stats-bar-count">${val}</div>
+  </div>`;
+}
+
 function renderStats() {
   const now = new Date();
   document.getElementById('stats-updated').textContent = 'Son güncelleme: ' + now.toLocaleString('tr-TR');
@@ -5015,6 +5009,32 @@ function renderStats() {
       <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cnt, maxBm)}%;background:${tagColors[i%tagColors.length]}"></div></div>
       <div class="stats-bar-count">${cnt}</div>
     </div>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Etiketli link yok.</div>');
+
+  // Kartlar & Şifreler detayı
+  const allCards = getCards();
+  const cardT = {credit:0, debit:0, prepaid:0, virtual:0};
+  allCards.forEach(c => { if(cardT[c.type]!==undefined) cardT[c.type]++; });
+  const maxC = Math.max(allCards.length, 1);
+  const statsCardsEl = document.getElementById('stats-cards-detail');
+  if (statsCardsEl) statsCardsEl.innerHTML = `
+    <div class="stats-bar-row"><div class="stats-bar-label">Şifre</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:100%;background:var(--accent2)"></div></div><div class="stats-bar-count">${vault.length}</div></div>
+    <div class="stats-bar-row"><div class="stats-bar-label">Kredi Kartı</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cardT.credit,maxC)}%;background:#4ade80"></div></div><div class="stats-bar-count">${cardT.credit}</div></div>
+    <div class="stats-bar-row"><div class="stats-bar-label">Banka Kartı</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cardT.debit,maxC)}%;background:#60a5fa"></div></div><div class="stats-bar-count">${cardT.debit}</div></div>
+    <div class="stats-bar-row"><div class="stats-bar-label">Sanal/Diğer</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cardT.prepaid+cardT.virtual,maxC)}%;background:#f59e0b"></div></div><div class="stats-bar-count">${cardT.prepaid+cardT.virtual}</div></div>
+  `;
+
+  // Kanvas detayı
+  const noteNodes = cvNodes.filter(n=>n.type==='note').length;
+  const bmNodes   = cvNodes.filter(n=>n.type==='bm').length;
+  const freeNodes = cvNodes.filter(n=>n.type==='free').length;
+  const maxN = Math.max(cvNodes.length, 1);
+  const statsCanvasEl = document.getElementById('stats-canvas-detail');
+  if (statsCanvasEl) statsCanvasEl.innerHTML = cvNodes.length === 0
+    ? '<div style="font-size:12px;color:var(--text3);padding:8px 0">Kanvasta henüz düğüm yok.</div>'
+    : `<div class="stats-bar-row"><div class="stats-bar-label">Not Düğümü</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(noteNodes,maxN)}%;background:var(--accent)"></div></div><div class="stats-bar-count">${noteNodes}</div></div>
+    <div class="stats-bar-row"><div class="stats-bar-label">Bookmark</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(bmNodes,maxN)}%;background:var(--accent2)"></div></div><div class="stats-bar-count">${bmNodes}</div></div>
+    <div class="stats-bar-row"><div class="stats-bar-label">Serbest Metin</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(freeNodes,maxN)}%;background:#a78bfa"></div></div><div class="stats-bar-count">${freeNodes}</div></div>
+    <div class="stats-bar-row"><div class="stats-bar-label">Bağlantı</div><div class="stats-bar-track"><div class="stats-bar-fill" style="width:${barPct(cvEdges.length,Math.max(cvEdges.length,1))}%;background:#60a5fa"></div></div><div class="stats-bar-count">${cvEdges.length}</div></div>`;
 
   // Gist depolama bilgisi
   renderGistStats();
@@ -6458,32 +6478,15 @@ function saveCards(cards) {
 
 let cards = [];
 
-// ── Tab geçişi ──
+// ── Tab geçişi (artık yan yana — her ikisi de görünür) ──
 function switchPwTab(tab) {
-  const passView = document.getElementById('pw-pass-view');
-  const cardView = document.getElementById('pw-card-view');
-  const passBtn  = document.getElementById('pw-tab-pass');
-  const cardBtn  = document.getElementById('pw-tab-card');
-  if (tab === 'pass') {
-    passView.style.display = 'flex';
-    cardView.style.display = 'none';
-    passBtn.style.borderBottomColor = 'var(--accent)';
-    passBtn.style.color = 'var(--accent)';
-    cardBtn.style.borderBottomColor = 'transparent';
-    cardBtn.style.color = 'var(--text3)';
-  } else {
-    passView.style.display = 'none';
-    cardView.style.display = 'flex';
-    cardBtn.style.borderBottomColor = 'var(--accent)';
-    cardBtn.style.color = 'var(--accent)';
-    passBtn.style.borderBottomColor = 'transparent';
-    passBtn.style.color = 'var(--text3)';
-    cards = getCards();
-    renderCardGrid();
-  }
+  cards = getCards();
+  renderCardGrid();
 }
-
-function showCardTab() { switchPwTab('card'); }
+function showCardTab() {
+  cards = getCards();
+  renderCardGrid();
+}
 
 // ── Kart Grid ──
 function renderCardGrid() {
@@ -6653,17 +6656,16 @@ function showToast(msg, dur) {
 
 <script>
 // ══════════════════════════════════════════════
-//  DASHBOARD MODÜLÜ
-//  Hava durumu · Döviz · Bütçe özeti
+//  DASHBOARD MODÜLÜ v2
 // ══════════════════════════════════════════════
 
-const DASH_CITY_KEY  = 'rulokat_dash_city';
-const DASH_SPEND_KEY = 'rulokat_dash_spend';
+const DASH_CITY_KEY = 'rulokat_dash_city';
 let dashCity = localStorage.getItem(DASH_CITY_KEY) || 'Istanbul';
+let fxPrevRates = {};
 
 function initDashboard() {
-  document.getElementById('dash-city-input').value = dashCity;
-  dashRenderStats();
+  const inp = document.getElementById('dash-city-input');
+  if (inp) inp.value = dashCity;
   updateDashBudget();
   fetchDashWeather();
   fetchDashFX();
@@ -6672,157 +6674,172 @@ function initDashboard() {
 function dashRefresh() {
   fetchDashWeather();
   fetchDashFX();
-  dashRenderStats();
   updateDashBudget();
   showToast('Dashboard güncellendi ↺');
 }
 
 function dashSaveCity() {
-  const v = document.getElementById('dash-city-input').value.trim();
+  const v = (document.getElementById('dash-city-input')?.value || '').trim();
   if (!v) return;
   dashCity = v;
   localStorage.setItem(DASH_CITY_KEY, v);
   fetchDashWeather();
-  showToast('Şehir kaydedildi ✓');
 }
 
-// ── Hava Durumu — Open-Meteo (ücretsiz, CORS yok) ──
+// ── Hava Durumu — 7 günlük ──
 async function fetchDashWeather() {
-  const el = document.getElementById('dash-weather');
-  if (!el) return;
-  el.innerHTML = `<div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace">Hava Durumu</div><div style="color:var(--text3);font-size:11px;margin-top:8px">Yükleniyor...</div>`;
+  const body = document.getElementById('dash-weather-body');
+  if (!body) return;
+  body.innerHTML = '<span style="color:var(--text3);font-size:11px">Yükleniyor...</span>';
 
   try {
-    // 1. Şehri koordinata çevir — Open-Meteo Geocoding
-    const geoRes  = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dashCity)}&count=1&language=tr`, { signal: AbortSignal.timeout(6000) });
+    const geoRes  = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dashCity)}&count=1&language=tr`, { signal: AbortSignal.timeout(8000) });
     const geoData = await geoRes.json();
     const loc     = geoData.results?.[0];
-    if (!loc) throw new Error('Şehir bulunamadı');
+    if (!loc) throw new Error('Şehir bulunamadı: ' + dashCity);
 
-    // 2. Hava verisini çek
-    const wRes  = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&timezone=auto`, { signal: AbortSignal.timeout(6000) });
+    const wRes  = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}` +
+      `&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m,apparent_temperature` +
+      `&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max` +
+      `&timezone=auto&forecast_days=7`,
+      { signal: AbortSignal.timeout(8000) }
+    );
     const wData = await wRes.json();
     const cur   = wData.current;
+    const daily = wData.daily;
 
-    const icon  = weatherIcon(cur.weathercode);
-    const temp  = Math.round(cur.temperature_2m);
-    const wind  = Math.round(cur.windspeed_10m);
-    const humid = cur.relative_humidity_2m;
+    const icon      = weatherIcon(cur.weathercode);
+    const temp      = Math.round(cur.temperature_2m);
+    const feelsLike = Math.round(cur.apparent_temperature);
+    const wind      = Math.round(cur.windspeed_10m);
+    const humid     = cur.relative_humidity_2m;
 
-    el.innerHTML = `
-      <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">${escHtml(loc.name)}</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="font-size:28px">${icon}</div>
-        <div>
-          <div style="font-size:22px;font-weight:700;color:var(--text);font-family:'IBM Plex Mono',monospace">${temp}°C</div>
-          <div style="font-size:10px;color:var(--text3)">💨 ${wind} km/h · 💧 ${humid}%</div>
-        </div>
+    const dayNames = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+
+    const forecastHTML = daily.time.map((dateStr, i) => {
+      const d    = new Date(dateStr);
+      const name = i === 0 ? 'Bugün' : i === 1 ? 'Yarın' : dayNames[d.getDay()];
+      const ico  = weatherIcon(daily.weathercode[i]);
+      const max  = Math.round(daily.temperature_2m_max[i]);
+      const min  = Math.round(daily.temperature_2m_min[i]);
+      const rain = daily.precipitation_probability_max[i] || 0;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:var(--surface2);border-radius:8px;min-width:0;flex:1">
+        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap">${name}</div>
+        <div style="font-size:18px">${ico}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text)">${max}°</div>
+        <div style="font-size:10px;color:var(--text3)">${min}°</div>
+        ${rain > 20 ? `<div style="font-size:9px;color:#60a5fa">💧${rain}%</div>` : '<div style="font-size:9px;color:transparent">-</div>'}
       </div>`;
+    }).join('');
+
+    body.innerHTML = `
+      <!-- Şu an -->
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div style="font-size:42px;line-height:1">${icon}</div>
+        <div>
+          <div style="font-size:28px;font-weight:700;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1">${temp}°C</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${escHtml(loc.name)} · Hissedilen ${feelsLike}°C</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">💨 ${wind} km/h · 💧 ${humid}%</div>
+        </div>
+      </div>
+      <!-- 7 günlük tahmin -->
+      <div style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">${forecastHTML}</div>`;
   } catch(e) {
-    el.innerHTML = `<div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">Hava Durumu</div><div style="color:var(--danger);font-size:11px">${escHtml(e.message)}</div>`;
+    body.innerHTML = `<span style="color:var(--danger);font-size:11px">${escHtml(e.message)}</span>`;
   }
 }
 
 function weatherIcon(code) {
-  if (code === 0)               return '☀️';
-  if (code <= 2)                return '⛅';
-  if (code <= 3)                return '☁️';
-  if (code <= 48)               return '🌫️';
-  if (code <= 67)               return '🌧️';
-  if (code <= 77)               return '❄️';
-  if (code <= 82)               return '🌦️';
-  if (code <= 86)               return '🌨️';
-  if (code <= 99)               return '⛈️';
+  if (code === 0)         return '☀️';
+  if (code <= 2)          return '⛅';
+  if (code <= 3)          return '☁️';
+  if (code <= 48)         return '🌫️';
+  if (code <= 67)         return '🌧️';
+  if (code <= 77)         return '❄️';
+  if (code <= 82)         return '🌦️';
+  if (code <= 86)         return '🌨️';
+  if (code <= 99)         return '⛈️';
   return '🌡️';
 }
 
-// ── Döviz — Frankfurter (ücretsiz, CORS yok) ──
+// ── Döviz — yön okları, TRY merkezli ──
 async function fetchDashFX() {
-  const el = document.getElementById('dash-fx');
-  if (!el) return;
+  const body = document.getElementById('dash-fx-body');
+  if (!body) return;
 
   try {
-    const res  = await fetch('https://api.frankfurter.app/latest?from=USD&to=TRY,EUR,GBP', { signal: AbortSignal.timeout(6000) });
+    // USD, EUR, GBP, HUF → TRY
+    const res  = await fetch('https://api.frankfurter.app/latest?from=TRY&to=USD,EUR,GBP,HUF', { signal: AbortSignal.timeout(8000) });
     const data = await res.json();
-    const rates = data.rates || {};
+    const r    = data.rates || {};
 
-    const usdTry = rates.TRY?.toFixed(2) || '—';
-    const eurUsd = (1 / (rates.EUR || 1)).toFixed(2);
-    const gbpUsd = (1 / (rates.GBP || 1)).toFixed(2);
+    // TRY karşısındaki değerler (1 TRY = X döviz → ters çevir = 1 döviz = Y TRY)
+    const usdTry = r.USD ? (1 / r.USD).toFixed(2) : '—';
+    const eurTry = r.EUR ? (1 / r.EUR).toFixed(2) : '—';
+    const gbpTry = r.GBP ? (1 / r.GBP).toFixed(2) : '—';
+    const hufTry = r.HUF ? (1 / r.HUF).toFixed(4) : '—';  // HUF küçük değer
 
-    // EUR/TRY
-    const res2   = await fetch('https://api.frankfurter.app/latest?from=EUR&to=TRY', { signal: AbortSignal.timeout(6000) });
-    const data2  = await res2.json();
-    const eurTry = data2.rates?.TRY?.toFixed(2) || '—';
+    // Önceki değerlerle karşılaştır (artış/azalış)
+    const pairs = [
+      { label: 'USD/TRY', flag: '🇺🇸', key: 'usdtry', val: usdTry },
+      { label: 'EUR/TRY', flag: '🇪🇺', key: 'eurtry', val: eurTry },
+      { label: 'GBP/TRY', flag: '🇬🇧', key: 'gbptry', val: gbpTry },
+      { label: 'HUF/TRY', flag: '🇭🇺', key: 'huftry', val: hufTry },
+    ];
 
-    el.innerHTML = `
-      <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:8px">Döviz</div>
-      ${fxRow('USD/TRY', usdTry, '🇺🇸')}
-      ${fxRow('EUR/TRY', eurTry, '🇪🇺')}
-      ${fxRow('GBP/USD', gbpUsd, '🇬🇧')}
-      <div style="font-size:9px;color:var(--text3);margin-top:6px;font-family:'IBM Plex Mono',monospace">via frankfurter.app</div>`;
+    body.innerHTML = pairs.map(p => {
+      const prev   = fxPrevRates[p.key];
+      const cur    = parseFloat(p.val);
+      let arrow = '', arrowColor = 'var(--text3)';
+      if (prev !== undefined && !isNaN(cur)) {
+        if (cur > prev) {
+          // TL zayıfladı — döviz pahalandı — kırmızı aşağı ok (TL değer kaybetti)
+          arrow = ' <span style="color:#ef4444;font-size:12px">↓</span>';
+          arrowColor = '#ef4444';
+        } else if (cur < prev) {
+          // TL güçlendi — döviz ucuzladı — yeşil yukarı ok (TL değer kazandı)
+          arrow = ' <span style="color:#4ade80;font-size:12px">↑</span>';
+          arrowColor = '#4ade80';
+        }
+      }
+      fxPrevRates[p.key] = cur;
+
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px">${p.flag} <span style="font-family:'IBM Plex Mono',monospace">${p.label}</span></span>
+        <span style="font-size:13px;font-weight:600;color:var(--text);font-family:'IBM Plex Mono',monospace">${escHtml(String(p.val))} ₺${arrow}</span>
+      </div>`;
+    }).join('') + `<div style="font-size:9px;color:var(--text3);margin-top:6px;font-family:'IBM Plex Mono',monospace;text-align:right">↑ TL güçlendi · ↓ TL zayıfladı · via frankfurter.app</div>`;
   } catch(e) {
-    el.innerHTML = `<div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">Döviz</div><div style="color:var(--danger);font-size:11px">Bağlantı hatası</div>`;
+    body.innerHTML = `<span style="color:var(--danger);font-size:11px">Bağlantı hatası</span>`;
   }
 }
 
-function fxRow(label, val, flag) {
-  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
-    <span style="font-size:11px;color:var(--text2)">${flag} ${label}</span>
-    <span style="font-size:12px;color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-weight:500">${escHtml(String(val))}</span>
-  </div>`;
-}
-
-// ── Bütçe Özeti ──
+// ── Kartlar Özeti ──
 function updateDashBudget() {
   const el = document.getElementById('dash-budget');
   if (!el) return;
   cards = getCards();
   if (cards.length === 0) {
-    el.innerHTML = `<div style="color:var(--text3);font-size:12px">Henüz kart eklenmedi — <button onclick="toggleAcc('pw');setTimeout(()=>showCardTab(),100)" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12px;font-family:'IBM Plex Sans',sans-serif;text-decoration:underline">Kart ekle</button></div>`;
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px;padding:4px 0">Henüz kart eklenmedi</div>`;
     return;
   }
   el.innerHTML = cards.map(c => {
+    const last4    = (c.number||'').replace(/\s/g,'').slice(-4)||'••••';
     const limitNum = parseFloat(c.limit) || 0;
-    const typeLabel = {credit:'Kredi',debit:'Banka',prepaid:'Ön Öd.',virtual:'Sanal'}[c.type]||c.type;
-    const last4 = (c.number||'').replace(/\s/g,'').slice(-4)||'••••';
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+    const typeLabel= {credit:'Kredi',debit:'Banka',prepaid:'Ön Öd.',virtual:'Sanal'}[c.type]||c.type;
+    const col      = cardBrandColor(c.number);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:8px;height:8px;border-radius:50%;background:${cardBrandColor(c.number).from};flex-shrink:0"></div>
+        <div style="width:28px;height:18px;border-radius:4px;background:linear-gradient(135deg,${col.from},${col.to});flex-shrink:0"></div>
         <div>
           <div style="font-size:12px;color:var(--text);font-weight:500">${escHtml(c.name||c.bank||'Kart')}</div>
           <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">••••${last4} · ${typeLabel}</div>
         </div>
       </div>
-      ${limitNum ? `<div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace">${limitNum.toLocaleString('tr-TR')} ₺</div>` : ''}
+      ${limitNum ? `<div style="font-size:11px;color:var(--accent2);font-family:'IBM Plex Mono',monospace">${limitNum.toLocaleString('tr-TR')} ₺</div>` : ''}
     </div>`;
   }).join('');
-}
-
-// ── Hızlı İstatistikler ──
-function dashRenderStats() {
-  const grid = document.getElementById('dash-stats-grid');
-  if (!grid) return;
-  const noteCount  = notes.length;
-  const bmCount    = bookmarks.length;
-  const mediaCount = mediaItems.length;
-  const cardCount  = getCards().length;
-
-  const items = [
-    { label:'Notlar',   val: noteCount,  color:'var(--accent)',  icon:'📝' },
-    { label:'Linkler',  val: bmCount,    color:'var(--accent2)', icon:'🔖' },
-    { label:'İzleme',   val: mediaCount, color:'#a78bfa',        icon:'🎬' },
-    { label:'Kartlar',  val: cardCount,  color:'#4ade80',        icon:'💳' },
-    { label:'Şifreler', val: vault.length, color:'#f59e0b',      icon:'🔑' },
-    { label:'Kanvas',   val: cvNodes.length, color:'#60a5fa',    icon:'🕸️' },
-  ];
-
-  grid.innerHTML = items.map(item => `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='${item.color}'" onmouseout="this.style.borderColor='var(--border)'">
-      <div style="font-size:18px;margin-bottom:4px">${item.icon}</div>
-      <div style="font-size:20px;font-weight:700;color:${item.color};font-family:'IBM Plex Mono',monospace">${item.val}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${item.label}</div>
-    </div>`).join('');
 }
 </script>
 
