@@ -1741,7 +1741,7 @@
   <div style="text-align:center;margin-bottom:28px;position:relative;z-index:3;animation:lockLogoIn 1s cubic-bezier(0.16,1,0.3,1) both">
     <div style="display:inline-block;position:relative">
       <div class="lock-logo-text">Rulokat Arşiv</div>
-      <div class="lock-version">v 1.66</div>
+      <div class="lock-version">v 1.71</div>
     </div>
   </div>
 
@@ -1770,7 +1770,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.66</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.72</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2893,100 +2893,276 @@ const lockHint = document.getElementById('lock-hint');
       const b = sum / weight;
       stripBrightness.push(Math.max(0.05, Math.min(1, b * 1.2)));
     }
+    initFlames();
   }
 
-  // Statik arka planı bir OffscreenCanvas'a çiz (performans için)
-  function buildStaticBg() {
-    const off = document.createElement('canvas');
-    off.width  = W; off.height = H;
-    const oc   = off.getContext('2d');
+  // ── ALEV SİMÜLASYONU ──
+  // Her şerit bağımsız "ateş dili" — farklı hız, faz, yükseklik
+  let flames = [];
 
-    oc.fillStyle = '#080402';
-    oc.fillRect(0, 0, W, H);
-
-    for (let i = 0; i < COUNT; i++) {
-      const x   = i * STRIP_W;
-      const b   = stripBrightness[i];
-      if (b < 0.005) continue;
-
-      // Renk: tüm şeritler aynı ton — sadece opaklık değişir
-      const r = 220;
-      const g = Math.round(b * 55);
-
-      // Tabandan yukarı — alt dolup üste doğru söner
-      const grad = oc.createLinearGradient(x, H, x, 0);
-      // Opaklık 0.15-0.85 arası — çok koyu veya çok parlak şerit yok
-      const a = 0.15 + b * 0.70;
-      grad.addColorStop(0.00, `rgba(${r},${g},0,${a.toFixed(3)})`);
-      grad.addColorStop(0.25, `rgba(${r},${g},0,${a.toFixed(3)})`);
-      grad.addColorStop(0.60, `rgba(${r},${g},0,${(a*0.50).toFixed(3)})`);
-      grad.addColorStop(0.85, `rgba(${r},${g},0,${(a*0.08).toFixed(3)})`);
-      grad.addColorStop(1.00, `rgba(${r},${g},0,0)`);
-      oc.fillStyle = grad;
-      oc.fillRect(x, 0, STRIP_W, H);
-
-      // Şerit kenar çizgisi — ribbed doku
-      const la = b * 0.22;
-      oc.strokeStyle = `rgba(255,${Math.round(g*2+20)},0,${la.toFixed(3)})`;
-      oc.lineWidth   = 0.5;
-      oc.beginPath();
-      oc.moveTo(x + STRIP_W - 0.5, H * 0.08);
-      oc.lineTo(x + STRIP_W - 0.5, H * 0.92);
-      oc.stroke();
-    }
-
-    // Üste doğru fade — site arka planı rengi (#080402) ile tam kaynaş
-    const tf = oc.createLinearGradient(0, H, 0, 0);
-    tf.addColorStop(0,    'rgba(8,4,2,0)');
-    tf.addColorStop(0.28, 'rgba(8,4,2,0)');
-    tf.addColorStop(0.55, 'rgba(8,4,2,0.6)');
-    tf.addColorStop(0.78, 'rgba(8,4,2,0.88)');
-    tf.addColorStop(1,    'rgba(8,4,2,1)');
-    oc.fillStyle = tf; oc.fillRect(0, 0, W, H);
-
-    return off;
-  }
-
-  let staticBg = null;
-
-  function drawFrame(ts) {
-    if (!staticBg) { animId = requestAnimationFrame(drawFrame); return; }
-
-    // Statik arka planı çiz
-    ctx.drawImage(staticBg, 0, 0);
-
-    // Titreme efekti — bazı şeritleri rastgele hafifçe parlatır/söndürür
-    const flickerTime = ts * 0.003;
+  function initFlames() {
+    flames = [];
     for (let i = 0; i < COUNT; i++) {
       const b = stripBrightness[i];
-      if (b < 0.05) continue;
-
-      // Her şerit için unique faz — birbirinden bağımsız
-      const phase   = i * 2.399 + flickerTime;           // altın oran faz dağılımı
-      const flicker = (Math.sin(phase) * 0.5 + 0.5)      // 0..1
-                    * (Math.sin(phase * 3.7) * 0.5 + 0.5) // harmonik
-                    * b * 0.06;                            // maksimum %6 parlaklık değişimi
-
-      if (flicker < 0.005) continue;
-
-      const x = i * STRIP_W;
-      const r = 220;
-      const g = Math.round(b * 55);
-
-      const fg = ctx.createLinearGradient(x, H, x, 0);
-      fg.addColorStop(0.00, `rgba(${r},${g},0,${flicker.toFixed(3)})`);
-      fg.addColorStop(0.55, `rgba(${r},${g},0,${(flicker*0.6).toFixed(3)})`);
-      fg.addColorStop(0.85, `rgba(${r},${g},0,0)`);
-      ctx.fillStyle = fg;
-      ctx.fillRect(x, 0, STRIP_W, H);
+      flames.push({
+        // Temel yükseklik — parlaklığa göre
+        baseH:   0.38 + b * 0.32,   // daha yüksek taban
+        freq1:   0.8  + Math.random() * 1.4,
+        freq2:   2.1  + Math.random() * 2.5,
+        freq3:   5.0  + Math.random() * 4.0,
+        phase1:  Math.random() * Math.PI * 2,
+        phase2:  Math.random() * Math.PI * 2,
+        phase3:  Math.random() * Math.PI * 2,
+        amp1:    0.07 + Math.random() * 0.09,  // daha büyük salınım
+        amp2:    0.04 + Math.random() * 0.05,
+        amp3:    0.02 + Math.random() * 0.025,
+        // Komşu etki için ofset
+        neighbor: (Math.random() - 0.5) * 0.3,
+      });
     }
+  }
+
+  function flameTop(i, ts) {
+    const f  = flames[i];
+    if (!f) return H * 0.55;
+    const t  = ts * 0.001;
+    // Kendi salınımı
+    const h  = f.baseH
+      + Math.sin(t * f.freq1 + f.phase1) * f.amp1
+      + Math.sin(t * f.freq2 + f.phase2) * f.amp2
+      + Math.sin(t * f.freq3 + f.phase3) * f.amp3;
+    // Komşu etkisi — yan alevler birbirini etkiler
+    let neighborEffect = 0;
+    if (i > 0 && flames[i-1]) {
+      neighborEffect += Math.sin(t * flames[i-1].freq1 + flames[i-1].phase1) * 0.012;
+    }
+    if (i < COUNT-1 && flames[i+1]) {
+      neighborEffect += Math.sin(t * flames[i+1].freq1 + flames[i+1].phase1) * 0.012;
+    }
+    return H * (1.0 - Math.max(0.05, Math.min(0.72, h + neighborEffect)));
+  }
+
+  function drawFrame(ts) {
+    ctx.fillStyle = '#080402';
+    ctx.fillRect(0, 0, W, H);
+
+    for (let i = 0; i < COUNT; i++) {
+      const x = i * STRIP_W;
+      const b = stripBrightness[i];
+      if (b < 0.015) continue;
+
+      const topY = flameTop(i, ts);
+
+      // Alev rengi — tabandan kırmızı, ortada koyu kırmızı, üst sönük
+      const grad = ctx.createLinearGradient(x, H, x, topY);
+      const baseA = Math.min(0.97, 0.22 + b * 0.75);
+      // Taban: parlak kırmızı
+      grad.addColorStop(0.00, `rgba(255,18,0,${baseA.toFixed(3)})`);
+      grad.addColorStop(0.20, `rgba(230,12,0,${baseA.toFixed(3)})`);
+      // Orta: koyu kırmızı
+      grad.addColorStop(0.50, `rgba(180,8,0,${(baseA*0.70).toFixed(3)})`);
+      // Üst: çok koyu kırmızı
+      grad.addColorStop(0.78, `rgba(100,4,0,${(baseA*0.28).toFixed(3)})`);
+      // Uç: şeffaf
+      grad.addColorStop(1.00, `rgba(60,0,0,0)`);
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(x, H);
+      ctx.lineTo(x + STRIP_W, H);
+      ctx.lineTo(x + STRIP_W, topY);
+      ctx.lineTo(x, topY);
+      ctx.closePath();
+      ctx.fill();
+
+      // İnce parlak kenar — cam efekti
+      const la = b * 0.22;
+      if (la > 0.01) {
+        ctx.strokeStyle = `rgba(255,30,0,${la.toFixed(3)})`;
+        ctx.lineWidth   = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(x + STRIP_W - 0.5, H);
+        ctx.lineTo(x + STRIP_W - 0.5, topY + 2);
+        ctx.stroke();
+      }
+    }
+
+    // Üst fade — alev tepesinden siyaha
+    const tf = ctx.createLinearGradient(0, H * 0.15, 0, 0);
+    tf.addColorStop(0,    'rgba(8,4,2,0)');
+    tf.addColorStop(0.30, 'rgba(8,4,2,0.35)');
+    tf.addColorStop(0.60, 'rgba(8,4,2,0.80)');
+    tf.addColorStop(1,    'rgba(8,4,2,1)');
+    ctx.fillStyle = tf;
+    ctx.fillRect(0, 0, W, H);
+
+    // ── KIVIRCIMLAR ──
+    drawSparks(ts);
+
+    // ── MATRİX YAĞMURU ──
+    drawMatrix(ts);
 
     animId = requestAnimationFrame(drawFrame);
   }
 
+  // ── KIVIRCIM SİSTEMİ ──
+  let sparks = [];
+  const MAX_SPARKS = 120;
+
+  function initSparks() { sparks = []; }
+
+  function spawnSpark(ts) {
+    if (sparks.length >= MAX_SPARKS) return;
+    // Alev tepesinden doğan kıvılcım — rastgele bir şeritten
+    const si = Math.floor(Math.random() * COUNT);
+    const b  = stripBrightness[si] || 0.1;
+    if (b < 0.15 || Math.random() > 0.35) return;
+    const topY = flameTop(si, ts);
+    // %40 sarı, %60 kırmızı kıvılcım
+    const isYellow = Math.random() < 0.40;
+    sparks.push({
+      x:      si * STRIP_W + Math.random() * STRIP_W,
+      y:      topY + Math.random() * 10,
+      vx:     (Math.random() - 0.5) * 1.8,
+      vy:    -(1.2 + Math.random() * 2.8),
+      life:   1.0,
+      decay:  0.008 + Math.random() * 0.018,
+      size:   1.0 + Math.random() * 2.0,
+      bright: b,
+      yellow: isYellow,
+    });
+  }
+
+  function drawSparks(ts) {
+    const spawnCount = 3 + Math.floor(Math.random() * 4);
+    for (let s = 0; s < spawnCount; s++) spawnSpark(ts);
+
+    sparks = sparks.filter(sp => sp.life > 0);
+    for (const sp of sparks) {
+      sp.x  += sp.vx;
+      sp.y  += sp.vy;
+      sp.vy += 0.04;
+      sp.vx *= 0.98;
+      sp.life -= sp.decay;
+
+      if (sp.life <= 0) continue;
+
+      const a  = sp.life * sp.bright * 0.9;
+      const sz = sp.size * sp.life;
+
+      let rr, gg, bb;
+      if (sp.yellow) {
+        // Sarı-turuncu alev kıvılcımı: parlak sarı → turuncu → söner
+        rr = 255;
+        gg = Math.round(180 + sp.life * 60);   // 180-240 arası sarı
+        bb = Math.round(sp.life * 20);          // hafif beyazımsı parıltı
+      } else {
+        // Kırmızı kıvılcım
+        rr = 255;
+        gg = Math.round(sp.life * 60 * sp.bright);
+        bb = 0;
+      }
+
+      ctx.beginPath();
+      ctx.arc(sp.x, sp.y, Math.max(0.3, sz), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${rr},${gg},${bb},${a.toFixed(3)})`;
+      ctx.fill();
+
+      // Kuyruk çizgisi
+      if (sp.size > 1.8) {
+        ctx.beginPath();
+        ctx.moveTo(sp.x, sp.y);
+        ctx.lineTo(sp.x - sp.vx * 3, sp.y - sp.vy * 3);
+        ctx.strokeStyle = `rgba(${rr},${gg},${bb},${(a*0.5).toFixed(3)})`;
+        ctx.lineWidth = sz * 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  // ── MATRİX YAĞMURU ──
+  let matrixCols = [];
+  const MAT_CHARS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモ';
+  let matrixFont = 11;
+
+  function initMatrix() {
+    matrixCols = [];
+    const cols = Math.floor(W / 14);
+    for (let i = 0; i < cols; i++) {
+      matrixCols.push({
+        x:      i * 14 + 7,
+        y:      Math.random() * -H,          // ekran dışından başla
+        speed:  0.8 + Math.random() * 1.6,
+        len:    6  + Math.floor(Math.random() * 16),
+        bright: 0.08 + Math.random() * 0.18,  // çok soluk — arka planda
+        chars:  Array.from({length:20}, () => MAT_CHARS[Math.floor(Math.random()*MAT_CHARS.length)]),
+        tick:   0,
+        tickMax: 4 + Math.floor(Math.random() * 8),  // karakter değişim hızı
+      });
+    }
+  }
+
+  let lastMatTick = 0;
+  function drawMatrix(ts) {
+    const dt = ts - lastMatTick;
+    lastMatTick = ts;
+
+    ctx.font = `${matrixFont}px 'IBM Plex Mono', monospace`;
+    ctx.textAlign = 'center';
+
+    for (const col of matrixCols) {
+      col.y += col.speed;
+      col.tick++;
+
+      // Rastgele karakter değiştir
+      if (col.tick >= col.tickMax) {
+        col.tick = 0;
+        const ri = Math.floor(Math.random() * col.chars.length);
+        col.chars[ri] = MAT_CHARS[Math.floor(Math.random() * MAT_CHARS.length)];
+      }
+
+      // Ekranın altını geçince başa al
+      if (col.y - col.len * matrixFont > H) {
+        col.y     = -matrixFont * 2;
+        col.speed = 0.8 + Math.random() * 1.6;
+        col.len   = 6 + Math.floor(Math.random() * 16);
+        col.bright= 0.06 + Math.random() * 0.16;
+      }
+
+      // Sütun karakterlerini çiz
+      for (let j = 0; j < col.len; j++) {
+        const cy   = col.y - j * matrixFont;
+        if (cy < 0 || cy > H) continue;
+
+        // Baş karakter en parlak, kuyruk söner
+        const fadeFactor = 1 - j / col.len;
+        // Alev bölgesinde matrix daha az görünür
+        const inFlame    = cy > H * 0.55 ? 0.3 : 1.0;
+        const alpha      = col.bright * fadeFactor * inFlame;
+        if (alpha < 0.01) continue;
+
+        // Baş karakter kırmızıya yakın, geri kalanlar koyu kırmızı-yeşil mix
+        let cr, cg, cb;
+        if (j === 0) {
+          cr = 220; cg = 30; cb = 10;  // parlak kırmızı-turuncu baş
+        } else {
+          cr = Math.round(60 + fadeFactor * 80);
+          cg = Math.round(fadeFactor * 20);
+          cb = Math.round(fadeFactor * 8);
+        }
+
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha.toFixed(3)})`;
+        ctx.fillText(col.chars[j % col.chars.length], col.x, cy);
+      }
+    }
+
+    ctx.textAlign = 'left';  // sıfırla
+  }
+
   function start() {
     setup();
-    staticBg = buildStaticBg();
+    initSparks();
+    initMatrix();
     if (animId) cancelAnimationFrame(animId);
     animId = requestAnimationFrame(drawFrame);
   }
