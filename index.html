@@ -260,12 +260,12 @@
   }
   #lock-screen.visible { display: flex !important; }
 
-  /* Canvas arka plan — tabana yayılmış */
+  /* Canvas arka plan — tam ekran (matrix için) */
   #lock-canvas {
     position: absolute;
-    bottom: 0; left: 0; right: 0;
+    inset: 0;
     width: 100%;
-    height: 38%;
+    height: 100%;
     z-index: 0; pointer-events: none;
   }
 
@@ -1770,7 +1770,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.72</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.73</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2863,35 +2863,19 @@ const lockHint = document.getElementById('lock-hint');
     STRIP_W = Math.max(5, Math.round(W / 130));
     COUNT   = Math.ceil(W / STRIP_W) + 2;
 
-    // Soldan sağa tüm genişliğe yayılmış dalgalı ışık dağılımı
-    // Her şerit bağımsız rastgele ama komşularıyla yumuşak geçişli
+    // U şekli: sol ve sağ kenarlarda yüksek alev, ortada daha alçak
     stripBrightness = [];
-
-    // Önce ham rastgele değerler üret
-    const raw = [];
     for (let i = 0; i < COUNT; i++) {
-      // Birkaç sinüs dalgasının toplamı — organik dalgalı görünüm
-      const t   = i / (COUNT - 1);
-      const wave =
-        0.45 * Math.pow(Math.sin(t * Math.PI * 2.3 + 0.8), 2) +
-        0.30 * Math.pow(Math.sin(t * Math.PI * 4.7 + 2.1), 2) +
-        0.20 * Math.pow(Math.sin(t * Math.PI * 7.1 + 1.4), 2) +
-        0.05 * Math.pow(Math.sin(t * Math.PI * 11.3 + 0.3), 2);
-      raw.push(wave);
-    }
-
-    // Gaussian blur — çok geniş yarıçap, tamamen pürüzsüz geçiş
-    const blur = 80;
-    for (let i = 0; i < COUNT; i++) {
-      let sum = 0, weight = 0;
-      for (let j = Math.max(0, i - blur); j < Math.min(COUNT, i + blur); j++) {
-        const d = i - j;
-        const w = Math.exp(-d * d / (2 * blur * blur * 0.5));
-        sum    += raw[j] * w;
-        weight += w;
-      }
-      const b = sum / weight;
-      stripBrightness.push(Math.max(0.05, Math.min(1, b * 1.2)));
+      const t = i / (COUNT - 1);  // 0=sol 1=sağ
+      // U eğrisi: kenarlar 1.0, orta ~0.4
+      const u = Math.pow(2*t - 1, 2);           // 0 ortada, 1 kenarlarda
+      // Organik küçük dalgalar ekle — düz değil
+      const noise =
+        0.12 * Math.sin(t * Math.PI * 6.3 + 1.1) +
+        0.07 * Math.sin(t * Math.PI * 12.7 + 2.4) +
+        0.04 * Math.sin(t * Math.PI * 21.0 + 0.7);
+      const b = Math.max(0.18, Math.min(1.0, 0.38 + u * 0.62 + noise));
+      stripBrightness.push(b);
     }
     initFlames();
   }
@@ -2987,13 +2971,20 @@ const lockHint = document.getElementById('lock-hint');
       }
     }
 
-    // Üst fade — alev tepesinden siyaha
-    const tf = ctx.createLinearGradient(0, H * 0.15, 0, 0);
-    tf.addColorStop(0,    'rgba(8,4,2,0)');
-    tf.addColorStop(0.30, 'rgba(8,4,2,0.35)');
-    tf.addColorStop(0.60, 'rgba(8,4,2,0.80)');
-    tf.addColorStop(1,    'rgba(8,4,2,1)');
-    ctx.fillStyle = tf;
+    // Alev bölgesi alt %50, üst %50 matrix + siyah
+    // Alev sadece alttan yükselen bölgede görünür — üstü temiz
+    const flameFade = ctx.createLinearGradient(0, H, 0, H * 0.45);
+    flameFade.addColorStop(0,   'rgba(8,4,2,0)');
+    flameFade.addColorStop(0.65,'rgba(8,4,2,0)');
+    flameFade.addColorStop(1,   'rgba(8,4,2,0)');
+    // Üst %50 karanlık kalsın ama matrix görünsün
+    const topFade = ctx.createLinearGradient(0, H * 0.40, 0, 0);
+    topFade.addColorStop(0,    'rgba(8,4,2,0)');
+    topFade.addColorStop(0.18, 'rgba(8,4,2,0.25)');
+    topFade.addColorStop(0.45, 'rgba(8,4,2,0.70)');
+    topFade.addColorStop(0.75, 'rgba(8,4,2,0.92)');
+    topFade.addColorStop(1,    'rgba(8,4,2,1)');
+    ctx.fillStyle = topFade;
     ctx.fillRect(0, 0, W, H);
 
     // ── KIVIRCIMLAR ──
@@ -3087,76 +3078,81 @@ const lockHint = document.getElementById('lock-hint');
 
   function initMatrix() {
     matrixCols = [];
-    const cols = Math.floor(W / 14);
+    const cols = Math.floor(W / 16);
     for (let i = 0; i < cols; i++) {
       matrixCols.push({
-        x:      i * 14 + 7,
-        y:      Math.random() * -H,          // ekran dışından başla
-        speed:  0.8 + Math.random() * 1.6,
-        len:    6  + Math.floor(Math.random() * 16),
-        bright: 0.08 + Math.random() * 0.18,  // çok soluk — arka planda
-        chars:  Array.from({length:20}, () => MAT_CHARS[Math.floor(Math.random()*MAT_CHARS.length)]),
-        tick:   0,
-        tickMax: 4 + Math.floor(Math.random() * 8),  // karakter değişim hızı
+        x:       i * 16 + 8,
+        y:       Math.random() * H * 0.7,    // ekranda dağıtılmış başla
+        speed:   1.2 + Math.random() * 2.2,
+        len:     8  + Math.floor(Math.random() * 18),
+        bright:  0.12 + Math.random() * 0.22,
+        chars:   Array.from({length:20}, () => MAT_CHARS[Math.floor(Math.random()*MAT_CHARS.length)]),
+        tick:    0,
+        tickMax: 60 + Math.random() * 180,
       });
     }
   }
 
-  let lastMatTick = 0;
+  let lastMatTs = 0;
   function drawMatrix(ts) {
-    const dt = ts - lastMatTick;
-    lastMatTick = ts;
+    if (!matrixCols.length) return;
 
-    ctx.font = `${matrixFont}px 'IBM Plex Mono', monospace`;
+    // Delta time ile frame-rate bağımsız hareket
+    const dt = Math.min(ts - lastMatTs, 50);  // max 50ms cap
+    lastMatTs = ts;
+
+    ctx.save();
+    ctx.font = `12px 'IBM Plex Mono', monospace`;
     ctx.textAlign = 'center';
 
     for (const col of matrixCols) {
-      col.y += col.speed;
-      col.tick++;
+      col.y += col.speed * dt * 0.06;
+      col.tick += dt;
 
-      // Rastgele karakter değiştir
       if (col.tick >= col.tickMax) {
         col.tick = 0;
         const ri = Math.floor(Math.random() * col.chars.length);
         col.chars[ri] = MAT_CHARS[Math.floor(Math.random() * MAT_CHARS.length)];
+        col.tickMax = 60 + Math.random() * 180;
       }
 
-      // Ekranın altını geçince başa al
-      if (col.y - col.len * matrixFont > H) {
-        col.y     = -matrixFont * 2;
-        col.speed = 0.8 + Math.random() * 1.6;
-        col.len   = 6 + Math.floor(Math.random() * 16);
-        col.bright= 0.06 + Math.random() * 0.16;
+      if (col.y - col.len * 13 > H) {
+        col.y     = -13 * 3;
+        col.speed = 1.2 + Math.random() * 2.2;
+        col.len   = 8 + Math.floor(Math.random() * 18);
+        col.bright= 0.12 + Math.random() * 0.22;
       }
 
-      // Sütun karakterlerini çiz
       for (let j = 0; j < col.len; j++) {
-        const cy   = col.y - j * matrixFont;
-        if (cy < 0 || cy > H) continue;
+        const cy = col.y - j * 13;
+        if (cy < -13 || cy > H + 13) continue;
 
-        // Baş karakter en parlak, kuyruk söner
-        const fadeFactor = 1 - j / col.len;
-        // Alev bölgesinde matrix daha az görünür
-        const inFlame    = cy > H * 0.55 ? 0.3 : 1.0;
-        const alpha      = col.bright * fadeFactor * inFlame;
-        if (alpha < 0.01) continue;
+        const fade = 1 - j / col.len;
+        // Alev bölgesinde (alt %45) matrix çok soluk
+        const zone  = cy > H * 0.55 ? 0.18 : 1.0;
+        const alpha = col.bright * fade * zone;
+        if (alpha < 0.012) continue;
 
-        // Baş karakter kırmızıya yakın, geri kalanlar koyu kırmızı-yeşil mix
         let cr, cg, cb;
         if (j === 0) {
-          cr = 220; cg = 30; cb = 10;  // parlak kırmızı-turuncu baş
+          // Baş: parlak kırmızı-turuncu
+          cr = 255; cg = 80; cb = 20;
+        } else if (j < 3) {
+          // İlk 3: turuncu-kırmızı
+          cr = 200; cg = Math.round(fade * 40); cb = 0;
         } else {
-          cr = Math.round(60 + fadeFactor * 80);
-          cg = Math.round(fadeFactor * 20);
-          cb = Math.round(fadeFactor * 8);
+          // Kuyruk: koyu kırmızı
+          cr = Math.round(80 + fade * 100);
+          cg = Math.round(fade * 12);
+          cb = 0;
         }
 
-        ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha.toFixed(3)})`;
+        ctx.fillStyle = `rgba(${cr},${cg},${cb},${Math.min(0.95, alpha).toFixed(3)})`;
         ctx.fillText(col.chars[j % col.chars.length], col.x, cy);
       }
     }
 
-    ctx.textAlign = 'left';  // sıfırla
+    ctx.restore();
   }
 
   function start() {
