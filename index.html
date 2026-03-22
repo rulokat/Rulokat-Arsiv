@@ -1740,7 +1740,7 @@
   <div style="text-align:center;margin-bottom:28px;position:relative;z-index:3;animation:lockLogoIn 1s cubic-bezier(0.16,1,0.3,1) both">
     <div style="display:inline-block;position:relative">
       <div class="lock-logo-text">Rulokat Arşiv</div>
-      <div class="lock-version">v 1.53</div>
+      <div class="lock-version">v 1.62</div>
     </div>
   </div>
 
@@ -1769,7 +1769,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.62</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.63</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2585,6 +2585,32 @@
     <div class="modal-actions">
       <button class="btn-cancel" onclick="document.getElementById('media-manual-modal').style.display='none'">İptal</button>
       <button class="btn-confirm" style="background:var(--accent);color:#000" onclick="saveManualMedia()">Ekle</button>
+    </div>
+  </div>
+</div>
+
+<!-- HARCAMA MODAL -->
+<div class="modal-overlay" id="card-spend-modal">
+  <div class="modal" style="width:360px">
+    <h3 id="card-spend-title">💳 Harcama Ekle</h3>
+    <input type="hidden" id="card-spend-id">
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Tutar (₺)</label>
+    <input type="number" id="card-spend-amount" placeholder="0.00" min="0" step="0.01"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:18px;padding:10px 12px;border-radius:5px;outline:none;margin-bottom:10px;transition:border-color 0.2s"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Açıklama (opsiyonel)</label>
+    <input type="text" id="card-spend-desc" placeholder="Market, restoran, fatura..."
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;margin-bottom:14px;transition:border-color 0.2s"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+      onkeydown="if(event.key==='Enter')saveSpend()">
+
+    <div id="card-spend-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:14px;font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--text2)"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('card-spend-modal').style.display='none'">İptal</button>
+      <button class="btn-confirm" style="background:var(--accent);color:#000" onclick="saveSpend()">Harcamayı Kaydet</button>
     </div>
   </div>
 </div>
@@ -6871,13 +6897,14 @@ function renderCardGrid() {
             <div style="font-size:12px;color:rgba(255,255,255,0.92);font-family:'IBM Plex Mono',monospace">${escHtml(expiry)}</div>
           </div>
           <div style="text-align:right">
-            <div style="font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1.2px;margin-bottom:3px">${c.limit ? 'LİMİT' : 'TİP'}</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.92);font-family:'IBM Plex Mono',monospace">${c.limit ? Number(c.limit).toLocaleString('tr-TR')+'₺' : typeLabel}</div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1.2px;margin-bottom:3px">${c.limit ? 'KALAN' : 'TİP'}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.92);font-family:'IBM Plex Mono',monospace">${c.limit ? (Number(c.limit) - (c.spent||0)).toLocaleString('tr-TR')+'₺' : typeLabel}</div>
           </div>
         </div>
         <!-- Banka adı + eylemler -->
         <div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.12);padding-top:10px">
           <div style="flex:1;font-size:11px;color:rgba(255,255,255,0.6);font-weight:500">${escHtml(c.name||c.bank||'')}</div>
+          <button onclick="openSpendModal('${c.id}')" style="background:rgba(255,180,0,0.18);border:none;color:rgba(255,200,80,0.9);padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,180,0,0.32)'" onmouseout="this.style.background='rgba(255,180,0,0.18)'">+ Harca</button>
           <button onclick="showCardDetails('${c.id}')" style="background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Detay</button>
           <button onclick="openCardEntry('${c.id}')" style="background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Düzenle</button>
           <button onclick="deleteCard('${c.id}')" style="background:rgba(220,50,50,0.25);border:none;color:rgba(255,160,160,0.9);padding:5px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(220,50,50,0.45)'" onmouseout="this.style.background='rgba(220,50,50,0.25)'">Sil</button>
@@ -6897,11 +6924,22 @@ function cardBrandColor(num) {
 function showCardDetails(id) {
   const c = cards.find(x => x.id === id);
   if (!c) return;
-  const num = (c.number || '').replace(/\s/g,'');
-  // Numarayı göster
-  const fullNum = num || '————————————————';
-  const formatted = fullNum.replace(/(.{4})/g,'$1 ').trim();
-  showToast(`${formatted} | CVV: ${c.cvv||'—'} | ${c.expiry||'—/—'}`, 5000);
+  const num       = (c.number || '').replace(/\s/g,'');
+  const formatted = (num || '————————————————').replace(/(.{4})/g,'$1 ').trim();
+  const spent     = parseFloat(c.spent) || 0;
+  const limit     = parseFloat(c.limit) || 0;
+  const history   = (c.spendHistory || []).slice(-5).reverse();
+
+  let msg = `${formatted}  CVV: ${c.cvv||'—'}  ${c.expiry||'—/—'}`;
+  if (limit > 0) msg += `\nHarcanan: ${spent.toLocaleString('tr-TR')} ₺ / ${limit.toLocaleString('tr-TR')} ₺`;
+  if (history.length > 0) {
+    msg += '\n\nSon harcamalar:';
+    history.forEach(h => {
+      const d = new Date(h.date).toLocaleDateString('tr-TR');
+      msg += `\n${d}  ${h.amount.toLocaleString('tr-TR')} ₺  ${h.desc||''}`;
+    });
+  }
+  alert(msg);
 }
 
 // ── Kart Ekleme/Düzenleme ──
@@ -6965,7 +7003,95 @@ function deleteCard(id) {
   cards = cards.filter(c => c.id !== id);
   saveCards(cards);
   renderCardGrid();
+  updateDashBudget();
   showToast('Kart silindi');
+}
+
+// ── Harcama Sistemi ──
+function openSpendModal(id) {
+  const c = cards.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('card-spend-id').value = id;
+  document.getElementById('card-spend-title').textContent = '💳 ' + (c.name || c.bank || 'Kart') + ' — Harcama';
+  document.getElementById('card-spend-amount').value = '';
+  document.getElementById('card-spend-desc').value = '';
+
+  const limit   = parseFloat(c.limit) || 0;
+  const spent   = parseFloat(c.spent) || 0;
+  const remaining = limit - spent;
+  const infoEl  = document.getElementById('card-spend-info');
+
+  if (limit > 0) {
+    const pct = Math.min(100, Math.round((spent / limit) * 100));
+    infoEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="color:var(--text3)">Limit</span>
+        <span>${limit.toLocaleString('tr-TR')} ₺</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="color:var(--text3)">Harcanan</span>
+        <span style="color:var(--accent)">${spent.toLocaleString('tr-TR')} ₺</span>
+      </div>
+      <div style="background:var(--surface);border-radius:3px;height:4px;margin-bottom:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${pct>80?'var(--danger)':'var(--accent)'};border-radius:3px;transition:width 0.3s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--text3)">Kalan</span>
+        <span style="color:${remaining<0?'var(--danger)':'#4ade80'};font-weight:500">${remaining.toLocaleString('tr-TR')} ₺</span>
+      </div>`;
+  } else {
+    infoEl.innerHTML = '<span style="color:var(--text3)">Bu kart için limit belirlenmemiş</span>';
+  }
+
+  document.getElementById('card-spend-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('card-spend-amount').focus(), 100);
+}
+
+function saveSpend() {
+  const id     = document.getElementById('card-spend-id').value;
+  const amount = parseFloat(document.getElementById('card-spend-amount').value);
+  const desc   = document.getElementById('card-spend-desc').value.trim();
+
+  if (!amount || amount <= 0) { showToast('Geçerli bir tutar girin'); return; }
+
+  const idx = cards.findIndex(c => c.id === id);
+  if (idx === -1) return;
+
+  const c = cards[idx];
+  const prevSpent = parseFloat(c.spent) || 0;
+  cards[idx] = {
+    ...c,
+    spent: prevSpent + amount,
+    spendHistory: [
+      ...((c.spendHistory || [])),
+      { amount, desc, date: new Date().toISOString() }
+    ]
+  };
+
+  saveCards(cards);
+  document.getElementById('card-spend-modal').style.display = 'none';
+  renderCardGrid();
+  updateDashBudget();
+
+  const limit = parseFloat(c.limit) || 0;
+  const newSpent = prevSpent + amount;
+  const remaining = limit - newSpent;
+  if (limit > 0 && remaining < 0) {
+    showToast(`⚠ Limit aşıldı! ${Math.abs(remaining).toLocaleString('tr-TR')} ₺ fazla`);
+  } else {
+    showToast(`Harcama eklendi ✓ ${amount.toLocaleString('tr-TR')} ₺`);
+  }
+}
+
+function resetCardSpend(id) {
+  const idx = cards.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  if (!confirm('Bu kartın harcama geçmişini sıfırlamak istiyor musunuz?')) return;
+  cards[idx] = { ...cards[idx], spent: 0, spendHistory: [] };
+  saveCards(cards);
+  renderCardGrid();
+  updateDashBudget();
+  showToast('Harcama geçmişi sıfırlandı');
 }
 
 // ── Format yardımcıları ──
@@ -7162,19 +7288,32 @@ function updateDashBudget() {
   el.innerHTML = cards.map(c => {
     const last4    = (c.number||'').replace(/\s/g,'').slice(-4)||'••••';
     const limitNum = parseFloat(c.limit) || 0;
-    const typeLabel= {credit:'Kredi',debit:'Banka',prepaid:'Ön Öd.',virtual:'Sanal'}[c.type]||c.type;
+    const spent    = parseFloat(c.spent) || 0;
+    const remaining= limitNum - spent;
+    const pct      = limitNum > 0 ? Math.min(100, Math.round((spent/limitNum)*100)) : 0;
     const col      = cardBrandColor(c.number);
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:28px;height:18px;border-radius:4px;background:linear-gradient(135deg,${col.from},${col.to});flex-shrink:0"></div>
-        <div>
-          <div style="font-size:12px;color:var(--text);font-weight:500">${escHtml(c.name||c.bank||'Kart')}</div>
-          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">••••${last4} · ${typeLabel}</div>
+    const barColor = pct > 80 ? 'var(--danger)' : pct > 50 ? 'var(--accent2)' : 'var(--accent)';
+    return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${limitNum?'5px':'0'}">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:18px;border-radius:4px;background:linear-gradient(135deg,${col.from},${col.to});flex-shrink:0"></div>
+          <div>
+            <div style="font-size:12px;color:var(--text);font-weight:500">${escHtml(c.name||c.bank||'Kart')}</div>
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">••••${last4}</div>
+          </div>
         </div>
+        ${limitNum ? `<div style="text-align:right">
+          <div style="font-size:11px;color:${remaining<0?'var(--danger)':'var(--accent2)'};font-family:'IBM Plex Mono',monospace;font-weight:500">${remaining.toLocaleString('tr-TR')} ₺</div>
+          <div style="font-size:9px;color:var(--text3)">${spent.toLocaleString('tr-TR')} / ${limitNum.toLocaleString('tr-TR')}</div>
+        </div>` : ''}
       </div>
-      ${limitNum ? `<div style="font-size:11px;color:var(--accent2);font-family:'IBM Plex Mono',monospace">${limitNum.toLocaleString('tr-TR')} ₺</div>` : ''}
+      ${limitNum ? `<div style="background:var(--surface2);border-radius:2px;height:3px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${barColor};border-radius:2px;transition:width 0.4s"></div>
+      </div>` : ''}
     </div>`;
-  }).join('');
+  }).join('') + `<div style="margin-top:8px;display:flex;justify-content:flex-end">
+    <button onclick="toggleAcc('pw')" style="font-size:11px;color:var(--accent2);background:none;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Harcama ekle →</button>
+  </div>`;
 }
 </script>
 
