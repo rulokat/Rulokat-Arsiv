@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.49</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.50</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.49</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.50</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -1777,6 +1777,17 @@
             <span class="acc-arrow" id="acc-arrow-pw"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
           </button>
           <div class="acc-body" id="acc-body-pw">
+            <!-- ŞİFRE / KART SEKMELERİ -->
+            <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0">
+              <button id="pw-tab-pass" onclick="switchPwTab('pass')"
+                style="flex:1;background:none;border:none;border-bottom:2px solid var(--accent);color:var(--accent);padding:9px 6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s">
+                🔑 Şifreler
+              </button>
+              <button id="pw-tab-card" onclick="switchPwTab('card')"
+                style="flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);padding:9px 6px;font-size:12px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all 0.15s">
+                💳 Kartlar
+              </button>
+            </div>
             <div style="padding:10px 14px 6px">
               <div id="pw-stats" style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text2)"></div>
             </div>
@@ -1879,20 +1890,19 @@
           </button>
           <div class="acc-body" id="acc-body-canvas"></div>
         </div>
-
-        <!-- HABERLER -->
-        <div class="acc-group" id="acc-news">
-          <button class="acc-header" onclick="toggleAcc('news')">
+        <!-- YEDEKLE — sidebar hızlı erişim -->
+        <!-- DASHBOARD -->
+        <div class="acc-group" id="acc-dash">
+          <button class="acc-header" onclick="toggleAcc('dash')">
             <span class="acc-header-left">
-              <span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/></svg></span>
-              Haberler
+              <span class="ico-svg"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+              Dashboard
             </span>
-            <span class="acc-arrow" id="acc-arrow-news"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
+            <span class="acc-arrow" id="acc-arrow-dash"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
           </button>
-          <div class="acc-body" id="acc-body-news"></div>
+          <div class="acc-body" id="acc-body-dash"></div>
         </div>
 
-        <!-- YEDEKLE — sidebar hızlı erişim -->
         <!-- GOFİLE UPLOAD -->
         <div class="acc-group" id="acc-gofile">
           <button class="acc-header" onclick="toggleAcc('gofile')">
@@ -2071,60 +2081,60 @@
 
     </div>
 
-    <!-- HABERLER PANELİ -->
-    <div id="news-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
+    <!-- DASHBOARD PANELİ -->
+    <div id="dash-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
 
-      <!-- ÜSTTBAR -->
-      <div style="padding:12px 16px 0;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
-        <!-- Başlık + Durum -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Haberler</span>
-            <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 2s infinite"></span>
-            <span style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace" id="news-last-update"></span>
+      <!-- Toolbar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
+        <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Dashboard</span>
+        <button onclick="dashRefresh()" style="background:none;border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:14px;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺</button>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px">
+
+        <!-- HAVA + DÖVİZ -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <!-- Hava Durumu -->
+          <div id="dash-weather" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;min-height:90px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace">Hava Durumu</div>
+            <div style="text-align:center;color:var(--text3);font-size:11px;margin-top:8px">Yükleniyor...</div>
           </div>
-          <button onclick="newsRefresh()" title="Yenile" style="background:none;border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-size:13px" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺</button>
+          <!-- Döviz -->
+          <div id="dash-fx" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;min-height:90px">
+            <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:8px">Döviz</div>
+            <div style="color:var(--text3);font-size:11px">Yükleniyor...</div>
+          </div>
         </div>
-        <!-- Arama -->
-        <div style="position:relative;margin-bottom:10px">
-          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;font-size:13px">
-            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg>
-          </span>
-          <input type="text" id="news-search" placeholder="ara: war, AI, bitcoin, space..."
-            style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 36px 8px 32px;border-radius:6px;outline:none;transition:border-color 0.2s"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
-            onkeydown="if(event.key==='Enter')fetchNews()" oninput="if(this.value==='')loadHNFeed(newsActiveCat)">
-          <button onclick="document.getElementById('news-search').value='';loadHNFeed(newsActiveCat)" id="news-clear-btn"
-            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px;display:none">✕</button>
-        </div>
-        <!-- Kategoriler -->
-        <div style="display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px">
-          <button class="news-cat-btn active" data-cat="top"      onclick="newsQuickCat(this)">🔥 Gündem</button>
-          <button class="news-cat-btn"        data-cat="new"      onclick="newsQuickCat(this)">⚡ Yeni</button>
-          <button class="news-cat-btn"        data-cat="conflict" onclick="newsQuickCat(this)">⚔️ Savaş</button>
-          <button class="news-cat-btn"        data-cat="tech"     onclick="newsQuickCat(this)">🤖 Teknoloji</button>
-          <button class="news-cat-btn"        data-cat="science"  onclick="newsQuickCat(this)">🔬 Bilim</button>
-          <button class="news-cat-btn"        data-cat="economy"  onclick="newsQuickCat(this)">📈 Ekonomi</button>
-          <button class="news-cat-btn"        data-cat="best"     onclick="newsQuickCat(this)">⭐ En İyi</button>
-        </div>
-      </div>
 
-      <!-- DURUM ŞERIDI -->
-      <div id="news-status" style="display:none;padding:5px 16px;font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;background:var(--surface2);border-bottom:1px solid var(--border);flex-shrink:0">
-        <span id="news-status-text"></span>
-      </div>
-
-      <!-- HABER LİSTESİ -->
-      <div id="news-list" style="flex:1;overflow-y:auto;padding:0">
-        <div style="text-align:center;padding:60px 20px;color:var(--text3);font-size:13px">
-          <div style="font-size:40px;opacity:0.15;margin-bottom:12px">📰</div>
-          Yükleniyor...
+        <!-- BÜTÇE ÖZETİ -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">Bu Ay Harcama</span>
+            <button onclick="toggleAcc('pw');setTimeout(()=>showCardTab(),100)" style="font-size:11px;color:var(--accent2);background:none;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Kartlar →</button>
+          </div>
+          <div id="dash-budget" style="padding:12px 14px">
+            <div style="color:var(--text3);font-size:12px">Henüz harcama yok</div>
+          </div>
         </div>
+
+        <!-- HIZLI İSTATİSTİKLER -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="dash-stats-grid">
+        </div>
+
+        <!-- ŞEHİR AYARI -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Hava durumu için şehir</div>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="dash-city-input" placeholder="İstanbul" value=""
+              style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:12px;padding:6px 10px;border-radius:5px;outline:none;transition:border-color 0.2s"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')dashSaveCity()">
+            <button onclick="dashSaveCity()" style="background:var(--accent);border:none;color:#000;padding:6px 12px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Kaydet</button>
+          </div>
+        </div>
+
       </div>
-      <div id="news-api-warn" style="display:none"></div>
-      <input type="hidden" id="news-api-key-input">
     </div>
-
     <!-- BOOKMARK PANEL -->
     <div id="bm-panel">
       <div class="bm-toolbar">
@@ -2153,14 +2163,29 @@
 
     <!-- PASSWORD MANAGER PANEL -->
     <div id="pw-panel">
-      <div class="pw-toolbar">
-        <input type="text" class="pw-search" id="pw-search" placeholder="Site veya kullanıcı ara...">
-        <button class="btn-add-pw" onclick="openPwEntry(null)">
-          <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
-          Ekle
-        </button>
+      <!-- ŞİFRE PANEL -->
+      <div id="pw-pass-view" style="display:flex;flex:1;flex-direction:column;overflow:hidden">
+        <div class="pw-toolbar">
+          <input type="text" class="pw-search" id="pw-search" placeholder="Site veya kullanıcı ara...">
+          <button class="btn-add-pw" onclick="openPwEntry(null)">
+            <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
+            Ekle
+          </button>
+        </div>
+        <div class="pw-grid" id="pw-grid"></div>
       </div>
-      <div class="pw-grid" id="pw-grid"></div>
+
+      <!-- KREDİ KARTI PANEL -->
+      <div id="pw-card-view" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+        <div class="pw-toolbar">
+          <input type="text" class="pw-search" id="card-search" placeholder="Kart ara..." oninput="renderCardGrid()">
+          <button class="btn-add-pw" onclick="openCardEntry(null)">
+            <span class="ico-svg"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg></span>
+            Ekle
+          </button>
+        </div>
+        <div id="card-grid" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px"></div>
+      </div>
     </div>
 
     <!-- MEDIA PANEL -->
@@ -2518,6 +2543,62 @@
   </div>
 </div>
 
+<!-- KREDİ KARTI MODAL -->
+<div class="modal-overlay" id="card-entry-modal">
+  <div class="modal" style="width:380px">
+    <h3 id="card-entry-title">💳 Kart Ekle</h3>
+    <input type="hidden" id="card-entry-id">
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Kart Adı / Takma Ad</label>
+    <input type="text" id="card-name" placeholder="Örn: Vakıfbank Gold" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;margin-bottom:10px;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Kart Numarası</label>
+    <input type="text" id="card-number" placeholder="•••• •••• •••• ••••" maxlength="19" oninput="formatCardNumber(this)" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;padding:8px 12px;border-radius:5px;outline:none;margin-bottom:10px;letter-spacing:2px;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Son Kullanma</label>
+        <input type="text" id="card-expiry" placeholder="AA/YY" maxlength="5" oninput="formatExpiry(this)" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div>
+        <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">CVV</label>
+        <div style="position:relative">
+          <input type="password" id="card-cvv" placeholder="•••" maxlength="4" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 36px 8px 12px;border-radius:5px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <button onclick="togglePwEye('card-cvv',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:2px">
+            <span class="ico-svg" style="width:14px;height:14px"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0"/><path d="M21 12c-2.4 4-5.4 6-9 6c-3.6 0-6.6-2-9-6c2.4-4 5.4-6 9-6c3.6 0 6.6 2 9 6"/></svg></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Kart Sahibi</label>
+    <input type="text" id="card-holder" placeholder="AD SOYAD" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;margin-bottom:10px;text-transform:uppercase;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="this.value=this.value.toUpperCase()">
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Banka / Kart Tipi</label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <input type="text" id="card-bank" placeholder="Vakıfbank" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      <select id="card-type" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;cursor:pointer">
+        <option value="credit">Kredi Kartı</option>
+        <option value="debit">Banka Kartı</option>
+        <option value="prepaid">Ön Ödemeli</option>
+        <option value="virtual">Sanal Kart</option>
+      </select>
+    </div>
+
+    <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">Limit (opsiyonel)</label>
+    <input type="number" id="card-limit" placeholder="50000" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 12px;border-radius:5px;outline:none;margin-bottom:14px;transition:border-color 0.2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+
+    <div style="background:rgba(230,58,15,0.08);border:1px solid rgba(230,58,15,0.2);border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:var(--accent2);line-height:1.6">
+      🔒 Tüm kart bilgileri AES-256 ile şifrelenerek saklanır. CVV dahil hiçbir bilgi şifresiz tutulmaz.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('card-entry-modal').style.display='none'">İptal</button>
+      <button class="btn-confirm" style="background:var(--accent);color:#000" onclick="saveCardEntry()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- MEDIA DETAIL MODAL -->
 <div class="modal-overlay" id="media-detail-modal">
 </div>
@@ -2744,6 +2825,7 @@ function init() {
   bookmarks = getBookmarks();
   vault = getVault();
   mediaItems = getMediaItems();
+  cards = getCards();
   renderTagList();
   renderNoteList();
   if (notes.length > 0 && !isMobile()) selectNote(notes[0].id);
@@ -3143,7 +3225,7 @@ function showToast(msg) {
 }
 
 // ─── ACCORDION SIDEBAR ───
-const ACC_TABS = ['notes','bm','pw','media','canvas','news','gofile','stats'];
+const ACC_TABS = ['notes','bm','pw','media','canvas','dash','gofile','stats'];
 let currentTab = 'notes';
 
 function toggleAcc(tab) {
@@ -3188,18 +3270,18 @@ function switchSidebarTab(tab) {
     document.getElementById('stats-panel').style.display    = tab === 'stats'  ? 'flex' : 'none';
     const cvp = document.getElementById('canvas-panel');
     if (cvp) cvp.style.display = tab === 'canvas' ? 'flex' : 'none';
-    const nwp = document.getElementById('news-panel');
-    if (nwp) nwp.style.display = tab === 'news' ? 'flex' : 'none';
+    const dsp = document.getElementById('dash-panel');
+    if (dsp) dsp.style.display = tab === 'dash' ? 'flex' : 'none';
     const gfp = document.getElementById('gofile-panel');
     if (gfp) gfp.style.display = tab === 'gofile' ? 'flex' : 'none';
     document.getElementById('new-note-btn').style.display   = tab === 'notes'  ? 'flex' : 'none';
   }
   if (tab === 'bm')     { renderBmTagList(); renderBookmarks(); }
-  if (tab === 'pw')     { renderPwGrid(); }
+  if (tab === 'pw')     { cards = getCards(); renderPwGrid(); renderCardGrid(); }
   if (tab === 'media')  { renderMediaGrid(); }
   if (tab === 'stats')  { renderStats(); }
   if (tab === 'canvas') { cvLoad(); cvRender(); }
-  if (tab === 'news')   { initNewsPanel(); }
+  if (tab === 'dash')   { initDashboard(); }
   if (tab === 'gofile') {
     // Mobilde de panel göster
     const gfp2 = document.getElementById('gofile-panel');
@@ -3533,15 +3615,16 @@ function exportData() {
   // Bellekteki state kullan — storage'dan tekrar decrypt etme
   const canvasData = { nodes: cvNodes, edges: cvEdges, ox: cvOX, oy: cvOY, scale: cvScale };
   const data = {
-    version: 3,
+    version: 4,
     exportedAt: new Date().toISOString(),
     notes:      notes,
     bookmarks:  bookmarks,
     mediaItems: mediaItems,
     vault:      vault,
+    cards:      cards,
     canvas:     canvasData
   };
-  const counts = notes.length + ' not, ' + bookmarks.length + ' link, ' + mediaItems.length + ' film/dizi, ' + cvNodes.length + ' kanvas düğümü';
+  const counts = notes.length + ' not, ' + bookmarks.length + ' link, ' + mediaItems.length + ' film/dizi, ' + cards.length + ' kart, ' + cvNodes.length + ' kanvas düğümü';
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -3712,6 +3795,10 @@ async function importFromGofile() {
     mediaItems = [...mediaItems.filter(m => !fileData.mediaItems?.find(x=>x.id===m.id)), ...(fileData.mediaItems || [])];
     vault      = [...vault.filter(v => !fileData.vault?.find(x=>x.id===v.id)),      ...(fileData.vault      || [])];
 
+    if (fileData.cards) {
+        cards = [...cards.filter(c => !fileData.cards?.find(x=>x.id===c.id)), ...(fileData.cards||[])];
+        saveCards(cards);
+      }
     saveNotes(notes); saveBookmarks(bookmarks); saveMediaItems(mediaItems); saveVault(vault);
 
     if (fileData.canvas) {
@@ -3764,6 +3851,11 @@ function importData(e) {
       mediaItems = [...mediaItems.filter(m => !data.mediaItems?.find(x=>x.id===m.id)), ...(data.mediaItems || [])];
       vault      = [...vault.filter(v => !data.vault?.find(x=>x.id===v.id)),      ...(data.vault      || [])];
 
+      // Kartları da geri yükle
+      if (data.cards) {
+        cards = [...cards.filter(c => !data.cards?.find(x=>x.id===c.id)), ...(data.cards||[])];
+        saveCards(cards);
+      }
       saveNotes(notes);
       saveBookmarks(bookmarks);
       saveMediaItems(mediaItems);
@@ -6341,6 +6433,396 @@ function gfFormatSize(bytes) {
   const k = 1024, sizes = ['B','KB','MB','GB','TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+</script>
+
+
+<script>
+// ══════════════════════════════════════════════
+//  KREDİ KARTI MODÜLÜ
+//  AES-256 şifreli · Vault içinde ayrı alan
+// ══════════════════════════════════════════════
+
+const CARD_KEY = 'rulokat_cards_enc';
+
+function getCards() {
+  const enc = localStorage.getItem(CARD_KEY);
+  if (!enc) return [];
+  const d = decrypt(enc, sessionPw);
+  return Array.isArray(d) ? d : [];
+}
+function saveCards(cards) {
+  if (!sessionPw) return;
+  localStorage.setItem(CARD_KEY, encrypt(cards, sessionPw));
+}
+
+let cards = [];
+
+// ── Tab geçişi ──
+function switchPwTab(tab) {
+  const passView = document.getElementById('pw-pass-view');
+  const cardView = document.getElementById('pw-card-view');
+  const passBtn  = document.getElementById('pw-tab-pass');
+  const cardBtn  = document.getElementById('pw-tab-card');
+  if (tab === 'pass') {
+    passView.style.display = 'flex';
+    cardView.style.display = 'none';
+    passBtn.style.borderBottomColor = 'var(--accent)';
+    passBtn.style.color = 'var(--accent)';
+    cardBtn.style.borderBottomColor = 'transparent';
+    cardBtn.style.color = 'var(--text3)';
+  } else {
+    passView.style.display = 'none';
+    cardView.style.display = 'flex';
+    cardBtn.style.borderBottomColor = 'var(--accent)';
+    cardBtn.style.color = 'var(--accent)';
+    passBtn.style.borderBottomColor = 'transparent';
+    passBtn.style.color = 'var(--text3)';
+    cards = getCards();
+    renderCardGrid();
+  }
+}
+
+function showCardTab() { switchPwTab('card'); }
+
+// ── Kart Grid ──
+function renderCardGrid() {
+  const grid = document.getElementById('card-grid');
+  if (!grid) return;
+  const q = (document.getElementById('card-search')?.value || '').toLowerCase();
+  const filtered = cards.filter(c =>
+    !q || (c.name||'').toLowerCase().includes(q) || (c.bank||'').toLowerCase().includes(q)
+  );
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
+      <div style="font-size:32px;opacity:0.2;margin-bottom:10px">💳</div>
+      <div style="font-size:13px">Henüz kart eklenmedi</div>
+      <div style="font-size:11px;margin-top:4px;opacity:0.7">Yukarıdan yeni kart ekleyebilirsin</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => {
+    const last4   = (c.number || '').replace(/\s/g,'').slice(-4) || '••••';
+    const expiry  = c.expiry || '••/••';
+    const typeLabel = {credit:'Kredi', debit:'Banka', prepaid:'Ön Ödemeli', virtual:'Sanal'}[c.type] || c.type;
+    const cardColor = cardBrandColor(c.number);
+
+    return `<div style="background:linear-gradient(135deg,${cardColor.from},${cardColor.to});border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.15s;user-select:none"
+      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <!-- Chip -->
+      <div style="width:32px;height:24px;background:rgba(255,215,0,0.7);border-radius:4px;margin-bottom:14px;position:relative">
+        <div style="position:absolute;top:8px;left:0;right:0;height:1px;background:rgba(180,140,0,0.5)"></div>
+        <div style="position:absolute;left:11px;top:0;bottom:0;width:1px;background:rgba(180,140,0,0.5)"></div>
+      </div>
+      <!-- Numara -->
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:rgba(255,255,255,0.95);letter-spacing:3px;margin-bottom:10px">
+        •••• •••• •••• ${escHtml(last4)}
+      </div>
+      <!-- Alt bilgi -->
+      <div style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.6);letter-spacing:1px;margin-bottom:2px">KART SAHİBİ</div>
+          <div style="font-size:12px;color:#fff;font-family:'IBM Plex Mono',monospace;letter-spacing:1px">${escHtml((c.holder||'').toUpperCase()||'—')}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:9px;color:rgba(255,255,255,0.6);letter-spacing:1px;margin-bottom:2px">SON KULLANMA</div>
+          <div style="font-size:12px;color:#fff;font-family:'IBM Plex Mono',monospace">${escHtml(expiry)}</div>
+        </div>
+      </div>
+      <!-- Üst sağ: banka + tip -->
+      <div style="position:absolute;top:16px;right:16px;text-align:right">
+        <div style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:600">${escHtml(c.bank||'')}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.6)">${typeLabel}</div>
+      </div>
+      <!-- Eylemler -->
+      <div style="display:flex;gap:6px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.15);padding-top:10px">
+        <button onclick="showCardDetails('${c.id}')" style="flex:1;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">Detay</button>
+        <button onclick="openCardEntry('${c.id}')" style="flex:1;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">Düzenle</button>
+        <button onclick="deleteCard('${c.id}')" style="background:rgba(255,80,80,0.3);border:none;color:#ffaaaa;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,80,80,0.5)'" onmouseout="this.style.background='rgba(255,80,80,0.3)'">Sil</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cardBrandColor(num) {
+  const n = (num || '').replace(/\s/g,'');
+  if (n.startsWith('4'))      return { from:'#1a1f71', to:'#2a67c5' };      // Visa
+  if (/^5[1-5]/.test(n))     return { from:'#eb001b', to:'#f79e1b' };      // Mastercard
+  if (/^3[47]/.test(n))      return { from:'#007bc1', to:'#00a8e0' };      // Amex
+  if (n.startsWith('6'))     return { from:'#ff6900', to:'#ffa040' };      // Troy/Discover
+  return { from:'#1b1b1b', to:'#393737' };                                  // Default
+}
+
+// ── Kart Detay ──
+function showCardDetails(id) {
+  const c = cards.find(x => x.id === id);
+  if (!c) return;
+  const num = (c.number || '').replace(/\s/g,'');
+  // Numarayı göster
+  const fullNum = num || '————————————————';
+  const formatted = fullNum.replace(/(.{4})/g,'$1 ').trim();
+  showToast(`${formatted} | CVV: ${c.cvv||'—'} | ${c.expiry||'—/—'}`, 5000);
+}
+
+// ── Kart Ekleme/Düzenleme ──
+function openCardEntry(id) {
+  const modal = document.getElementById('card-entry-modal');
+  const title = document.getElementById('card-entry-title');
+  document.getElementById('card-entry-id').value = id || '';
+
+  if (id) {
+    const c = cards.find(x => x.id === id);
+    if (!c) return;
+    title.textContent = '💳 Kartı Düzenle';
+    document.getElementById('card-name').value   = c.name   || '';
+    document.getElementById('card-number').value = c.number || '';
+    document.getElementById('card-expiry').value = c.expiry || '';
+    document.getElementById('card-cvv').value    = c.cvv    || '';
+    document.getElementById('card-holder').value = c.holder || '';
+    document.getElementById('card-bank').value   = c.bank   || '';
+    document.getElementById('card-type').value   = c.type   || 'credit';
+    document.getElementById('card-limit').value  = c.limit  || '';
+  } else {
+    title.textContent = '💳 Kart Ekle';
+    ['card-name','card-number','card-expiry','card-cvv','card-holder','card-bank','card-limit'].forEach(id2 => {
+      document.getElementById(id2).value = '';
+    });
+    document.getElementById('card-type').value = 'credit';
+  }
+  modal.style.display = 'flex';
+}
+
+function saveCardEntry() {
+  const id     = document.getElementById('card-entry-id').value;
+  const name   = document.getElementById('card-name').value.trim();
+  const number = document.getElementById('card-number').value.trim();
+  const expiry = document.getElementById('card-expiry').value.trim();
+  const cvv    = document.getElementById('card-cvv').value.trim();
+  const holder = document.getElementById('card-holder').value.trim();
+  const bank   = document.getElementById('card-bank').value.trim();
+  const type   = document.getElementById('card-type').value;
+  const limit  = document.getElementById('card-limit').value;
+
+  if (!name && !number) { showToast('Kart adı veya numara gerekli'); return; }
+
+  if (id) {
+    const idx = cards.findIndex(c => c.id === id);
+    if (idx !== -1) cards[idx] = { ...cards[idx], name, number, expiry, cvv, holder, bank, type, limit };
+  } else {
+    cards.push({ id: Date.now().toString(), name, number, expiry, cvv, holder, bank, type, limit, createdAt: Date.now() });
+  }
+
+  saveCards(cards);
+  document.getElementById('card-entry-modal').style.display = 'none';
+  renderCardGrid();
+  showToast(id ? 'Kart güncellendi ✓' : 'Kart eklendi ✓');
+  // Dashboard'ı güncelle
+  updateDashBudget();
+}
+
+function deleteCard(id) {
+  if (!confirm('Bu kartı silmek istiyor musunuz?')) return;
+  cards = cards.filter(c => c.id !== id);
+  saveCards(cards);
+  renderCardGrid();
+  showToast('Kart silindi');
+}
+
+// ── Format yardımcıları ──
+function formatCardNumber(inp) {
+  let v = inp.value.replace(/\D/g,'').slice(0,16);
+  inp.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExpiry(inp) {
+  let v = inp.value.replace(/\D/g,'').slice(0,4);
+  if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+  inp.value = v;
+}
+
+// ── showToast uzun süreli versiyon ──
+const _origShowToast = showToast;
+function showToast(msg, dur) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur || 2200);
+}
+</script>
+
+<script>
+// ══════════════════════════════════════════════
+//  DASHBOARD MODÜLÜ
+//  Hava durumu · Döviz · Bütçe özeti
+// ══════════════════════════════════════════════
+
+const DASH_CITY_KEY  = 'rulokat_dash_city';
+const DASH_SPEND_KEY = 'rulokat_dash_spend';
+let dashCity = localStorage.getItem(DASH_CITY_KEY) || 'Istanbul';
+
+function initDashboard() {
+  document.getElementById('dash-city-input').value = dashCity;
+  dashRenderStats();
+  updateDashBudget();
+  fetchDashWeather();
+  fetchDashFX();
+}
+
+function dashRefresh() {
+  fetchDashWeather();
+  fetchDashFX();
+  dashRenderStats();
+  updateDashBudget();
+  showToast('Dashboard güncellendi ↺');
+}
+
+function dashSaveCity() {
+  const v = document.getElementById('dash-city-input').value.trim();
+  if (!v) return;
+  dashCity = v;
+  localStorage.setItem(DASH_CITY_KEY, v);
+  fetchDashWeather();
+  showToast('Şehir kaydedildi ✓');
+}
+
+// ── Hava Durumu — Open-Meteo (ücretsiz, CORS yok) ──
+async function fetchDashWeather() {
+  const el = document.getElementById('dash-weather');
+  if (!el) return;
+  el.innerHTML = `<div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace">Hava Durumu</div><div style="color:var(--text3);font-size:11px;margin-top:8px">Yükleniyor...</div>`;
+
+  try {
+    // 1. Şehri koordinata çevir — Open-Meteo Geocoding
+    const geoRes  = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dashCity)}&count=1&language=tr`, { signal: AbortSignal.timeout(6000) });
+    const geoData = await geoRes.json();
+    const loc     = geoData.results?.[0];
+    if (!loc) throw new Error('Şehir bulunamadı');
+
+    // 2. Hava verisini çek
+    const wRes  = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&timezone=auto`, { signal: AbortSignal.timeout(6000) });
+    const wData = await wRes.json();
+    const cur   = wData.current;
+
+    const icon  = weatherIcon(cur.weathercode);
+    const temp  = Math.round(cur.temperature_2m);
+    const wind  = Math.round(cur.windspeed_10m);
+    const humid = cur.relative_humidity_2m;
+
+    el.innerHTML = `
+      <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">${escHtml(loc.name)}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:28px">${icon}</div>
+        <div>
+          <div style="font-size:22px;font-weight:700;color:var(--text);font-family:'IBM Plex Mono',monospace">${temp}°C</div>
+          <div style="font-size:10px;color:var(--text3)">💨 ${wind} km/h · 💧 ${humid}%</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">Hava Durumu</div><div style="color:var(--danger);font-size:11px">${escHtml(e.message)}</div>`;
+  }
+}
+
+function weatherIcon(code) {
+  if (code === 0)               return '☀️';
+  if (code <= 2)                return '⛅';
+  if (code <= 3)                return '☁️';
+  if (code <= 48)               return '🌫️';
+  if (code <= 67)               return '🌧️';
+  if (code <= 77)               return '❄️';
+  if (code <= 82)               return '🌦️';
+  if (code <= 86)               return '🌨️';
+  if (code <= 99)               return '⛈️';
+  return '🌡️';
+}
+
+// ── Döviz — Frankfurter (ücretsiz, CORS yok) ──
+async function fetchDashFX() {
+  const el = document.getElementById('dash-fx');
+  if (!el) return;
+
+  try {
+    const res  = await fetch('https://api.frankfurter.app/latest?from=USD&to=TRY,EUR,GBP', { signal: AbortSignal.timeout(6000) });
+    const data = await res.json();
+    const rates = data.rates || {};
+
+    const usdTry = rates.TRY?.toFixed(2) || '—';
+    const eurUsd = (1 / (rates.EUR || 1)).toFixed(2);
+    const gbpUsd = (1 / (rates.GBP || 1)).toFixed(2);
+
+    // EUR/TRY
+    const res2   = await fetch('https://api.frankfurter.app/latest?from=EUR&to=TRY', { signal: AbortSignal.timeout(6000) });
+    const data2  = await res2.json();
+    const eurTry = data2.rates?.TRY?.toFixed(2) || '—';
+
+    el.innerHTML = `
+      <div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:8px">Döviz</div>
+      ${fxRow('USD/TRY', usdTry, '🇺🇸')}
+      ${fxRow('EUR/TRY', eurTry, '🇪🇺')}
+      ${fxRow('GBP/USD', gbpUsd, '🇬🇧')}
+      <div style="font-size:9px;color:var(--text3);margin-top:6px;font-family:'IBM Plex Mono',monospace">via frankfurter.app</div>`;
+  } catch(e) {
+    el.innerHTML = `<div style="font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:6px">Döviz</div><div style="color:var(--danger);font-size:11px">Bağlantı hatası</div>`;
+  }
+}
+
+function fxRow(label, val, flag) {
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid var(--border)">
+    <span style="font-size:11px;color:var(--text2)">${flag} ${label}</span>
+    <span style="font-size:12px;color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-weight:500">${escHtml(String(val))}</span>
+  </div>`;
+}
+
+// ── Bütçe Özeti ──
+function updateDashBudget() {
+  const el = document.getElementById('dash-budget');
+  if (!el) return;
+  cards = getCards();
+  if (cards.length === 0) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:12px">Henüz kart eklenmedi — <button onclick="toggleAcc('pw');setTimeout(()=>showCardTab(),100)" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:12px;font-family:'IBM Plex Sans',sans-serif;text-decoration:underline">Kart ekle</button></div>`;
+    return;
+  }
+  el.innerHTML = cards.map(c => {
+    const limitNum = parseFloat(c.limit) || 0;
+    const typeLabel = {credit:'Kredi',debit:'Banka',prepaid:'Ön Öd.',virtual:'Sanal'}[c.type]||c.type;
+    const last4 = (c.number||'').replace(/\s/g,'').slice(-4)||'••••';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${cardBrandColor(c.number).from};flex-shrink:0"></div>
+        <div>
+          <div style="font-size:12px;color:var(--text);font-weight:500">${escHtml(c.name||c.bank||'Kart')}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace">••••${last4} · ${typeLabel}</div>
+        </div>
+      </div>
+      ${limitNum ? `<div style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace">${limitNum.toLocaleString('tr-TR')} ₺</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Hızlı İstatistikler ──
+function dashRenderStats() {
+  const grid = document.getElementById('dash-stats-grid');
+  if (!grid) return;
+  const noteCount  = notes.length;
+  const bmCount    = bookmarks.length;
+  const mediaCount = mediaItems.length;
+  const cardCount  = getCards().length;
+
+  const items = [
+    { label:'Notlar',   val: noteCount,  color:'var(--accent)',  icon:'📝' },
+    { label:'Linkler',  val: bmCount,    color:'var(--accent2)', icon:'🔖' },
+    { label:'İzleme',   val: mediaCount, color:'#a78bfa',        icon:'🎬' },
+    { label:'Kartlar',  val: cardCount,  color:'#4ade80',        icon:'💳' },
+    { label:'Şifreler', val: vault.length, color:'#f59e0b',      icon:'🔑' },
+    { label:'Kanvas',   val: cvNodes.length, color:'#60a5fa',    icon:'🕸️' },
+  ];
+
+  grid.innerHTML = items.map(item => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='${item.color}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="font-size:18px;margin-bottom:4px">${item.icon}</div>
+      <div style="font-size:20px;font-weight:700;color:${item.color};font-family:'IBM Plex Mono',monospace">${item.val}</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">${item.label}</div>
+    </div>`).join('');
 }
 </script>
 
