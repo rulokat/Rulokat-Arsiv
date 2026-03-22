@@ -270,40 +270,31 @@
   }
 
   /* Işık katmanları */
+  /* Üst ışık — geniş yumuşak halo, streak yok */
   .l-halo {
-    position:absolute; top:-100px; left:50%; transform:translateX(-50%);
-    width:900px; height:600px;
-    background: radial-gradient(ellipse 50% 40% at 50% 0%,
-      rgba(230,58,15,0.20) 0%, rgba(200,40,8,0.06) 42%, transparent 68%);
+    position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+    width:120%; height:55%;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%,
+      rgba(230,58,15,0.16) 0%,
+      rgba(200,40,8,0.05) 50%,
+      transparent 75%);
     pointer-events:none; z-index:1;
-    animation: lPulse 6s ease-in-out infinite;
+    animation: lPulse 7s ease-in-out infinite;
   }
   .l-mid {
-    position:absolute; top:-60px; left:50%; transform:translateX(-50%);
-    width:480px; height:420px;
-    background: radial-gradient(ellipse 36% 32% at 50% 0%,
-      rgba(255,75,20,0.28) 0%, rgba(230,58,15,0.08) 44%, transparent 65%);
+    position:absolute; top:-30px; left:50%; transform:translateX(-50%);
+    width:60%; height:40%;
+    background: radial-gradient(ellipse 55% 45% at 50% 0%,
+      rgba(255,70,15,0.18) 0%,
+      rgba(230,58,15,0.04) 55%,
+      transparent 75%);
     pointer-events:none; z-index:1;
-    animation: lPulse 5s ease-in-out infinite 0.8s;
+    animation: lPulse 5s ease-in-out infinite 1.2s;
   }
-  .l-spot {
-    position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:200px; height:360px;
-    background: radial-gradient(ellipse 44% 72% at 50% 0%,
-      rgba(255,110,35,0.36) 0%, rgba(230,58,15,0.12) 38%, transparent 62%);
-    clip-path: polygon(26% 0%, 74% 0%, 100% 100%, 0% 100%);
-    pointer-events:none; z-index:1;
-    animation: lSpot 4s ease-in-out infinite;
-  }
-  .l-streak {
-    position:absolute; top:0; left:50%; transform:translateX(-50%);
-    width:2px; height:140px;
-    background: linear-gradient(to bottom, rgba(255,140,60,0.9), rgba(255,80,20,0.25), transparent);
-    pointer-events:none; z-index:2;
-    animation: lPulse 4s ease-in-out infinite 0.3s;
-  }
-  @keyframes lPulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
-  @keyframes lSpot  { 0%,100%{opacity:1;transform:translateX(-50%) scaleX(1)} 50%{opacity:0.6;transform:translateX(-50%) scaleX(0.86)} }
+  .l-spot { display:none; }
+  .l-streak { display:none; }
+  @keyframes lPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  @keyframes lSpot  { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
   /* Logo */
   .lock-logo-wrap {
@@ -324,11 +315,11 @@
   }
   .lock-version {
     position: absolute;
-    bottom: -2px;
-    right: 2px;
+    bottom: -4px;
+    right: 0px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: rgba(150,144,138,0.45);
+    font-size: 13px;
+    color: rgba(180,170,160,0.70);
     letter-spacing: 2px;
   }
 
@@ -1778,7 +1769,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.57</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.61</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2805,22 +2796,35 @@ const lockHint = document.getElementById('lock-hint');
     STRIP_W = Math.max(5, Math.round(W / 130));
     COUNT   = Math.ceil(W / STRIP_W) + 2;
 
-    // Fotoğraf analizi:
-    // - Sol %15: tamamen siyah
-    // - Sol %15-%40: karanlıktan kırmızıya geçiş
-    // - %40-%60: turuncu-kırmızı, en parlak
-    // - %60-%80: kırmızıdan koyuya geçiş
-    // - Sağ %20: neredeyse siyah
+    // Soldan sağa tüm genişliğe yayılmış dalgalı ışık dağılımı
+    // Her şerit bağımsız rastgele ama komşularıyla yumuşak geçişli
     stripBrightness = [];
+
+    // Önce ham rastgele değerler üret
+    const raw = [];
     for (let i = 0; i < COUNT; i++) {
-      const t = i / (COUNT - 1); // 0..1 sol→sağ
-      let b;
-      if      (t < 0.12) b = 0;
-      else if (t < 0.38) b = Math.pow((t - 0.12) / 0.26, 1.8);
-      else if (t < 0.58) b = 1.0 - Math.pow(Math.abs(t - 0.48) / 0.14, 1.5) * 0.15; // tepe
-      else if (t < 0.78) b = Math.pow(1 - (t - 0.58) / 0.20, 1.4);
-      else               b = 0;
-      stripBrightness.push(Math.max(0, Math.min(1, b)));
+      // Birkaç sinüs dalgasının toplamı — organik dalgalı görünüm
+      const t   = i / (COUNT - 1);
+      const wave =
+        0.45 * Math.pow(Math.sin(t * Math.PI * 2.3 + 0.8), 2) +
+        0.30 * Math.pow(Math.sin(t * Math.PI * 4.7 + 2.1), 2) +
+        0.20 * Math.pow(Math.sin(t * Math.PI * 7.1 + 1.4), 2) +
+        0.05 * Math.pow(Math.sin(t * Math.PI * 11.3 + 0.3), 2);
+      raw.push(wave);
+    }
+
+    // Gaussian blur — çok geniş yarıçap, tamamen pürüzsüz geçiş
+    const blur = 80;
+    for (let i = 0; i < COUNT; i++) {
+      let sum = 0, weight = 0;
+      for (let j = Math.max(0, i - blur); j < Math.min(COUNT, i + blur); j++) {
+        const d = i - j;
+        const w = Math.exp(-d * d / (2 * blur * blur * 0.5));
+        sum    += raw[j] * w;
+        weight += w;
+      }
+      const b = sum / weight;
+      stripBrightness.push(Math.max(0.05, Math.min(1, b * 1.2)));
     }
   }
 
@@ -2830,7 +2834,7 @@ const lockHint = document.getElementById('lock-hint');
     off.width  = W; off.height = H;
     const oc   = off.getContext('2d');
 
-    oc.fillStyle = '#050200';
+    oc.fillStyle = '#080402';
     oc.fillRect(0, 0, W, H);
 
     for (let i = 0; i < COUNT; i++) {
@@ -2838,17 +2842,18 @@ const lockHint = document.getElementById('lock-hint');
       const b   = stripBrightness[i];
       if (b < 0.005) continue;
 
-      // Renk: parlak kısım turuncu (255,80,0), koyu kısım kırmızı (180,10,0)
-      const r = Math.round(180 + b * 75);
-      const g = Math.round(b * b * 80);
+      // Renk: tüm şeritler aynı ton — sadece opaklık değişir
+      const r = 220;
+      const g = Math.round(b * 55);
 
       // Tabandan yukarı — alt dolup üste doğru söner
       const grad = oc.createLinearGradient(x, H, x, 0);
-      const a    = Math.min(0.96, b * 0.95);
+      // Opaklık 0.15-0.85 arası — çok koyu veya çok parlak şerit yok
+      const a = 0.15 + b * 0.70;
       grad.addColorStop(0.00, `rgba(${r},${g},0,${a.toFixed(3)})`);
-      grad.addColorStop(0.30, `rgba(${r},${g},0,${a.toFixed(3)})`);
-      grad.addColorStop(0.65, `rgba(${r},${g},0,${(a*0.55).toFixed(3)})`);
-      grad.addColorStop(0.88, `rgba(${r},${g},0,${(a*0.12).toFixed(3)})`);
+      grad.addColorStop(0.25, `rgba(${r},${g},0,${a.toFixed(3)})`);
+      grad.addColorStop(0.60, `rgba(${r},${g},0,${(a*0.50).toFixed(3)})`);
+      grad.addColorStop(0.85, `rgba(${r},${g},0,${(a*0.08).toFixed(3)})`);
       grad.addColorStop(1.00, `rgba(${r},${g},0,0)`);
       oc.fillStyle = grad;
       oc.fillRect(x, 0, STRIP_W, H);
@@ -2863,12 +2868,13 @@ const lockHint = document.getElementById('lock-hint');
       oc.stroke();
     }
 
-    // Üste doğru fade — şeritler yukarı söner
+    // Üste doğru fade — site arka planı rengi (#080402) ile tam kaynaş
     const tf = oc.createLinearGradient(0, H, 0, 0);
-    tf.addColorStop(0,   'rgba(3,1,0,0)');
-    tf.addColorStop(0.35,'rgba(3,1,0,0)');
-    tf.addColorStop(0.75,'rgba(3,1,0,0.55)');
-    tf.addColorStop(1,   'rgba(3,1,0,0.95)');
+    tf.addColorStop(0,    'rgba(8,4,2,0)');
+    tf.addColorStop(0.28, 'rgba(8,4,2,0)');
+    tf.addColorStop(0.55, 'rgba(8,4,2,0.6)');
+    tf.addColorStop(0.78, 'rgba(8,4,2,0.88)');
+    tf.addColorStop(1,    'rgba(8,4,2,1)');
     oc.fillStyle = tf; oc.fillRect(0, 0, W, H);
 
     return off;
@@ -2897,8 +2903,8 @@ const lockHint = document.getElementById('lock-hint');
       if (flicker < 0.005) continue;
 
       const x = i * STRIP_W;
-      const r = Math.round(180 + b * 75);
-      const g = Math.round(b * b * 80);
+      const r = 220;
+      const g = Math.round(b * 55);
 
       const fg = ctx.createLinearGradient(x, H, x, 0);
       fg.addColorStop(0.00, `rgba(${r},${g},0,${flicker.toFixed(3)})`);
