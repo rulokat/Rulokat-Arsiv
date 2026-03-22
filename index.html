@@ -1686,7 +1686,7 @@
 <div id="lock-screen">
   <div class="lock-card">
     <div class="lock-deco"><svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.15;color:var(--accent)"><path d="M6 4h12a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1"/><path d="M8 11V7a4 4 0 1 1 8 0v4"/><circle cx="12" cy="16" r="1"/><line x1="12" y1="17" x2="12" y2="19"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></div>
-    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.51</span></div>
+    <div class="lock-title" style="font-family:'Manufacturing Consent',system-ui;font-weight:400;letter-spacing:1px">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.52</span></div>
     <div class="lock-sub">Kişisel arşivinize hoş geldiniz</div>
     <div class="lock-input-wrap">
       <input type="password" id="pw-input" placeholder="Şifre girin..." autocomplete="off">
@@ -1708,7 +1708,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.51</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.52</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -6488,6 +6488,75 @@ function showCardTab() {
   renderCardGrid();
 }
 
+// ── Kart Tema Sistemi ──
+// Kart numarasından marka tespiti + banka adına göre renk
+function getCardTheme(c) {
+  const n    = (c.number || '').replace(/\s/g,'');
+  const bank = (c.bank || '').toLowerCase();
+  const name = (c.name || '').toLowerCase();
+
+  // Önce numaradan marka tespit
+  let brand = 'default';
+  let brandLogo = '';
+  if (n.startsWith('4'))        { brand = 'visa';       }
+  else if (/^5[1-5]/.test(n))  { brand = 'mc';         }
+  else if (/^3[47]/.test(n))   { brand = 'amex';       }
+  else if (n.startsWith('62')) { brand = 'unionpay';   }
+  else if (n.startsWith('6'))  { brand = 'troy';       }
+  else if (/^3[068]/.test(n))  { brand = 'diners';     }
+
+  // Marka bazlı logo SVG string
+  const logos = {
+    visa:     `<div style="font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:700;font-style:italic;color:rgba(255,255,255,0.9);letter-spacing:-1px">VISA</div>`,
+    mc:       `<div style="display:flex"><div style="width:20px;height:20px;border-radius:50%;background:#eb001b;opacity:0.9"></div><div style="width:20px;height:20px;border-radius:50%;background:#f79e1b;margin-left:-8px;opacity:0.9"></div></div>`,
+    amex:     `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:1px">AMEX</div>`,
+    troy:     `<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:1px">TROY</div>`,
+    unionpay: `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:rgba(255,255,255,0.9);letter-spacing:0.5px">UNION PAY</div>`,
+    diners:   `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:rgba(255,255,255,0.9)">DINERS</div>`,
+    default:  `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,0.6)">💳</div>`,
+  };
+  brandLogo = logos[brand] || logos.default;
+
+  // Renk temaları — marka + banka adı kombinasyonu
+  // Önce markaya göre birincil tema
+  const brandThemes = {
+    visa:     { bg1:'#1a1f71', bg2:'#2a4c9e', accent:'rgba(100,140,255,0.15)' },
+    mc:       { bg1:'#1a0505', bg2:'#3a1010', accent:'rgba(235,80,27,0.15)' },
+    amex:     { bg1:'#006ba6', bg2:'#005a8e', accent:'rgba(0,160,220,0.15)' },
+    troy:     { bg1:'#c8102e', bg2:'#a00020', accent:'rgba(200,16,46,0.15)' },
+    unionpay: { bg1:'#d00000', bg2:'#a00000', accent:'rgba(200,0,0,0.15)' },
+    diners:   { bg1:'#4a4a4a', bg2:'#2a2a2a', accent:'rgba(100,100,100,0.15)' },
+    default:  { bg1:'#1b1b2e', bg2:'#16213e', accent:'rgba(80,80,160,0.15)' },
+  };
+
+  // Banka adına göre tema override
+  const bankOverrides = [
+    { match: ['vakıfbank','vakif'],    theme: { bg1:'#004f9f', bg2:'#003d7a', accent:'rgba(0,79,159,0.2)' } },
+    { match: ['garanti','bbva'],       theme: { bg1:'#009640', bg2:'#007030', accent:'rgba(0,150,64,0.2)' } },
+    { match: ['işbank','iş bank','isbank'], theme: { bg1:'#003087', bg2:'#001f5c', accent:'rgba(0,48,135,0.2)' } },
+    { match: ['yapıkredi','yapı kredi','yapikredi'], theme: { bg1:'#e41e2b', bg2:'#b01020', accent:'rgba(228,30,43,0.2)' } },
+    { match: ['akbank'],               theme: { bg1:'#e30613', bg2:'#b50010', accent:'rgba(227,6,19,0.2)' } },
+    { match: ['ziraat'],               theme: { bg1:'#b5002e', bg2:'#8a0020', accent:'rgba(181,0,46,0.2)' } },
+    { match: ['halk','halkbank'],      theme: { bg1:'#003d6b', bg2:'#002a4d', accent:'rgba(0,61,107,0.2)' } },
+    { match: ['denizbank','deniz'],    theme: { bg1:'#006bb6', bg2:'#00508a', accent:'rgba(0,107,182,0.2)' } },
+    { match: ['ing'],                  theme: { bg1:'#ff6200', bg2:'#cc4e00', accent:'rgba(255,98,0,0.2)' } },
+    { match: ['qnb','finansbank'],     theme: { bg1:'#5c006d', bg2:'#430050', accent:'rgba(92,0,109,0.2)' } },
+    { match: ['n26','revolut','wise'], theme: { bg1:'#111111', bg2:'#222222', accent:'rgba(100,100,100,0.15)' } },
+    { match: ['enpara'],               theme: { bg1:'#00a0dc', bg2:'#0080b0', accent:'rgba(0,160,220,0.2)' } },
+    { match: ['troy'],                 theme: { bg1:'#c8102e', bg2:'#8a0020', accent:'rgba(200,16,46,0.2)' } },
+  ];
+
+  let theme = brandThemes[brand] || brandThemes.default;
+  for (const ov of bankOverrides) {
+    if (ov.match.some(m => bank.includes(m) || name.includes(m))) {
+      theme = ov.theme;
+      break;
+    }
+  }
+
+  return { ...theme, brandLogo };
+}
+
 // ── Kart Grid ──
 function renderCardGrid() {
   const grid = document.getElementById('card-grid');
@@ -6507,55 +6576,66 @@ function renderCardGrid() {
   }
 
   grid.innerHTML = filtered.map(c => {
-    const last4   = (c.number || '').replace(/\s/g,'').slice(-4) || '••••';
-    const expiry  = c.expiry || '••/••';
+    const last4     = (c.number || '').replace(/\s/g,'').slice(-4) || '••••';
+    const expiry    = c.expiry || '••/••';
     const typeLabel = {credit:'Kredi', debit:'Banka', prepaid:'Ön Ödemeli', virtual:'Sanal'}[c.type] || c.type;
-    const cardColor = cardBrandColor(c.number);
+    const theme     = getCardTheme(c);
 
-    return `<div style="background:linear-gradient(135deg,${cardColor.from},${cardColor.to});border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.15s;user-select:none"
-      onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-      <!-- Chip -->
-      <div style="width:32px;height:24px;background:rgba(255,215,0,0.7);border-radius:4px;margin-bottom:14px;position:relative">
-        <div style="position:absolute;top:8px;left:0;right:0;height:1px;background:rgba(180,140,0,0.5)"></div>
-        <div style="position:absolute;left:11px;top:0;bottom:0;width:1px;background:rgba(180,140,0,0.5)"></div>
+    return `<div style="background:${theme.bg1};border-radius:16px;padding:20px 22px;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;cursor:default;user-select:none;min-height:170px;display:flex;flex-direction:column;justify-content:space-between"
+      onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,0.4)'"
+      onmouseout="this.style.transform='';this.style.boxShadow=''">
+
+      <!-- Dekoratif daireler -->
+      <div style="position:absolute;right:-30px;bottom:-30px;width:160px;height:160px;border-radius:50%;background:${theme.bg2};opacity:0.6"></div>
+      <div style="position:absolute;right:30px;bottom:-50px;width:110px;height:110px;border-radius:50%;background:${theme.accent}"></div>
+
+      <!-- Üst satır: Chip + Logo -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;position:relative;z-index:1">
+        <div style="width:34px;height:26px;background:linear-gradient(135deg,#d4a843,#f0c84a);border-radius:4px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:9px;left:0;right:0;height:1px;background:rgba(120,80,0,0.4)"></div>
+          <div style="position:absolute;left:12px;top:0;bottom:0;width:1px;background:rgba(120,80,0,0.4)"></div>
+          <div style="position:absolute;inset:0;border-radius:4px;border:0.5px solid rgba(180,130,0,0.3)"></div>
+        </div>
+        <div style="position:relative;z-index:1">${theme.brandLogo}</div>
       </div>
-      <!-- Numara -->
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:rgba(255,255,255,0.95);letter-spacing:3px;margin-bottom:10px">
+
+      <!-- Kart numarası -->
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;color:rgba(255,255,255,0.92);letter-spacing:3px;position:relative;z-index:1">
         •••• •••• •••• ${escHtml(last4)}
       </div>
-      <!-- Alt bilgi -->
-      <div style="display:flex;align-items:flex-end;justify-content:space-between">
-        <div>
-          <div style="font-size:9px;color:rgba(255,255,255,0.6);letter-spacing:1px;margin-bottom:2px">KART SAHİBİ</div>
-          <div style="font-size:12px;color:#fff;font-family:'IBM Plex Mono',monospace;letter-spacing:1px">${escHtml((c.holder||'').toUpperCase()||'—')}</div>
+
+      <!-- Alt satır -->
+      <div style="position:relative;z-index:1">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px">
+          <div>
+            <div style="font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1.2px;margin-bottom:3px">KART SAHİBİ</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.92);font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px">${escHtml((c.holder||'').toUpperCase()||'—')}</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1.2px;margin-bottom:3px">SON KUL.</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.92);font-family:'IBM Plex Mono',monospace">${escHtml(expiry)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:1.2px;margin-bottom:3px">${c.limit ? 'LİMİT' : 'TİP'}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.92);font-family:'IBM Plex Mono',monospace">${c.limit ? Number(c.limit).toLocaleString('tr-TR')+'₺' : typeLabel}</div>
+          </div>
         </div>
-        <div style="text-align:right">
-          <div style="font-size:9px;color:rgba(255,255,255,0.6);letter-spacing:1px;margin-bottom:2px">SON KULLANMA</div>
-          <div style="font-size:12px;color:#fff;font-family:'IBM Plex Mono',monospace">${escHtml(expiry)}</div>
+        <!-- Banka adı + eylemler -->
+        <div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.12);padding-top:10px">
+          <div style="flex:1;font-size:11px;color:rgba(255,255,255,0.6);font-weight:500">${escHtml(c.name||c.bank||'')}</div>
+          <button onclick="showCardDetails('${c.id}')" style="background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Detay</button>
+          <button onclick="openCardEntry('${c.id}')" style="background:rgba(255,255,255,0.12);border:none;color:rgba(255,255,255,0.8);padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Düzenle</button>
+          <button onclick="deleteCard('${c.id}')" style="background:rgba(220,50,50,0.25);border:none;color:rgba(255,160,160,0.9);padding:5px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(220,50,50,0.45)'" onmouseout="this.style.background='rgba(220,50,50,0.25)'">Sil</button>
         </div>
-      </div>
-      <!-- Üst sağ: banka + tip -->
-      <div style="position:absolute;top:16px;right:16px;text-align:right">
-        <div style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:600">${escHtml(c.bank||'')}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,0.6)">${typeLabel}</div>
-      </div>
-      <!-- Eylemler -->
-      <div style="display:flex;gap:6px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.15);padding-top:10px">
-        <button onclick="showCardDetails('${c.id}')" style="flex:1;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">Detay</button>
-        <button onclick="openCardEntry('${c.id}')" style="flex:1;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">Düzenle</button>
-        <button onclick="deleteCard('${c.id}')" style="background:rgba(255,80,80,0.3);border:none;color:#ffaaaa;padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:background 0.15s" onmouseover="this.style.background='rgba(255,80,80,0.5)'" onmouseout="this.style.background='rgba(255,80,80,0.3)'">Sil</button>
       </div>
     </div>`;
   }).join('');
 }
 
+// Geriye dönük uyumluluk için
 function cardBrandColor(num) {
-  const n = (num || '').replace(/\s/g,'');
-  if (n.startsWith('4'))      return { from:'#1a1f71', to:'#2a67c5' };      // Visa
-  if (/^5[1-5]/.test(n))     return { from:'#eb001b', to:'#f79e1b' };      // Mastercard
-  if (/^3[47]/.test(n))      return { from:'#007bc1', to:'#00a8e0' };      // Amex
-  if (n.startsWith('6'))     return { from:'#ff6900', to:'#ffa040' };      // Troy/Discover
-  return { from:'#1b1b1b', to:'#393737' };                                  // Default
+  const t = getCardTheme({number: num, bank:'', name:''});
+  return { from: t.bg1, to: t.bg2 };
 }
 
 // ── Kart Detay ──
