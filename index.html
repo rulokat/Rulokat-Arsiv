@@ -320,6 +320,31 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
+/* WorldMonitor tarzı dashboard */
+#dash-panel { display:none; flex:1; overflow:hidden; position:relative; }
+#dash-hub { display:flex; flex-direction:column; height:100%; }
+#dash-topbar {
+  padding: 8px 12px; border-bottom:1px solid var(--border); background:var(--surface);
+  display:flex; align-items:center; justify-content:space-between;
+}
+#dash-layout {
+  flex:1; display:flex; gap: 10px; padding:10px; overflow:hidden;
+}
+#dash-map-area { flex:2; display:flex; flex-direction:column; gap:10px; min-width:0; }
+#dash-map-area .card {
+  flex: 1; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--surface);
+}
+#dash-map-box { height:100%; min-height:410px; position:relative; }
+#nm-map { width:100%; height:100%; }
+#dash-sidebar { flex:1; display:flex; flex-direction:column; gap:10px; min-width:280px; }
+#dash-sidebar .card { flex:1; border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:hidden; display:flex; flex-direction:column; }
+#dash-sidebar .card h3 { margin:0; padding:10px; font-size:12px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); }
+#dash-feed-area { flex:1; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+#dash-feed-area .nm-feed-card { margin-bottom: 8px; }
+#dash-live-intel { border:1px solid var(--border); border-radius:12px; background:var(--surface); overflow:auto; padding:8px; height:220px; }
+#dash-map-legend { margin-top:8px; display:flex; gap:10px; flex-wrap:wrap; }
+.dash-chip { padding:4px 8px; border:1px solid var(--border); border-radius:8px; font-size:10px; color:var(--text2); background:var(--surface2); }
+
 .nm-card-importance-bar {
   position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
   flex-shrink: 0;
@@ -1906,7 +1931,7 @@
   <div style="text-align:center;margin-bottom:28px;position:relative;z-index:3;animation:lockLogoIn 1s cubic-bezier(0.16,1,0.3,1) both">
     <div style="display:inline-block;position:relative">
       <div class="lock-logo-text">Rulokat Arşiv</div>
-      <div class="lock-version">v 1.74</div>
+      <div class="lock-version">v 1.77</div>
     </div>
   </div>
 
@@ -1935,7 +1960,7 @@
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.76</span></div>
+    <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.77</span></div>
     <div class="search-wrap" style="position:relative">
       <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
       <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -2308,32 +2333,52 @@
     </div>
 
     <!-- DASHBOARD PANELİ -->
-    <div id="dash-panel" style="display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)">
-      <!-- Toolbar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0">
-        <span style="font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700">Dashboard</span>
-        <button onclick="dashRefresh()" style="background:none;border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:14px;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent2)';this.style.color='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)'">↺</button>
-      </div>
-      <div id="dash-map-row">
-        <div id="dash-map-column">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 8px;">
-            <span style="font-size:12px;font-weight:600;color:var(--text3)">Harita</span>
-            <span style="font-size:10px;color:var(--text3)">9:16</span>
-          </div>
-          <div id="dash-map-box">
-            <div id="nm-map"></div>
-          </div>
-          <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px;">
-            <button class="nm-filter-btn active" data-filter="all" onclick="nmFilterFeed('all')">Tümü</button>
-            <button class="nm-filter-btn" data-filter="conflict" onclick="nmFilterFeed('conflict')">Çatışma</button>
-            <button class="nm-filter-btn" data-filter="health" onclick="nmFilterFeed('health')">Sağlık</button>
-            <button class="nm-filter-btn" data-filter="disaster" onclick="nmFilterFeed('disaster')">Afet</button>
+    <div id="dash-panel">
+      <div id="dash-hub">
+        <div id="dash-topbar">
+          <span style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text);font-weight:700">WorldMonitor-style</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="dashRefresh()" style="background:none;border:1px solid var(--border);color:var(--text3);padding:6px 10px;border-radius:5px;font-size:12px;cursor:pointer">Yenile</button>
+            <button onclick="nmFilterFeed('all')" style="background:var(--accent);border:none;color:#000;padding:6px 10px;border-radius:5px;font-size:12px;cursor:pointer">Temiz</button>
           </div>
         </div>
 
-        <div id="dash-feed-column">
-          <div id="dash-feed-header">Yayın Akışı</div>
-          <div id="nm-feed-list"></div>
+        <div id="dash-layout">
+          <div id="dash-map-area" class="card">
+            <div id="dash-map-box"><div id="nm-map"></div></div>
+            <div id="dash-map-legend">
+              <span class="dash-chip">Çatışma / Suç</span>
+              <span class="dash-chip">Salgın / Sağlık</span>
+              <span class="dash-chip">Afet / İklim</span>
+              <span class="dash-chip">Acil</span>
+            </div>
+          </div>
+
+          <div id="dash-sidebar">
+            <div class="card">
+              <h3>Filtreler</h3>
+              <div style="padding:8px;display:flex;flex-direction:column;gap:6px;">
+                <button class="nm-filter-btn active" data-filter="all" onclick="nmFilterFeed('all')">Tümü</button>
+                <button class="nm-filter-btn" data-filter="conflict" onclick="nmFilterFeed('conflict')">Çatışma</button>
+                <button class="nm-filter-btn" data-filter="health" onclick="nmFilterFeed('health')">Sağlık</button>
+                <button class="nm-filter-btn" data-filter="disaster" onclick="nmFilterFeed('disaster')">Afet</button>
+                <button class="nm-filter-btn" data-filter="urgent" onclick="nmFilterFeed('urgent')">Acil</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3>Yayın Akışı</h3>
+              <div id="dash-feed-area" style="padding:8px;overflow-y:auto;flex:1"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="dash-live-intel">
+          <h3 style="margin:0 0 8px 0;color:var(--text3);font-size:12px;">Live Intelligence</h3>
+          <div id="dash-live-list" style="font-size:12px;color:var(--text2);line-height:1.4;">
+            • Tüm alt sistemler normal<br>
+            • 22:00 UTC: Kritik saldırı sinyali
+          </div>
         </div>
       </div>
     </div>
@@ -3920,7 +3965,7 @@ function switchSidebarTab(tab) {
   if (tab === 'media')  { renderMediaGrid(); }
   if (tab === 'stats')  { renderStats(); }
   if (tab === 'canvas') { cvLoad(); cvRender(); }
-  if (tab === 'dash')   { initDashboard(); }
+  if (tab === 'dash')   { initDashboard(); setTimeout(() => { if (nmMap) nmMap.invalidateSize(); }, 200); }
   if (tab === 'gofile') {
     // Mobilde de panel göster
     const gfp2 = document.getElementById('gofile-panel');
@@ -7838,7 +7883,7 @@ function nmRenderMapPins() {
 
 
 function nmRenderFeed() {
-  const list = document.getElementById('nm-feed-list');
+  const list = document.getElementById('nm-feed-list') || document.getElementById('dash-feed-area');
   if (!list) return;
   
   let filtered = nmFeedData;
