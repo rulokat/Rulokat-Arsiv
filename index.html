@@ -212,6 +212,152 @@
   animation: spin 0.8s linear infinite;
 }
 .news-blink { animation: pulse 1.5s infinite; }
+
+/* ── HARITA + YAYIM AKIŞI MODÜLÜ ── */
+#news-map-panel {
+  display: none; flex: 1; flex-direction: column;
+  overflow: hidden; background: var(--bg); position: relative;
+}
+#news-map-panel.visible { display: flex; }
+
+/* Harita Konteyner */
+#nm-map-container {
+  flex: 0 0 300px; background: var(--surface2); border-bottom: 1px solid var(--border);
+  overflow: hidden; position: relative;
+}
+#nm-map {
+  width: 100%; height: 100%;
+  background: var(--surface2) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23393737" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="%23262626"/><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+}
+
+.nm-pin {
+  position: absolute; width: 24px; height: 24px;
+  border-radius: 50%; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.nm-pin.conflict { background: #e63a0f; } /* Kırmızı */
+.nm-pin.health { background: #4ade80; }    /* Yeşil */
+.nm-pin.disaster { background: #3b82f6; }  /* Mavi */
+.nm-pin::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 50%; border: 2px solid currentColor; opacity: 0;
+  animation: ping 1.5s infinite;
+}
+@keyframes ping { 0% { transform: scale(1); opacity: 1; } 75% { transform: scale(2); opacity: 0; } }
+
+/* Feed Bölümü */
+#nm-feed-wrap {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+
+#nm-feed-sidebar {
+  flex: 0 0 220px; background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 12px 0; overflow-y: auto;
+  display: none;
+}
+#nm-feed-sidebar.visible { display: block; }
+
+.nm-filter-label {
+  font-size: 9px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text3);
+  padding: 8px 12px 4px; margin-top: 2px;
+}
+.nm-filter-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; cursor: pointer; font-size: 12px;
+  color: var(--text2); border: none; background: none;
+  border-left: 2px solid transparent;
+  transition: all 0.15s; width: 100%;
+}
+.nm-filter-btn:hover {
+  background: var(--surface2); color: var(--text); border-left-color: var(--accent2);
+}
+.nm-filter-btn.active {
+  background: var(--surface2); color: var(--accent); border-left-color: var(--accent);
+}
+.nm-filter-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* Feed Grid */
+#nm-feed-list {
+  flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px; padding: 14px; overflow-y: auto;
+  background: var(--bg);
+}
+
+.nm-feed-card {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+  cursor: pointer; transition: all 0.15s;
+  position: relative;
+}
+.nm-feed-card:hover {
+  border-color: var(--text3); transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.nm-card-importance-bar {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  flex-shrink: 0;
+}
+.nm-card-importance-bar.critical { background: #e63a0f; }  /* Kırmızı */
+.nm-card-importance-bar.high { background: #ff7a50; }      /* Turuncu */
+.nm-card-importance-bar.normal { background: #555555; }    /* Gri */
+
+.nm-card-header {
+  padding: 10px 10px 0; display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 6px;
+}
+.nm-card-source {
+  font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+  padding: 2px 6px; border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--tag-bg); color: var(--tag-text);
+  flex-shrink: 0;
+}
+
+.nm-card-content { padding: 0 10px; }
+.nm-card-title {
+  font-size: 12px; font-weight: 500; color: var(--text);
+  line-height: 1.4; margin: 8px 0 4px;
+}
+.nm-card-desc {
+  font-size: 10px; color: var(--text3); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; margin-bottom: 8px;
+}
+
+.nm-card-tags {
+  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;
+  font-size: 9px;
+}
+.nm-card-tag {
+  background: var(--tag-bg); color: var(--tag-text);
+  border: 1px solid var(--tag-border); padding: 2px 6px;
+  border-radius: 3px; font-family: 'IBM Plex Mono', monospace;
+}
+
+.nm-card-footer {
+  padding: 8px 10px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 6px;
+}
+.nm-card-time {
+  font-size: 9px; color: var(--text3);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.nm-urgency-badge {
+  background: #e63a0f; color: #fff; font-size: 8px;
+  font-weight: 700; letter-spacing: 0.5px; padding: 2px 5px;
+  border-radius: 2px; text-transform: uppercase;
+}
+
 </style>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manufacturing+Consent&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
@@ -1979,6 +2125,18 @@
           <div class="acc-body" id="acc-body-stats"></div>
         </div>
 
+        <!-- HARITA & YAYIM AKIŞI -->
+        <div class="acc-group" id="acc-newsmap">
+          <button class="acc-header" onclick="toggleAcc('newsmap')">
+            <span class="acc-header-left">
+              <span class="ico-svg"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="8" cy="8" r="1.5" fill="currentColor"/></svg></span>
+              Harita & Yayın
+            </span>
+            <span class="acc-arrow" id="acc-arrow-newsmap"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s"><path d="M6 9l6 6 6-6"/></svg></span>
+          </button>
+          <div class="acc-body" id="acc-body-newsmap"></div>
+        </div>
+
       </div>
     </div>
     <div class="note-list-panel">
@@ -2182,6 +2340,94 @@
 
       </div>
     </div>
+
+    <!-- HARITA & YAYIM AKIŞI PANELİ -->
+    <div id="news-map-panel">
+      <!-- HARITA BÖLÜMÜ -->
+      <div id="nm-map-container">
+        <div id="nm-map">
+          <!-- Leaflet harita buraya yüklenecek veya DOM pinleri -->
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;flex-direction:column;gap:10px">
+            <svg viewBox="0 0 24 24" style="width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:0.3"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="8" cy="8" r="1.5"/></svg>
+            <span>Harita yükleniyor...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- YAYIM AKIŞI BÖLÜMÜ -->
+      <div id="nm-feed-wrap">
+        <!-- Sol Kenar Çubuğu (Filtreleri) -->
+        <div id="nm-feed-sidebar">
+          <div class="nm-filter-label">Kategoriler</div>
+          <button class="nm-filter-btn active" data-filter="all" onclick="nmFilterFeed('all')">
+            <span class="nm-filter-dot" style="background:var(--accent)"></span>
+            Tüm Haberler
+          </button>
+          <button class="nm-filter-btn" data-filter="conflict" onclick="nmFilterFeed('conflict')">
+            <span class="nm-filter-dot" style="background:#e63a0f"></span>
+            Çatışma/Suç
+          </button>
+          <button class="nm-filter-btn" data-filter="health" onclick="nmFilterFeed('health')">
+            <span class="nm-filter-dot" style="background:#4ade80"></span>
+            Salgın/Sağlık
+          </button>
+          <button class="nm-filter-btn" data-filter="disaster" onclick="nmFilterFeed('disaster')">
+            <span class="nm-filter-dot" style="background:#3b82f6"></span>
+            Afet/İklim
+          </button>
+
+          <div class="nm-filter-label" style="margin-top:12px">Kaynaklar</div>
+          <button class="nm-filter-btn" data-filter="source-gdelt" onclick="nmFilterFeed('source-gdelt')">
+            <span class="nm-filter-dot" style="background:#ff7a50"></span>
+            GDELT
+          </button>
+          <button class="nm-filter-btn" data-filter="source-acled" onclick="nmFilterFeed('source-acled')">
+            <span class="nm-filter-dot" style="background:#ff7a50"></span>
+            ACLED
+          </button>
+          <button class="nm-filter-btn" data-filter="source-promed" onclick="nmFilterFeed('source-promed')">
+            <span class="nm-filter-dot" style="background:#ff7a50"></span>
+            ProMED
+          </button>
+
+          <div class="nm-filter-label" style="margin-top:12px">Aciliyet</div>
+          <button class="nm-filter-btn" data-filter="urgent" onclick="nmFilterFeed('urgent')">
+            <span class="nm-filter-dot" style="background:#e63a0f"></span>
+            Acil Haberler
+          </button>
+        </div>
+
+        <!-- Haber Kartları Grid'i -->
+        <div id="nm-feed-list">
+          <!-- Örnek kart -->
+          <div class="nm-feed-card">
+            <div class="nm-card-importance-bar critical"></div>
+            <div class="nm-card-header">
+              <span class="nm-card-source">GDELT</span>
+              <span class="nm-urgency-badge">ACİL</span>
+            </div>
+            <div class="nm-card-content">
+              <div class="nm-card-title">Önemli Olay Başlığı</div>
+              <div class="nm-card-desc">Kısa açıklama ve önem derecesi ile birlikte haberler...</div>
+              <div class="nm-card-tags">
+                <span class="nm-card-tag">Çatışma</span>
+                <span class="nm-card-tag">Türkiye</span>
+              </div>
+            </div>
+            <div class="nm-card-footer">
+              <span class="nm-card-time">2 dakika önce</span>
+              <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;font-family:'IBM Plex Sans',sans-serif;transition:color 0.15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">💾 Kaydet</button>
+            </div>
+          </div>
+
+          <!-- Placeholder: Daha fazla kart API'den yüklenir -->
+          <div style="grid-column:1/-1;padding:40px 20px;text-align:center;color:var(--text3);font-size:12px">
+            <div style="opacity:0.5;margin-bottom:10px">📡 API'den haberler yükleniyor...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- BOOKMARK PANEL -->
     <div id="bm-panel">
       <div class="bm-toolbar">
@@ -3708,7 +3954,7 @@ function showToast(msg) {
 }
 
 // ─── ACCORDION SIDEBAR ───
-const ACC_TABS = ['notes','bm','pw','media','canvas','dash','gofile','stats'];
+const ACC_TABS = ['notes','bm','pw','media','canvas','dash','gofile','stats','newsmap'];
 let currentTab = 'notes';
 
 function toggleAcc(tab) {
@@ -3757,6 +4003,8 @@ function switchSidebarTab(tab) {
     if (dsp) dsp.style.display = tab === 'dash' ? 'flex' : 'none';
     const gfp = document.getElementById('gofile-panel');
     if (gfp) gfp.style.display = tab === 'gofile' ? 'flex' : 'none';
+    const nmp = document.getElementById('news-map-panel');
+    if (nmp) nmp.style.display = tab === 'newsmap' ? 'flex' : 'none';
     document.getElementById('new-note-btn').style.display   = tab === 'notes'  ? 'flex' : 'none';
   }
   if (tab === 'bm')     { renderBmTagList(); renderBookmarks(); }
@@ -3765,6 +4013,7 @@ function switchSidebarTab(tab) {
   if (tab === 'stats')  { renderStats(); }
   if (tab === 'canvas') { cvLoad(); cvRender(); }
   if (tab === 'dash')   { initDashboard(); }
+  if (tab === 'newsmap') { nmInitFeed(); }
   if (tab === 'gofile') {
     // Mobilde de panel göster
     const gfp2 = document.getElementById('gofile-panel');
@@ -7611,6 +7860,78 @@ function updateDashBudget() {
     <button onclick="toggleAcc('pw')" style="font-size:11px;color:var(--accent2);background:none;border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif">Harcama ekle →</button>
   </div>`;
 }
+
+/* ── HARITA & YAYIM AKIŞI MODÜLÜ JAVASCRIPT ── */
+
+// Feed verisi (API'den gelecek)
+let nmFeedData = [
+  { id: 1, title: 'Örnek Haber Başlığı', desc: 'Bu kısmda haber açıklaması gelecek...', source: 'GDELT', importance: 'critical', tags: ['Çatışma', 'Türkiye'], time: '2 dakika önce', urgent: true },
+  { id: 2, title: 'Sağlık Haberi', desc: 'Salgın ve sağlık bilgisi...', source: 'ProMED', importance: 'high', tags: ['Sağlık', 'Türkiye'], time: '15 dakika önce', urgent: false },
+];
+let nmCurrentFilter = 'all';
+
+function nmInitFeed() {
+  // Harita yükle (Leaflet placeholder)
+  console.log('Harita yükleniyor...');
+  
+  // Feed yükle
+  nmRenderFeed();
+}
+
+function nmRenderFeed() {
+  const list = document.getElementById('nm-feed-list');
+  if (!list) return;
+  
+  let filtered = nmFeedData;
+  if (nmCurrentFilter !== 'all') {
+    filtered = nmFeedData.filter(item => {
+      if (nmCurrentFilter === 'conflict') return item.tags.some(t => ['Çatışma', 'Suç'].includes(t));
+      if (nmCurrentFilter === 'health') return item.tags.some(t => ['Sağlık', 'Salgın'].includes(t));
+      if (nmCurrentFilter === 'disaster') return item.tags.some(t => ['Afet', 'İklim'].includes(t));
+      if (nmCurrentFilter === 'urgent') return item.urgent;
+      return true;
+    });
+  }
+
+  list.innerHTML = filtered.map(item => `
+    <div class="nm-feed-card">
+      <div class="nm-card-importance-bar ${item.importance}"></div>
+      <div class="nm-card-header">
+        <span class="nm-card-source">${item.source}</span>
+        ${item.urgent ? '<span class="nm-urgency-badge">ACİL</span>' : ''}
+      </div>
+      <div class="nm-card-content">
+        <div class="nm-card-title">${item.title}</div>
+        <div class="nm-card-desc">${item.desc}</div>
+        <div class="nm-card-tags">
+          ${item.tags.map(t => `<span class="nm-card-tag">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="nm-card-footer">
+        <span class="nm-card-time">${item.time}</span>
+        <button style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;font-family:'IBM Plex Sans',sans-serif;transition:color 0.15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--text3)'">💾 Kaydet</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function nmFilterFeed(filter) {
+  nmCurrentFilter = filter;
+  
+  // Aktif buton güncelle
+  document.querySelectorAll('.nm-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+  
+  // Sidebar toggle
+  const sidebar = document.getElementById('nm-feed-sidebar');
+  if (sidebar && window.innerWidth < 1024) {
+    sidebar.classList.toggle('visible');
+  }
+  
+  nmRenderFeed();
+}
+
 </script>
 
 </body>
