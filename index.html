@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rulokat Arşiv</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23010101'/><text x='16' y='23' font-family='serif' font-size='22' font-weight='bold' font-style='italic' fill='%23e63a0f' text-anchor='middle'>R</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Manufacturing+Consent&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-o9N1jdbkPHHccmAv/t3rQ6gxCwGvXDtH4ujR4n0YwBo=" crossorigin="" />
@@ -57,7 +58,7 @@
 <div id="app">
  <!-- TOPBAR -->
  <div class="topbar">
- <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.77</span></div>
+ <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.80</span></div>
  <div class="search-wrap" style="position:relative">
  <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
  <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -441,36 +442,6 @@
  </div>
 
  <div id="dash-layout">
- <div id="dash-map-area" class="card">
- <div id="dash-map-box"><div id="nm-map"></div></div>
- <div id="dash-map-legend">
- <span class="dash-chip">Çatışma / Suç</span>
- <span class="dash-chip">Salgın / Sağlık</span>
- <span class="dash-chip">Afet / İklim</span>
- <span class="dash-chip">Acil</span>
- </div>
- </div>
-
- <div id="dash-sidebar">
- <div class="card">
- <h3>Filtreler</h3>
- <div style="padding:8px;display:flex;flex-direction:column;gap:6px;">
- <button class="nm-filter-btn active" data-filter="all" onclick="nmFilterFeed('all')">Tümü</button>
- <button class="nm-filter-btn" data-filter="conflict" onclick="nmFilterFeed('conflict')">Çatışma</button>
- <button class="nm-filter-btn" data-filter="health" onclick="nmFilterFeed('health')">Sağlık</button>
- <button class="nm-filter-btn" data-filter="disaster" onclick="nmFilterFeed('disaster')">Afet</button>
- <button class="nm-filter-btn" data-filter="urgent" onclick="nmFilterFeed('urgent')">Acil</button>
- </div>
- </div>
-
- <div class="card">
- <h3>Yayın Akışı</h3>
- <div id="dash-feed-area" style="padding:8px;overflow-y:auto;flex:1"></div>
- </div>
- </div>
- </div>
-
- <div id="dash-live-intel">
  <h3 style="margin:0 0 8px 0;color:var(--text3);font-size:12px;">Live Intelligence</h3>
  <div id="dash-live-list" style="font-size:12px;color:var(--text2);line-height:1.4;">
  • Tüm alt sistemler normal<br>
