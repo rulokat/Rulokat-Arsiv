@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rulokat Arşiv</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23010101'/><text x='16' y='23' font-family='serif' font-size='22' font-weight='bold' font-style='italic' fill='%23e63a0f' text-anchor='middle'>R</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<style>
+  /* ── INLINE SVG ICONS ── */
+  .ico-svg { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; vertical-align:middle; flex-shrink:0; }
+  .ico-svg svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
+  .ico-lg .ico-svg { width:20px; height:20px; }
+
+  /* ── MEDIA MODULE ── */
+  .media-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+    width: 140px;
+    flex-shrink: 0;
+  }
+  .media-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .media-poster {
+    width: 100%; aspect-ratio: 2/3;
+    background: var(--surface2);
+    position: relative; overflow: hidden;
+  }
+  .media-type-badge {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 2px 6px; border-radius: 3px;
+    color: #000; font-family: 'IBM Plex Sans', sans-serif;
+    text-transform: uppercase;
+  }
+  .media-info { padding: 8px 10px 10px; }
+  .media-title {
+    font-size: 12px; font-weight: 500; color: var(--text);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; line-height: 1.4; margin-bottom: 4px;
+  }
+  .media-search-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .media-search-row:hover { background: var(--surface2); }
+  .media-search-row:last-child { border-bottom: none; }
+</style>
+<style>
+/* ── KANVAS MODÜLÜ ── */
+#canvas-panel {
+  display: none; flex: 1; flex-direction: column;
+  overflow: hidden; background: var(--bg); position: relative;
+}
+#canvas-panel.visible { display: flex; }
+.canvas-toolbar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  background: var(--surface); flex-shrink: 0; flex-wrap: wrap;
+}
+.cv-btn {
+  background: none; border: 1px solid var(--border); color: var(--text2);
+  padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif; transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.cv-btn:hover { border-color: var(--text2); color: var(--text); }
+.cv-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
+.cv-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+.cv-sep { width: 1px; height: 20px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+.cv-label { font-size: 11px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+#cv-surface {
+  flex: 1; position: relative; overflow: hidden; cursor: default;
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+#cv-surface.pan-mode { cursor: grab; }
+#cv-surface.pan-mode:active { cursor: grabbing; }
+#cv-surface.connect-mode { cursor: crosshair; }
+#cv-world { position: absolute; top: 0; left: 0; transform-origin: 0 0; width: 4000px; height: 4000px; }
+#cv-svg { position: absolute; top: 0; left: 0; width: 4000px; height: 4000px; pointer-events: none; overflow: visible; }
+.cv-node {
+  position: absolute; background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 10px; min-width: 160px; max-width: 240px;
+  cursor: grab; user-select: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cv-node:active { cursor: grabbing; }
+.cv-node.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(230,58,15,0.25), 0 4px 16px rgba(0,0,0,0.4); }
+.cv-node.note-node { border-left: 3px solid var(--accent); }
+.cv-node.bm-node   { border-left: 3px solid var(--accent2); }
+.cv-node.free-node { border-left: 3px solid #a78bfa; }
+.cv-node-header { display: flex; align-items: center; gap: 6px; padding: 8px 10px 6px; border-bottom: 1px solid var(--border); }
+.cv-node-type {
+<script>
+window.addEventListener('load', function() {
+  // Version güncelle
+  if (typeof APP_VERSION !== 'undefined') {
+    const lockVer = document.getElementById('lock-ver');
+    const mainVer = document.getElementById('main-ver');
+    if (lockVer) lockVer.textContent = 'v ' + APP_VERSION;
+    if (mainVer) mainVer.textContent = 'v' + APP_VERSION;
+  }
+  
+  // Menü render
+  setTimeout(() => {
+    if (typeof renderNoteList === 'function') renderNoteList();
+    if (typeof renderBookmarks === 'function') renderBookmarks();
+    if (typeof renderVault === 'function') renderVault();
+    if (typeof renderMediaList === 'function') renderMediaList();
+  }, 100);
+});
+</script>
+<script src="app.js"></script>
+<script>
+// Module initialization on toggle
+const originalToggleAcc = window.toggleAcc;
+window.toggleAcc = function(tab) {
+  originalToggleAcc(tab);
+  
+  setTimeout(() => {
+    if(tab === 'canvas' && typeof CVInit === 'function') CVInit();
+    if(tab === 'dash' && typeof dashRefresh === 'function') dashRefresh();
+    if(tab === 'gofile' && typeof refreshGofileStatus === 'function') refreshGofileStatus();
+    if(tab === 'stats' && typeof updateStatsPanel === 'function') updateStatsPanel();
+    if(tab === 'notes' && typeof renderNoteList === 'function') renderNoteList();
+    if(tab === 'bm' && typeof renderBookmarks === 'function') renderBookmarks();
+    if(tab === 'pw' && typeof renderVault === 'function') renderVault();
+    if(tab === 'media' && typeof renderMediaList === 'function') renderMediaList();
+  }, 50);
+};
+
+window.addEventListener('load', function() {
+  if (typeof APP_VERSION !== 'undefined') {
+    const lockVer = document.getElementById('lock-ver');
+    const mainVer = document.getElementById('main-ver');
+    if (lockVer) lockVer.textContent = 'v ' + APP_VERSION;
+    if (mainVer) mainVer.textContent = 'v' + APP_VERSION;
+  }
+  
+  setTimeout(() => {
+    if (typeof renderNoteList === 'function') renderNoteList();
+    if (typeof renderBookmarks === 'function') renderBookmarks();
+    if (typeof renderVault === 'function') renderVault();
+    if (typeof renderMediaList === 'function') renderMediaList();
+  }, 100);
+});
+</script>
+</body>
+</html>
+<script>
+// Module initialization fixes
+function switchSidebarTab(tab) {
+  window.currentTab = tab;
+  
+  // Panelleri göster/gizle (safe checks)
+  if (!isMobile()) {
+    const panels = {
+      'notes': ['note-list-panel', 'editor-panel', 'new-note-btn'],
+      'bm': ['bm-panel'],
+      'pw': ['pw-panel'],
+      'media': ['media-panel'],
+      'stats': ['stats-panel'],
+      'canvas': ['canvas-panel'],
+      'dash': ['dash-panel'],
+      'gofile': ['gofile-panel']
+    };
+    
+    // Tüm panelleri gizle
+    Object.values(panels).flat().forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    
+    // Seçilen panelleri göster
+    if (panels[tab]) {
+      panels[tab].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'flex';
+      });
+    }
+  }
+  
+  // Modülleri render et
+  if (tab === 'bm' && typeof renderBmTagList === 'function') { 
+    renderBmTagList(); 
+    if (typeof renderBookmarks === 'function') renderBookmarks();
+  }
+  if (tab === 'pw' && typeof renderPwGrid === 'function') renderPwGrid();
+  if (tab === 'media' && typeof renderMediaGrid === 'function') renderMediaGrid();
+  if (tab === 'stats' && typeof renderStats === 'function') renderStats();
+  if (tab === 'canvas' && typeof cvLoad === 'function') {
+    cvLoad();
+    if (typeof cvRender === 'function') cvRender();
+  }
+  if (tab === 'notes' && typeof renderNoteList === 'function') renderNoteList();
+}
+
+// toggleAcc override - modülleri render et
+const origToggleAcc = window.toggleAcc;
+window.toggleAcc = function(tab) {
+  origToggleAcc(tab);
+  setTimeout(() => switchSidebarTab(tab), 50);
+};
+</script>
