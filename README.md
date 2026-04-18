@@ -1,122 +1,105 @@
-<div align="center">
+# 🛰️ EVE Online Market Radar v3.5
 
-# Rulokat Arşiv
+  
 
-**Kişisel not defteri, bağlantı yöneticisi ve şifre kasası — tek dosya, sıfır sunucu.**
+**Market Radar**, EVE Online tüccarları için geliştirilmiş gelişmiş bir bölge analiz aracıdır. Sadece bulunduğunuz sistemi değil, belirlediğiniz atlayış menzili içerisindeki tüm pazar fırsatlarını çapraz sorgulayarak en kârlı rotaları raporlar.
 
-![HTML](https://img.shields.io/badge/HTML-tek%20dosya-e63a0f?style=flat-square)
-![Lisans](https://img.shields.io/badge/lisans-MIT-555?style=flat-square)
-![Şifreleme](https://img.shields.io/badge/şifreleme-AES--256-4ade80?style=flat-square)
+-----
 
-</div>
+## 🚀 Öne Çıkan Özellikler
 
----
+  * **V-Radar Algoritması:** Mevcut konumunuzdan alım noktasına ve oradan satış noktasına kadar olan tüm rotayı (Total Jumps) hesaplar.
+  * **Dinamik Kâr Hesaplama:** Pilot yeteneklerinize (Accounting & Broker Relations) göre vergileri otomatik düşer.
+  * **100+ Stratejik Ürün:** Salvage, Minerals, PI, Ice, Gas ve Gemi kategorilerinde pazarın en likit ürünlerini tarar.
+  * **Akıllı Skorlama:** ROI, kâr hacmi ve mesafe verilerini harmanlayarak her fırsata 0-100 arası bir puan verir.
+  * **Tek Pencere Konsol:** `baslat.bat` ile backend ve frontend sistemlerini tek bir terminal üzerinden yönetir.
 
-## Nedir?
+-----
 
-Rulokat Arşiv; notlarını, web bağlantılarını ve şifrelerini tek bir HTML dosyasında, tarayıcının kendi deposunda şifreli olarak saklayan kişisel bir arşiv uygulamasıdır. Sunucu yok, veritabanı yok, abonelik yok.
+## 🛠️ Teknik Mimari
 
----
+Proje, yüksek performans ve düşük gecikme süresi için ayrık bir mimari ile inşa edilmiştir:
 
-## Özellikler
+| Bileşen | Teknoloji | Açıklama |
+| :--- | :--- | :--- |
+| **Backend** | Python / FastAPI | ESI API entegrasyonu ve matematiksel analiz motoru. |
+| **Frontend** | React / Vite | Bento-grid tasarımlı, responsive kullanıcı arayüzü. |
+| **Styling** | Tailwind CSS | Modern, karanlık tema (EVE UI standartları). |
+| **Networking** | HTTPX (Async) | ESI sunucularına asenkron ve hızlı istek yönetimi. |
 
-### 📝 Not Defteri
-- Markdown desteği — kalın, italik, başlık, liste, kod bloğu, alıntı
-- Düzenle / İkili / Önizle görünüm modları
-- Etiket sistemi ve anlık arama
-- Notları sabitleme (📌)
-- 6 hazır şablon — Günlük, Toplantı, Fikir, Okuma Notu, Hedef, Bug Raporu
-- Otomatik kayıt — yazdıkça kaydedilir
+-----
 
-### 🔖 Bağlantı Yöneticisi
-- Favicon otomatik çekme
-- Başlık, açıklama ve etiket desteği
-- Ping sistemi — sitelerin erişilebilir olup olmadığını kontrol eder
-- Düzenleme ve filtreleme
+## 📦 Kurulum ve Hazırlık
 
-### 🔑 Şifre Kasası
-- Site, kullanıcı adı ve şifre kaydı
-- Tek tıkla panoya kopyalama
-- Şifre güç göstergesi
-- Yerleşik şifre oluşturucu — uzunluk, büyük/küçük harf, rakam ve sembol seçenekleri
-- Kriptografik rastgele üretim (`crypto.getRandomValues`)
+### 1\. Gereksinimler
 
-### 🔐 Güvenlik
-- **AES-256 şifreleme** — tüm veriler (notlar, bağlantılar, şifreler) tarayıcıda şifreli saklanır
-- **SHA-256 parola doğrulama** — ana şifre hiçbir zaman düz metin olarak tutulmaz
-- **5 hatalı deneme kilidi** — 30 saniye bekleme süresi
-- **Otomatik kilit** — 5 dakika hareketsizlik sonrası ekran kilitlenir
-- **Şifre değiştirince yeniden şifreleme** — tüm veriler yeni anahtarla otomatik güncellenir
+  * Python 3.10+
+  * Node.js v18+
+  * npm veya yarn
 
-### 🎨 Arayüz
-- 7 farklı tema — Alev, Amber, Okyanus, Orman, Gül, Açık, Nordic
-- Manufacturing Consent fontu
-- Mobil uyumlu — alt navigasyon çubuğu
-- JSON yedekleme ve geri yükleme
-- Sıfır dış bağımlılık (ikonlar inline SVG)
-
----
-
-## Kurulum
-
-### GitHub Pages (ücretsiz)
-
-1. Bu repoyu fork'la veya `index.html` dosyasını yeni bir repoya yükle
-2. **Settings → Pages → Branch: main → Save**
-3. Birkaç dakika içinde yayında:
-
-```
-https://KULLANICI-ADIN.github.io/REPO-ADIN
-```
-
-### Yerel kullanım
-
-Dosyayı indirip tarayıcıda aç — başka hiçbir şey gerekmez.
+### 2\. Backend Kurulumu
 
 ```bash
-open index.html
+# Gerekli kütüphaneleri yükleyin
+pip install fastapi uvicorn httpx
 ```
 
----
+### 3\. Frontend Kurulumu
 
-## İlk Giriş
+```bash
+cd frontend
+npm install
+```
 
-Varsayılan şifre: **1234**
+-----
 
-> Girdikten sonra hemen değiştirmen önerilir.  
-> Sol sidebar → 🔒 Şifre sekmesi → en alt → *Ana şifreyi değiştir*
+## 🚦 Kullanım Rehberi
 
----
+Sistemi başlatmak için ana dizindeki `baslat.bat` dosyasına çift tıklamanız yeterlidir. Bu işlem şunları yapar:
 
-## Yedekleme
+1.  **Backend'i (Port 8000)** sessiz modda başlatır.
+2.  **Frontend'i (Port 5173)** ayağa kaldırır.
+3.  Tarayıcınızda otomatik olarak Radar ekranını açar.
 
-Verilerini kaybetmemek için düzenli yedek al:
+### Radar Ayarları
 
-**Topbar → 💾 simgesi → Dışa Aktar (JSON)**
+  * **Capacity (m³):** Geminizin boş kargo alanını girin. Hesaplamalar buna göre yapılır.
+  * **Skills:** Oyun içindeki vergi yeteneklerinizi seçin.
+  * **Range:** Kaç sistem uzağa kadar tarama yapılacağını belirleyin.
 
-Oluşan dosyayı güvenli bir yere kaydet. Geri yüklemek için aynı ekrandan *İçe Aktar* seçeneğini kullan.
+> **İpucu:** En yüksek kârlar genellikle **Salvage** kategorisindeki küçük hacimli ama yüksek değerli ürünlerden (örn: Logic Circuits) gelir.
 
----
+-----
 
-## Teknik Notlar
+## 📊 Örnek Hesaplama Mantığı
 
-| Konu | Detay |
-|------|-------|
-| Depolama | `localStorage` — veriler tarayıcıda kalır |
-| Şifreleme | `CryptoJS` AES-256-CBC |
-| Parola hash | `SHA-256` + uygulama tuzu |
-| Markdown | `marked.js` |
-| İkonlar | Inline SVG — Tabler Icons kaynaklı |
-| Font | Manufacturing Consent (Google Fonts) |
+Sistem, kârlılığı şu formülle doğrular:
 
----
+$$Net\_Profit = (Sell\_Price - Buy\_Price) - (Sell\_Price \times Total\_Tax)$$
 
-## Ping Sistemi Hakkında
+Burada `Total_Tax`, sizin yetenek seviyelerinize göre hesaplanan **Sales Tax** ve **Broker Fee** toplamıdır.
 
-Bağlantı kontrolü tarayıcı ortamında `fetch` + `no-cors` yöntemiyle çalışır. Çoğu büyük site için doğru sonuç verir; ancak CORS politikası katı olan bazı siteler açık olsalar dahi erişilemez görünebilir. %100 doğruluk için sunucu tarafı bir çözüm gerekir.
+-----
 
----
+## 📁 Dosya Yapısı
 
-<div align="center">
-<sub>Tek dosya. Sıfır sunucu. Tamamen senin.</sub>
-</div>
+```text
+EVE_trader/
+├── main.py            # API ve Analiz motoru
+├── map_data.json      # EVE evren haritası verisi
+├── baslat.bat         # Görev kontrol dosyası
+├── .gitignore         # Gereksiz dosyaların (node_modules vb.) listesi
+└── frontend/          # React/Vite proje klasörü
+```
+
+-----
+
+## ⚠️ Yasal Uyarı
+
+Bu araç bir "bot" değildir. Oyun istemcisine (client) müdahale etmez, bellek okumaz. Sadece herkese açık olan resmi **EVE Swagger Interface (ESI)** verilerini kullanarak analiz yapar. Kullanımı güvenlidir.
+
+-----
+
+## 🤝 Katkıda Bulunma
+
+Yeni ürün fikirleriniz veya UI iyileştirme önerileriniz varsa lütfen bir **Issue** açın veya **Pull Request** gönderin.
