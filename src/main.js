@@ -4342,6 +4342,7 @@ function initDashboard() {
   fetchGlobalNews();
   fetchEarthquakes();
   fetchIpInfo();
+  fetchSpaceWeather();
   initTerminal();
   nmInitFeed(); // Haritayı başlat
   startUptimeCounter();
@@ -4448,6 +4449,33 @@ async function fetchIpInfo() {
       <div>ISP: <span style="color:#fff">${data.org}</span></div>
     `;
   } catch (e) { console.error("IP error:", e); }
+}
+
+async function fetchSpaceWeather() {
+  const container = document.getElementById("dash-space-weather");
+  if (!container) return;
+  try {
+    const resp = await fetch("https://services.swpc.noaa.gov/products/noaa-scales.json");
+    const data = await resp.json();
+    const R = data[0]?.R?.Current || 0;
+    const S = data[0]?.S?.Current || 0;
+    const G = data[0]?.G?.Current || 0;
+    
+    container.innerHTML = `
+      <div style="flex:1">
+        <div style="font-size:8px; opacity:0.6">RADIO_BL</div>
+        <div style="font-size:13px; color:#fff; font-weight:bold">R${R}</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:8px; opacity:0.6">SOLAR_RAD</div>
+        <div style="font-size:13px; color:#fff; font-weight:bold">S${S}</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:8px; opacity:0.6">GEO_MAG</div>
+        <div style="font-size:13px; color:#fff; font-weight:bold">G${G}</div>
+      </div>
+    `;
+  } catch (e) { console.error("Space weather error:", e); }
 }
 
 function updateDashStats() {
