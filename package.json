@@ -1,0 +1,21 @@
+{
+  "name": "rulokat-arsiv",
+  "version": "2.0.0",
+  "description": "Rulokat Arsiv Modernized",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "crypto-js": "^4.2.0",
+    "dompurify": "^3.4.2",
+    "leaflet": "^1.9.4",
+    "localforage": "^1.10.0",
+    "marked": "^18.0.3",
+    "vite": "^8.0.10"
+  }
+}

@@ -29,7 +29,7 @@
  <div style="text-align:center;margin-bottom:28px;position:relative;z-index:3;animation:lockLogoIn 1s cubic-bezier(0.16,1,0.3,1) both">
  <div style="display:inline-block;position:relative">
  <div class="lock-logo-text">Rulokat Arşiv</div>
- <div class="lock-version">v 1.80</div>
+ <div class="lock-version">v 2.0</div>
  </div>
  </div>
 
@@ -58,7 +58,7 @@
 <div id="app">
  <!-- TOPBAR -->
  <div class="topbar">
- <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v1.80</span></div>
+ <div class="logo">Rulokat Arşiv <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);font-style:normal;letter-spacing:0;vertical-align:middle">v2.0</span></div>
  <div class="search-wrap" style="position:relative">
  <span class="search-icon"><span class="ico-svg"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><path d="M21 21l-6-6"/></svg></span></span>
  <input type="text" id="search-input" placeholder="Tüm arşivde ara..." autocomplete="off">
@@ -432,23 +432,7 @@
 
  <!-- DASHBOARD PANELİ -->
  <div id="dash-panel">
- <div id="dash-hub">
- <div id="dash-topbar">
- <span style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text);font-weight:700">WorldMonitor-style</span>
- <div style="display:flex;gap:8px;align-items:center;">
- <button onclick="dashRefresh()" style="background:none;border:1px solid var(--border);color:var(--text3);padding:6px 10px;border-radius:5px;font-size:12px;cursor:pointer">Yenile</button>
- <button onclick="nmFilterFeed('all')" style="background:var(--accent);border:none;color:#000;padding:6px 10px;border-radius:5px;font-size:12px;cursor:pointer">Temiz</button>
- </div>
- </div>
-
- <div id="dash-layout">
- <h3 style="margin:0 0 8px 0;color:var(--text3);font-size:12px;">Live Intelligence</h3>
- <div id="dash-live-list" style="font-size:12px;color:var(--text2);line-height:1.4;">
- • Tüm alt sistemler normal<br>
- • 22:00 UTC: Kritik saldırı sinyali
- </div>
- </div>
- </div>
+ <!-- Dashboard bölümü boşaltıldı, ileride doldurulacak -->
  </div>
 
  <div id="bm-panel">
@@ -1001,5 +985,5 @@
 
 
 </body>
-<script src="app.js"></script>
+<script type="module" src="/src/main.js"></script>
 </html>
