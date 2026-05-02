@@ -4393,8 +4393,8 @@ async function fetchGlobalNews() {
   container.innerHTML = '<div class="news-time">SCANNING GLOBAL CHANNELS...</div>';
   
   try {
-    // GDELT API - Dünya çapında önemli haberler
-    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=(tone<-4%20OR%20tone>4)%20-sourcecountry:US&mode=artlist&maxrecords=8&format=json");
+    // GDELT API - Dünya çapında önemli haberler (İngilizce odaklı)
+    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=(tone<-4%20OR%20tone>4)%20-sourcecountry:US%20-lang:zho&mode=artlist&maxrecords=8&format=json");
     const data = await resp.json();
     
     if (data.articles) {
@@ -4474,7 +4474,7 @@ function updateClocks() {
   const now = new Date();
   container.innerHTML = zones.map(z => {
     const time = now.toLocaleTimeString("tr-TR", { timeZone: z.zone, hour: '2-digit', minute: '2-digit', hour12: false });
-    return `<span style="margin-left:15px; font-size:12px; color:#555"><span style="color:#0f0">${z.name}:</span> ${time}</span>`;
+    return `<span style="margin-left:15px; font-size:12px; color:#ccc"><span style="color:#0f0">${z.name}:</span> ${time}</span>`;
   }).join("");
 }
 function weatherIcon(e) {
