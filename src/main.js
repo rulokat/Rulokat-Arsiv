@@ -3287,6 +3287,14 @@ let cvNodes = [],
   cvSelectedEdge = null,
   cvSurfaceReady = !1,
   cvRafId = null;
+async function clearAndLogout() {
+  if (confirm("DİKKAT: Bu tarayıcıdaki tüm verileriniz (notlar, şifreler, medya listesi) tamamen silinecek. Eğer GitHub Gist veya dosya yedeğiniz yoksa verilerinizi kaybedersiniz.\n\nDevam etmek istiyor musunuz?")) {
+    localStorage.clear();
+    await window.localforage.clear();
+    window.location.reload();
+  }
+}
+window.clearAndLogout = clearAndLogout;
 function cvLoad() {
   try {
     const e = getItemSync(CV_KEY);
@@ -4808,3 +4816,4 @@ window.nmInitFeed = nmInitFeed;
 window.nmRenderMapPins = nmRenderMapPins;
 window.nmRenderFeed = nmRenderFeed;
 window.nmFilterFeed = nmFilterFeed;
+window.clearAndLogout = clearAndLogout;
