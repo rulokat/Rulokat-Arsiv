@@ -4351,8 +4351,78 @@ function initDashboard() {
   nmInitFeed(); 
   startUptimeCounter();
   updateClocks();
-  if (window.dashClockInterval) clearInterval(window.dashClockInterval);
   window.dashClockInterval = setInterval(updateClocks, 60000);
+}
+
+const GRID_SIZE = 20; // Izgara boyutu
+
+function initWidgetSystem() {
+  const canvas = document.getElementById("dash-canvas");
+  if (!canvas) return;
+  const widgets = document.querySelectorAll(".dash-widget");
+  widgets.forEach(w => {
+    const header = w.querySelector(".widget-header");
+    const resizer = w.querySelector(".widget-resizer");
+    w.onmousedown = () => {
+      widgets.forEach(ow => ow.style.zIndex = "100");
+      w.style.zIndex = "101";
+    };
+    if (header) {
+      header.onmousedown = (e) => {
+        if (e.target.closest(".widget-resizer")) return;
+        e.preventDefault();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = parseInt(w.style.left) || 20;
+        const startTop = parseInt(w.style.top) || 20;
+        w.classList.add("dragging");
+        const onMouseMove = (e) => {
+          let nl = startLeft + e.clientX - startX;
+          let nt = startTop + e.clientY - startY;
+          // GRID SNAPPING
+          nl = Math.round(nl / GRID_SIZE) * GRID_SIZE;
+          nt = Math.round(nt / GRID_SIZE) * GRID_SIZE;
+          w.style.left = nl + "px";
+          w.style.top = nt + "px";
+        };
+        const onMouseUp = () => {
+          w.classList.remove("dragging");
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+          saveWidgetPositions();
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+    }
+    if (resizer) {
+      resizer.onmousedown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startW = w.offsetWidth;
+        const startH = w.offsetHeight;
+        const onMouseMove = (e) => {
+          let nw = startW + e.clientX - startX;
+          let nh = startH + e.clientY - startY;
+          // GRID SNAPPING FOR RESIZE
+          nw = Math.round(nw / GRID_SIZE) * GRID_SIZE;
+          nh = Math.round(nh / GRID_SIZE) * GRID_SIZE;
+          w.style.width = Math.max(160, nw) + "px";
+          w.style.height = Math.max(80, nh) + "px";
+        };
+        const onMouseUp = () => {
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+          saveWidgetPositions();
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+    }
+  });
+  loadWidgetPositions();
 }
 function dashRefresh() {
   (fetchDashWeather(),
@@ -4401,8 +4471,8 @@ async function fetchGlobalNews() {
   container.innerHTML = '<div class="news-time">SCANNING GLOBAL CHANNELS...</div>';
   
   try {
-    // GDELT API - Daha basit ve geniş bir sorgu
-    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=breakingnews%20-sourcecountry:US&mode=artlist&maxrecords=10&format=json");
+    // GDELT API - 30 kayıt çekiyoruz
+    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=breakingnews%20-sourcecountry:CH&mode=artlist&maxrecords=30&format=json");
     const data = await resp.json();
     
     if (data.articles && data.articles.length > 0) {
@@ -4462,25 +4532,28 @@ async function fetchSpaceWeather() {
   try {
     const resp = await fetch("https://services.swpc.noaa.gov/products/noaa-scales.json");
     const data = await resp.json();
-    const R = data[0]?.R?.Current || 0;
-    const S = data[0]?.S?.Current || 0;
-    const G = data[0]?.G?.Current || 0;
+    const R = data[0]?.R?.scale || data[0]?.R?.Current || 0;
+    const S = data[0]?.S?.scale || data[0]?.S?.Current || 0;
+    const G = data[0]?.G?.scale || data[0]?.G?.Current || 0;
     
     container.innerHTML = `
-      <div style="flex:1">
-        <div style="font-size:8px; opacity:0.6">RADIO_BL</div>
-        <div style="font-size:13px; color:#fff; font-weight:bold">R${R}</div>
+      <div style="flex:1; border-right:1px solid #222; padding-right:10px">
+        <div style="font-size:8px; color:#f00; opacity:0.8">RADIO_BLACKOUT</div>
+        <div style="font-size:16px; color:#fff; font-weight:bold">R${R}</div>
+      </div>
+      <div style="flex:1; border-right:1px solid #222; padding-right:10px">
+        <div style="font-size:8px; color:#ff7a50; opacity:0.8">SOLAR_RADIATION</div>
+        <div style="font-size:16px; color:#fff; font-weight:bold">S${S}</div>
       </div>
       <div style="flex:1">
-        <div style="font-size:8px; opacity:0.6">SOLAR_RAD</div>
-        <div style="font-size:13px; color:#fff; font-weight:bold">S${S}</div>
-      </div>
-      <div style="flex:1">
-        <div style="font-size:8px; opacity:0.6">GEO_MAG</div>
-        <div style="font-size:13px; color:#fff; font-weight:bold">G${G}</div>
+        <div style="font-size:8px; color:#4ade80; opacity:0.8">GEOMAG_STORM</div>
+        <div style="font-size:16px; color:#fff; font-weight:bold">G${G}</div>
       </div>
     `;
-  } catch (e) { console.error("Space weather error:", e); }
+  } catch (e) {
+    container.innerHTML = '<div style="font-size:9px; color:#555">NOAA_LINK_FAILED</div>';
+    console.error("Space weather error:", e);
+  }
 }
 
 function updateDashStats() {
