@@ -4344,6 +4344,7 @@ function initDashboard() {
   fetchIpInfo();
   fetchSpaceWeather();
   initTerminal();
+  initWidgetSystem(); // Widget sistemini başlat
   nmInitFeed(); // Haritayı başlat
   startUptimeCounter();
   updateClocks();

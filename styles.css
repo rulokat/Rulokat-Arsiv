@@ -45,3 +45,15 @@
 #dash-panel { background: #050505; position: relative; }
 #dash-topbar { height: 40px; padding: 0 15px; background: #080808; border-bottom: 1px solid #1a1a1a; }
 #dash-global-clocks span { font-size: 10px !important; letter-spacing: 1px; }
+
+/* WIDGET SYSTEM STYLES */
+.dash-widget { position: absolute; background: #0a0a0a; border: 1px solid #222; border-radius: 4px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; min-width: 100px; min-height: 50px; }
+.dash-widget:hover { border-color: #333; }
+.widget-header { padding: 6px 10px; background: #111; cursor: move; border-bottom: 1px solid #222; display: flex; align-items: center; user-select: none; }
+.widget-header h3 { font-size: 10px; color: #0f0; margin: 0; pointer-events: none; }
+.widget-content { flex: 1; overflow: auto; position: relative; }
+.widget-resizer { position: absolute; right: 0; bottom: 0; width: 15px; height: 15px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, #333 50%); }
+.dash-widget iframe { pointer-events: auto; }
+.dash-widget.dragging { opacity: 0.8; z-index: 1000; box-shadow: 0 8px 30px rgba(0,0,0,0.8); }
+.dash-widget.dragging iframe { pointer-events: none; } /* Disable iframe interaction while dragging */
+
