@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify';
 import { initStorage, getItemSync, setItemAsync, removeItemAsync } from './storage.js';
 initStorage(); // fire-and-forget — sayfayı bekletmez
 

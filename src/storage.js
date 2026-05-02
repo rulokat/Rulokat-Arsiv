@@ -5,9 +5,7 @@
  * initStorage() anında döner — sayfa bloke olmaz.
  */
 
-import localforage from 'localforage';
-
-const lf = localforage.createInstance({
+const lf = window.localforage.createInstance({
   name: 'rulokat-arsiv',
   storeName: 'rulokat_data',
 });
