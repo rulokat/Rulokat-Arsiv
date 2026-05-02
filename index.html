@@ -432,10 +432,71 @@
 
  </div>
 
- <!-- DASHBOARD PANELİ -->
- <div id="dash-panel">
- <!-- Dashboard bölümü boşaltıldı, ileride doldurulacak -->
- </div>
+  <!-- DASHBOARD PANELİ (World Monitor Style) -->
+  <div id="dash-panel">
+    <div id="dash-hub">
+      <div id="dash-topbar">
+        <div class="dash-top-left">
+          <div class="terminal-text" id="dash-status-msg">> SYSTEM STATUS: OPERATIONAL_</div>
+        </div>
+        <div class="dash-top-right">
+          <div id="dash-global-clocks"></div>
+        </div>
+      </div>
+
+      <div id="dash-layout">
+        <!-- SOL SÜTUN: HARİTA VE İSTATİSTİKLER -->
+        <div id="dash-map-area">
+          <div class="card">
+            <div id="dash-map-box">
+              <iframe src="https://cybermap.kaspersky.com/en/widget/dynamic/dark" width="100%" height="100%" frameborder="0" style="background:#000"></iframe>
+              <div class="map-overlay-top">CYBER THREAT INTELLIGENCE - LIVE FEED</div>
+            </div>
+          </div>
+          
+          <div id="dash-stats-row">
+            <div class="dash-stat-box">
+              <span class="label">DATABASE_SIZE</span>
+              <span class="val" id="stat-total-items">0</span>
+            </div>
+            <div class="dash-stat-box">
+              <span class="label">ACTIVE_NODES</span>
+              <span class="val" id="stat-active-notes">0</span>
+            </div>
+            <div class="dash-stat-box">
+              <span class="label">SECURITY_SCORE</span>
+              <span class="val" style="color:var(--accent)">98.2%</span>
+            </div>
+            <div class="dash-stat-box">
+              <span class="label">UPTIME</span>
+              <span class="val" id="dash-uptime">00:00:00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SAĞ SÜTUN: HABERLER VE HAVA DURUMU -->
+        <div id="dash-sidebar">
+          <div class="card" style="flex: 0 0 auto; height: 280px; margin-bottom: 10px;">
+            <h3>METEOROLOGICAL_INTEL</h3>
+            <div id="dash-weather-grid"></div>
+          </div>
+
+          <div class="card" style="flex: 1; overflow: hidden;">
+            <div class="card-header-news">
+              <h3>GLOBAL_NEWS_FEED</h3>
+              <div class="live-indicator"><span class="blink">●</span> LIVE</div>
+            </div>
+            <div id="dash-feed-area"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALT BANT: TERMİNAL LOGLARI -->
+      <div id="dash-terminal">
+        <div id="terminal-output"></div>
+      </div>
+    </div>
+  </div>
 
  <div id="bm-panel">
  <div class="bm-toolbar">

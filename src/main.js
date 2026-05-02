@@ -4337,12 +4337,14 @@ const DASH_CITY_KEY = "rulokat_dash_city";
 let dashCity = getItemSync(DASH_CITY_KEY) || "Istanbul",
   fxPrevRates = {};
 function initDashboard() {
-  const e = document.getElementById("dash-city-input");
-  (e && (e.value = dashCity),
-    updateDashBudget(),
-    fetchDashWeather(),
-    fetchDashFX(),
-    nmInitFeed());
+  updateDashStats();
+  fetchWorldMonitorWeather();
+  fetchGlobalNews();
+  initTerminal();
+  nmInitFeed(); // Haritayı başlat
+  startUptimeCounter();
+  updateClocks();
+  setInterval(updateClocks, 60000);
 }
 function dashRefresh() {
   (fetchDashWeather(),
@@ -4357,48 +4359,123 @@ function dashSaveCity() {
     setItemAsync(DASH_CITY_KEY, e),
     fetchDashWeather());
 }
-async function fetchDashWeather() {
-  const e = document.getElementById("dash-weather-body");
-  if (e) {
-    e.innerHTML =
-      '<span style="color:var(--text3);font-size:11px">Yükleniyor...</span>';
+async function fetchWorldMonitorWeather() {
+  const container = document.getElementById("dash-weather-grid");
+  if (!container) return;
+  
+  const locations = [
+    { name: "Gülnar, Mersin", lat: 36.33, lon: 33.40 },
+    { name: "Merkez, Niğde", lat: 37.96, lon: 34.68 },
+    { name: "Bodrum, Muğla", lat: 37.03, lon: 27.43 },
+    { name: "Kaposvár, HU", lat: 46.36, lon: 17.78 }
+  ];
+
+  container.innerHTML = "";
+  locations.forEach(async (loc) => {
     try {
-      const t = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(dashCity)}&count=1&language=tr`,
-          { signal: AbortSignal.timeout(8e3) },
-        ),
-        n = await t.json(),
-        a = n.results?.[0];
-      if (!a) throw new Error("Şehir bulunamadı: " + dashCity);
-      const o = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${a.latitude}&longitude=${a.longitude}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m,apparent_temperature&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max&timezone=auto&forecast_days=7`,
-          { signal: AbortSignal.timeout(8e3) },
-        ),
-        s = await o.json(),
-        i = s.current,
-        r = s.daily,
-        l = weatherIcon(i.weathercode),
-        d = Math.round(i.temperature_2m),
-        c = Math.round(i.apparent_temperature),
-        m = Math.round(i.windspeed_10m),
-        u = i.relative_humidity_2m,
-        p = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"],
-        g = r.time
-          .map((e, t) => {
-            const n = new Date(e),
-              a = 0 === t ? "Bugün" : 1 === t ? "Yarın" : p[n.getDay()],
-              o = weatherIcon(r.weathercode[t]),
-              s = Math.round(r.temperature_2m_max[t]),
-              i = Math.round(r.temperature_2m_min[t]),
-              l = r.precipitation_probability_max[t] || 0;
-            return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:var(--surface2);border-radius:8px;min-width:0;flex:1">\n        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;white-space:nowrap">${a}</div>\n        <div style="font-size:18px">${o}</div>\n        <div style="font-size:11px;font-weight:600;color:var(--text)">${s}°</div>\n        <div style="font-size:10px;color:var(--text3)">${i}°</div>\n        ${l > 20 ? `<div style="font-size:9px;color:#60a5fa">💧${l}%</div>` : '<div style="font-size:9px;color:transparent">-</div>'}\n      </div>`;
-          })
-          .join("");
-      e.innerHTML = `\n      \x3c!-- Şu an --\x3e\n      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">\n        <div style="font-size:42px;line-height:1">${l}</div>\n        <div>\n          <div style="font-size:28px;font-weight:700;color:var(--text);font-family:'IBM Plex Mono',monospace;line-height:1">${d}°C</div>\n          <div style="font-size:11px;color:var(--text3);margin-top:3px">${escHtml(a.name)} · Hissedilen ${c}°C</div>\n          <div style="font-size:11px;color:var(--text3);margin-top:2px">💨 ${m} km/h · 💧 ${u}%</div>\n        </div>\n      </div>\n      \x3c!-- 7 günlük tahmin --\x3e\n      <div style="display:flex;gap:4px;overflow-x:auto;scrollbar-width:none">${g}</div>`;
-    } catch (t) {
-      e.innerHTML = `<span style="color:var(--danger);font-size:11px">${escHtml(t.message)}</span>`;
+      const resp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weathercode&timezone=auto`);
+      const data = await resp.json();
+      const temp = Math.round(data.current.temperature_2m);
+      const item = document.createElement("div");
+      item.className = "weather-item";
+      item.innerHTML = `
+        <div class="weather-loc">${loc.name.toUpperCase()}</div>
+        <div class="weather-data">${temp}°C <span style="font-size:10px;opacity:0.5">${weatherIcon(data.current.weathercode)}</span></div>
+      `;
+      container.appendChild(item);
+    } catch (e) { console.error("Weather error:", loc.name, e); }
+  });
+}
+
+async function fetchGlobalNews() {
+  const container = document.getElementById("dash-feed-area");
+  if (!container) return;
+  container.innerHTML = '<div class="news-time">SCANNING GLOBAL CHANNELS...</div>';
+  
+  try {
+    // GDELT API - Dünya çapında önemli haberler
+    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=(tone<-4%20OR%20tone>4)%20-sourcecountry:US&mode=artlist&maxrecords=8&format=json");
+    const data = await resp.json();
+    
+    if (data.articles) {
+      container.innerHTML = "";
+      data.articles.forEach(art => {
+        const item = document.createElement("div");
+        item.className = "news-item";
+        item.innerHTML = `
+          <div class="news-time">${new Date().toLocaleTimeString()} - ${art.sourcecountry || "INTL"}</div>
+          <div class="news-title">${art.title}</div>
+        `;
+        item.onclick = () => window.open(art.url, "_blank");
+        container.appendChild(item);
+      });
     }
+  } catch (e) {
+    container.innerHTML = '<div class="news-time" style="color:var(--danger)">ENCRYPTION_ERROR: FETCH_FAILED</div>';
   }
+}
+
+function updateDashStats() {
+  document.getElementById("stat-total-items").textContent = notes.length + bookmarks.length + mediaItems.length;
+  document.getElementById("stat-active-notes").textContent = notes.filter(n => !n.isLocked).length;
+}
+
+let uptimeStart = Date.now();
+function startUptimeCounter() {
+  setInterval(() => {
+    const diff = Math.floor((Date.now() - uptimeStart) / 1000);
+    const h = String(Math.floor(diff / 3600)).padStart(2, "0");
+    const m = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
+    const s = String(diff % 60).padStart(2, "0");
+    document.getElementById("dash-uptime").textContent = `${h}:${m}:${s}`;
+  }, 1000);
+}
+
+function initTerminal() {
+  const output = document.getElementById("terminal-output");
+  if (!output) return;
+  const msgs = [
+    "CONNECTED TO GLOBAL INTELLIGENCE NETWORK...",
+    "DECRYPTING ARCHIVE_V2.0_RESOURCES...",
+    "MONITORING CYBER THREAT VECTORS...",
+    "SYNCING WITH REMOTE REPOSITORIES...",
+    "SYSTEM HEALTH: 100% | ENCRYPTION: ACTIVE",
+    "SCANNING REGIONAL METEOROLOGICAL DATA...",
+    "IDLE_MODE_STANDBY_READY"
+  ];
+  let msgIdx = 0;
+
+  function typeNext() {
+    const text = msgs[msgIdx];
+    output.textContent = "> ";
+    let charIdx = 0;
+    const interval = setInterval(() => {
+      output.textContent += text[charIdx];
+      charIdx++;
+      if (charIdx >= text.length) {
+        clearInterval(interval);
+        msgIdx = (msgIdx + 1) % msgs.length;
+        setTimeout(typeNext, 3000);
+      }
+    }, 40);
+  }
+  typeNext();
+}
+
+function updateClocks() {
+  const container = document.getElementById("dash-global-clocks");
+  if (!container) return;
+  const zones = [
+    { name: "TR", zone: "Europe/Istanbul" },
+    { name: "HU", zone: "Europe/Budapest" },
+    { name: "NY", zone: "America/New_York" },
+    { name: "TK", zone: "Asia/Tokyo" }
+  ];
+  const now = new Date();
+  container.innerHTML = zones.map(z => {
+    const time = now.toLocaleTimeString("tr-TR", { timeZone: z.zone, hour: '2-digit', minute: '2-digit', hour12: false });
+    return `<span style="margin-left:15px; font-size:12px; color:#555"><span style="color:#0f0">${z.name}:</span> ${time}</span>`;
+  }).join("");
 }
 function weatherIcon(e) {
   return 0 === e
