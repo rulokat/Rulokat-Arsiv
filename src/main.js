@@ -4344,11 +4344,15 @@ function initDashboard() {
   fetchIpInfo();
   fetchSpaceWeather();
   initTerminal();
-  initWidgetSystem(); // Widget sistemini başlat
-  nmInitFeed(); // Haritayı başlat
+  
+  // Widget sistemini biraz gecikmeli başlat (DOM yerleşimi için)
+  setTimeout(initWidgetSystem, 100);
+  
+  nmInitFeed(); 
   startUptimeCounter();
   updateClocks();
-  setInterval(updateClocks, 60000);
+  if (window.dashClockInterval) clearInterval(window.dashClockInterval);
+  window.dashClockInterval = setInterval(updateClocks, 60000);
 }
 function dashRefresh() {
   (fetchDashWeather(),
@@ -4958,3 +4962,92 @@ window.nmRenderMapPins = nmRenderMapPins;
 window.nmRenderFeed = nmRenderFeed;
 window.nmFilterFeed = nmFilterFeed;
 window.clearAndLogout = clearAndLogout;
+
+function initWidgetSystem() {
+  const canvas = document.getElementById("dash-canvas");
+  if (!canvas) return;
+  const widgets = document.querySelectorAll(".dash-widget");
+  widgets.forEach(w => {
+    const header = w.querySelector(".widget-header");
+    const resizer = w.querySelector(".widget-resizer");
+    w.onmousedown = () => {
+      widgets.forEach(ow => ow.style.zIndex = "100");
+      w.style.zIndex = "101";
+    };
+    if (header) {
+      header.onmousedown = (e) => {
+        if (e.target.closest(".widget-resizer")) return;
+        e.preventDefault();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = parseInt(w.style.left) || 0;
+        const startTop = parseInt(w.style.top) || 0;
+        w.classList.add("dragging");
+        const onMouseMove = (e) => {
+          w.style.left = (startLeft + e.clientX - startX) + "px";
+          w.style.top = (startTop + e.clientY - startY) + "px";
+        };
+        const onMouseUp = () => {
+          w.classList.remove("dragging");
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+          saveWidgetPositions();
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+    }
+    if (resizer) {
+      resizer.onmousedown = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startW = w.offsetWidth;
+        const startH = w.offsetHeight;
+        const onMouseMove = (e) => {
+          w.style.width = Math.max(150, startW + e.clientX - startX) + "px";
+          w.style.height = Math.max(80, startH + e.clientY - startY) + "px";
+        };
+        const onMouseUp = () => {
+          document.removeEventListener("mousemove", onMouseMove);
+          document.removeEventListener("mouseup", onMouseUp);
+          saveWidgetPositions();
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+      };
+    }
+  });
+  loadWidgetPositions();
+}
+function saveWidgetPositions() {
+  const p = {};
+  document.querySelectorAll(".dash-widget").forEach(w => {
+    p[w.id] = { t: w.style.top, l: w.style.left, w: w.style.width, h: w.style.height };
+  });
+  localStorage.setItem("dash_widgets", JSON.stringify(p));
+}
+function loadWidgetPositions() {
+  try {
+    const s = localStorage.getItem("dash_widgets");
+    if (!s) return;
+    const p = JSON.parse(s);
+    for (const id in p) {
+      const w = document.getElementById(id);
+      if (w && p[id]) {
+        w.style.top = p[id].t;
+        w.style.left = p[id].l;
+        w.style.width = p[id].w;
+        w.style.height = p[id].h;
+      }
+    }
+  } catch (e) {}
+}
+function resetDashboardLayout() {
+  localStorage.removeItem("dash_widgets");
+  location.reload();
+}
+window.initWidgetSystem = initWidgetSystem;
+window.resetDashboardLayout = resetDashboardLayout;
+
