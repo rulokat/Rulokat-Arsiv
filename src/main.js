@@ -2175,10 +2175,8 @@ function saveMediaItems(e) {
 }
 async function searchMedia() {
   const e = document.getElementById("media-search").value.trim();
-  console.log("searchMedia tetiklendi, aranan:", e);
   if (!e) return;
   const t = document.getElementById("media-search-results");
-  console.log("Sonuç paneli:", t);
   ((t.style.display = "block"),
     (t.innerHTML =
       '<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">Aranıyor...</div>'));
@@ -2187,7 +2185,6 @@ async function searchMedia() {
         `https://www.omdbapi.com/?apikey=${OMDB_KEY}&s=${encodeURIComponent(e)}`,
       ),
       a = await n.json();
-    console.log("OMDb yanıtı:", a);
     if ("False" === a.Response)
       return void (t.innerHTML =
         '<div style="padding:16px;text-align:center;color:var(--text3);font-size:13px">Sonuç bulunamadı</div>');
