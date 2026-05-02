@@ -30,19 +30,18 @@
 
 #dash-terminal { height: 40px; background: #000; border-top: 1px solid #111; padding: 10px 20px; font-size: 11px; color: #080; display: flex; align-items: center; overflow: hidden; }
 
-
-/* CRT SCANLINE EFFECT */
-#dash-panel::before {
+/* CRT SCANLINE EFFECT - IMPROVED */
+.card::before {
   content: " ";
   display: block;
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-  z-index: 2000;
-  background-size: 100% 2px, 3px 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+  z-index: 10;
+  background-size: 100% 3px;
   pointer-events: none;
+  opacity: 0.5;
 }
-#dash-topbar { height: 40px; padding: 0 15px; }
-.dash-top-right { display: flex; align-items: center; }
+#dash-panel { background: #050505; position: relative; }
+#dash-topbar { height: 40px; padding: 0 15px; background: #080808; border-bottom: 1px solid #1a1a1a; }
 #dash-global-clocks span { font-size: 10px !important; letter-spacing: 1px; }
-

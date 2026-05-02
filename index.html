@@ -449,7 +449,7 @@
         <div id="dash-map-area">
           <div class="card">
             <div id="dash-map-box">
-              <iframe src="https://threatmap.fortiguard.com/" width="100%" height="100%" frameborder="0" style="background:#000; filter: invert(1) hue-rotate(180deg) brightness(0.8);"></iframe>
+              <iframe src="https://threatmap.fortiguard.com/" width="100%" height="100%" frameborder="0" style="background:#000"></iframe>
               <div class="map-overlay-top">CYBER THREAT INTELLIGENCE - LIVE FEED</div>
             </div>
           </div>
@@ -476,9 +476,19 @@
 
         <!-- SAĞ SÜTUN: HABERLER VE HAVA DURUMU -->
         <div id="dash-sidebar">
-          <div class="card" style="flex: 0 0 auto; height: 280px; margin-bottom: 10px;">
+          <div class="card" style="height: 140px; margin-bottom: 10px;">
             <h3>METEOROLOGICAL_INTEL</h3>
             <div id="dash-weather-grid"></div>
+          </div>
+
+          <div class="card" style="height: 140px; margin-bottom: 10px;">
+            <h3>SEISMIC_ACTIVITY_TURKEY</h3>
+            <div id="dash-earthquake-list" style="flex:1; overflow-y:auto; padding:10px; font-size:10px; color:#f59e0b"></div>
+          </div>
+
+          <div class="card" style="height: 100px; margin-bottom: 10px;">
+            <h3>CONNECTION_INTEL</h3>
+            <div id="dash-ip-info" style="padding:10px; font-size:11px; color:#0f0"></div>
           </div>
 
           <div class="card" style="flex: 1; overflow: hidden;">

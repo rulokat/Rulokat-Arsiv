@@ -4340,6 +4340,8 @@ function initDashboard() {
   updateDashStats();
   fetchWorldMonitorWeather();
   fetchGlobalNews();
+  fetchEarthquakes();
+  fetchIpInfo();
   initTerminal();
   nmInitFeed(); // Haritayı başlat
   startUptimeCounter();
@@ -4393,11 +4395,11 @@ async function fetchGlobalNews() {
   container.innerHTML = '<div class="news-time">SCANNING GLOBAL CHANNELS...</div>';
   
   try {
-    // GDELT API - Dünya çapında önemli haberler (İngilizce odaklı)
-    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=(tone<-4%20OR%20tone>4)%20-sourcecountry:US%20-lang:zho&mode=artlist&maxrecords=8&format=json");
+    // GDELT API - Daha basit ve geniş bir sorgu
+    const resp = await fetch("https://api.gdeltproject.org/api/v2/doc/doc?query=breakingnews%20-sourcecountry:US&mode=artlist&maxrecords=10&format=json");
     const data = await resp.json();
     
-    if (data.articles) {
+    if (data.articles && data.articles.length > 0) {
       container.innerHTML = "";
       data.articles.forEach(art => {
         const item = document.createElement("div");
@@ -4409,10 +4411,43 @@ async function fetchGlobalNews() {
         item.onclick = () => window.open(art.url, "_blank");
         container.appendChild(item);
       });
+    } else {
+      container.innerHTML = '<div class="news-time">NO_RECENT_INTEL_FOUND</div>';
     }
   } catch (e) {
     container.innerHTML = '<div class="news-time" style="color:var(--danger)">ENCRYPTION_ERROR: FETCH_FAILED</div>';
   }
+}
+
+async function fetchEarthquakes() {
+  const container = document.getElementById("dash-earthquake-list");
+  if (!container) return;
+  try {
+    const resp = await fetch("https://api.orhanaydogdu.com.tr/deprem/kandilli/live?limit=5");
+    const data = await resp.json();
+    if (data.result) {
+      container.innerHTML = data.result.map(d => `
+        <div style="border-bottom:1px solid #222; padding-bottom:4px; margin-bottom:4px">
+          <span style="color:#fff; font-weight:bold">${d.mag}</span> - ${d.title}
+          <div style="font-size:8px; opacity:0.6">${d.date}</div>
+        </div>
+      `).join("");
+    }
+  } catch (e) { console.error("Quake error:", e); }
+}
+
+async function fetchIpInfo() {
+  const container = document.getElementById("dash-ip-info");
+  if (!container) return;
+  try {
+    const resp = await fetch("https://ipapi.co/json/");
+    const data = await resp.json();
+    container.innerHTML = `
+      <div>IP: <span style="color:#fff">${data.ip}</span></div>
+      <div>LOC: <span style="color:#fff">${data.city}, ${data.country_name}</span></div>
+      <div>ISP: <span style="color:#fff">${data.org}</span></div>
+    `;
+  } catch (e) { console.error("IP error:", e); }
 }
 
 function updateDashStats() {
